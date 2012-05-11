@@ -12,8 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 public final class SliderFragment extends Fragment {
-	private Page page;
+	private static final String KEY_CONTENT = "SliderFragment:page";
 	
+	private Page page;
+
 	public static SliderFragment newInstance(Page page) {
 		SliderFragment fragment = new SliderFragment();
 		fragment.page = page;
@@ -22,9 +24,9 @@ public final class SliderFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		//if ((savedInstanceState != null) && savedInstanceState.containsKey(KEY_CONTENT)) {
-		//	content = savedInstanceState.getString(KEY_CONTENT);
-		//}
+		if ((savedInstanceState != null) && savedInstanceState.containsKey(KEY_CONTENT)) {
+			page = (Page) savedInstanceState.getSerializable(KEY_CONTENT);
+		}
 		
 		//TextView text = new TextView(getActivity());
 		//text.setGravity(Gravity.CENTER);
@@ -35,6 +37,7 @@ public final class SliderFragment extends Fragment {
 		LinearLayout layout = new LinearLayout(getActivity());
 		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 		layout.setGravity(Gravity.CENTER);
+		//layout.addView(text);
 		layout.addView(page.getView(getActivity()));
 		
 		return layout;
@@ -43,6 +46,6 @@ public final class SliderFragment extends Fragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		//outState.putString(KEY_CONTENT, content);
+		outState.putSerializable(KEY_CONTENT, page.getClass());
 	}
 }

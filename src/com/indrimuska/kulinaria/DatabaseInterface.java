@@ -76,13 +76,15 @@ public class DatabaseInterface {
 		public DbHelper(Context context) {
 			super(context, DATABASE, null, VERSION);
 		}
-
+		
 		// Called only once, first time the DB is created
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(INGREDIENTS.CREATE);
 			db.execSQL(RECIPES.CREATE);
 			db.execSQL(RECIPES_INGREDIENTS.CREATE);
+			insertIngredient("bread", 0.5, "kg", 0);
+			Log.d(TAG, "Insert new ingredient");
 		}
 		
 		// Called whenever newVersion != oldVersion
@@ -100,7 +102,7 @@ public class DatabaseInterface {
 			// put in a list the existing columns
 			List<String> columns = getColumns(db, tableName);
 			// backup table
-			db.execSQL("alter table " + tableName + " rename to 'temp_" + tableName + ")");
+			db.execSQL("alter table " + tableName + " rename to 'temp_" + tableName);
 			// create new table
 			db.execSQL(createTable);
 			// get the intersection with the new columns, this time columns taken from the upgraded table 
@@ -110,8 +112,10 @@ public class DatabaseInterface {
 			db.execSQL(String.format("insert into %s (%s) select %s from temp_%s", tableName, cols, cols, tableName));
 			// remove backup table
 			db.execSQL("drop table 'temp_" + tableName);
+			Log.d(TAG, "database updated");
 		}
 		
+		// Returns column names of a table
 		private List<String> getColumns(SQLiteDatabase db, String tableName) {
 			List<String> columns = null;
 			Cursor c = null;
@@ -140,12 +144,10 @@ public class DatabaseInterface {
 	}
 	
 	final DbHelper dbHelper;
-
+	
 	public DatabaseInterface(Context context) {
 		this.dbHelper = new DbHelper(context);
 		Log.i(TAG, "Initialized data");
-		insertIngredient("bread", 0.5, "kg", 0);
-		Log.i(TAG, "Insert new ingredient");
 	}
 	
 	public void close() {
@@ -153,7 +155,7 @@ public class DatabaseInterface {
 	}
 	
 	public void insertIngredient(String name, double quantity, String unit, long expirationDate) {
-		Log.i(TAG, "insertIngredient on " + name + "," + quantity + "," + unit + "," + expirationDate);
+		Log.d(TAG, "insertIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = this.dbHelper.getWritableDatabase();
 		try {
 			ContentValues values = new ContentValues();
