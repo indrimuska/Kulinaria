@@ -21,7 +21,7 @@ public class MainActivity extends FragmentActivity {
 	ViewPager pager;
 	PageIndicator indicator;
 	DatabaseInterface db;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,27 +41,26 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	class SliderAdapter extends FragmentPagerAdapter implements TitleProvider {
-		ArrayList<Page> pages = null;
+		ArrayList<Page> pages = new ArrayList<Page>();
 		
 		public SliderAdapter(FragmentManager fragmentManager) {
 			super(fragmentManager);
-			pages = new ArrayList<Page>();
 			pages.add(new InventoryPage());
 			pages.add(new MenuPage());
 			pages.add(new RecipesPage());
 			pages.add(new ShoppingListPage());
 		}
-
+		
 		@Override
 		public Fragment getItem(int position) {
 			return SliderFragment.newInstance(pages.get(position % pages.size()));
 		}
-
+		
 		@Override
 		public int getCount() {
 			return pages.size();
 		}
-
+		
 		@Override
 		public String getTitle(int position) {
 			return pages.get(position % pages.size()).getTitle().toUpperCase();
@@ -69,81 +68,60 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	// Generic page to implement
-	abstract static class Page {
+	abstract class Page {
 		String pageName;
-		static int pageNumber = -1;
-		public Page() { pageNumber++; }
 		public String getTitle() { return pageName; }
-		public int getPageNumber() { return pageNumber; }
 		public abstract View getView(FragmentActivity activity);
 	}
-	class InventoryPage extends Page {
-		public final int pageNumber;
+	
+	// Slider's pages implementation
+	final class InventoryPage extends Page {
+		public InventoryPage() { pageName = "Inventory"; }
 		
-		public InventoryPage() {
-			pageName = "Inventory";
-			pageNumber = super.getPageNumber();
-		}
-
 		@Override
 		public View getView(FragmentActivity activity) {
 			TextView text = new TextView(activity);
 			text.setGravity(Gravity.CENTER);
-			text.setText(String.valueOf(pageNumber));
+			text.setText(pageName);
 			text.setTextSize(20 * getResources().getDisplayMetrics().density);
 			text.setPadding(20, 20, 20, 20);
 			return text;
 		}
 	}
-	class MenuPage extends Page {
-		public final int pageNumber;
+	final class MenuPage extends Page {
+		public MenuPage() { pageName = "Menu"; }
 		
-		public MenuPage() {
-			pageName = "Menu";
-			pageNumber = super.getPageNumber();
-		}
-
 		@Override
 		public View getView(FragmentActivity activity) {
 			TextView text = new TextView(activity);
 			text.setGravity(Gravity.CENTER);
-			text.setText(String.valueOf(pageNumber));
+			text.setText(pageName);
 			text.setTextSize(20 * getResources().getDisplayMetrics().density);
 			text.setPadding(20, 20, 20, 20);
 			return text;
 		}
 	}
-	class RecipesPage extends Page {
-		public final int pageNumber;
+	final class RecipesPage extends Page {
+		public RecipesPage() { pageName = "Recipes"; }
 		
-		public RecipesPage() {
-			pageName = "Recipes";
-			pageNumber = super.getPageNumber();
-		}
-
 		@Override
 		public View getView(FragmentActivity activity) {
 			TextView text = new TextView(activity);
 			text.setGravity(Gravity.CENTER);
-			text.setText(String.valueOf(pageNumber));
+			text.setText(pageName);
 			text.setTextSize(20 * getResources().getDisplayMetrics().density);
 			text.setPadding(20, 20, 20, 20);
 			return text;
 		}
 	}
-	class ShoppingListPage extends Page {
-		public final int pageNumber;
+	final class ShoppingListPage extends Page {
+		public ShoppingListPage() { pageName = "Shopping List"; }
 		
-		public ShoppingListPage() {
-			pageName = "Shopping List";
-			pageNumber = super.getPageNumber();
-		}
-
 		@Override
 		public View getView(FragmentActivity activity) {
 			TextView text = new TextView(activity);
 			text.setGravity(Gravity.CENTER);
-			text.setText(String.valueOf(pageNumber));
+			text.setText(pageName);
 			text.setTextSize(20 * getResources().getDisplayMetrics().density);
 			text.setPadding(20, 20, 20, 20);
 			return text;
