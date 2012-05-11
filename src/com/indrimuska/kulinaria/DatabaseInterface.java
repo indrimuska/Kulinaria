@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,16 +19,19 @@ public class DatabaseInterface {
 	
 	// Tables definition
 	public static final class INGREDIENTS {
-		static final String TABLE				= "Ingredients";
-		static final String id					= "id";
-		static final String name				= "name";
-		static final String quantity			= "quantity";
-		static final String unitOfMeasurement	= "unitOfMeasurement";
-		static final String expirationDate		= "expirationDate";
+		static final String TABLE			= "Ingredients";
+		static final String id				= "id";
+		static final String name			= "name";
+		static final String quantity		= "quantity";
+		static final String unit			= "unit";
+		static final String expirationDate	= "expirationDate";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
-						id + " int primary key, " + name + " text, " +
-						quantity + " float, " + unitOfMeasurement + " text, " + expirationDate + " int )";
+						id + " int primary key, " +
+						name + " text, " +
+						quantity + " float, " +
+						unit + " text, " +
+						expirationDate + " int )";
 	}
 	public static final class RECIPES {
 		static final String TABLE		= "Recipes";
@@ -38,20 +42,28 @@ public class DatabaseInterface {
 		static final String description	= "description";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
-						id + " int primary key, " + name + " text, " +
-						dish + " text, " + time + " int, " + description + " text )";
+						id + " int primary key, " +
+						name + " text, " +
+						dish + " text, " +
+						time + " int, " +
+						description + " text )";
 	}
 	public static final class RECIPES_INGREDIENTS {
-		static final String TABLE				= "RecipesIngredients";
-		static final String recipeId			= "recipeId";
-		static final String ingredientId		= "ingredientId";
-		static final String ingredientNeed		= "ingredientNeed";
-		static final String unitOfMeasurement	= "unitOfMeasurement";
+		static final String TABLE			= "RecipesIngredients";
+		static final String recipeId		= "recipeId";
+		static final String ingredientId	= "ingredientId";
+		static final String ingredientNeed	= "ingredientNeed";
+		static final String unit			= "unit";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
-						recipeId + " int, " + ingredientId + " int, " +
-						ingredientNeed + " float, " + unitOfMeasurement + " text, " +
-						"primary key( " + recipeId + ", " + ingredientId + ") )";
+						recipeId + " int, " +
+						ingredientId + " int, " +
+						ingredientNeed + " float, " +
+						unit + " text, " +
+						"primary key( " +
+							recipeId + ", " +
+							ingredientId + " ) " +
+						")";
 	}
 	public static final class SHOPPING_LIST {
 		static final String TABLE	= "ShoppingList";
@@ -81,7 +93,8 @@ public class DatabaseInterface {
 			onUpgradeTable(db, RECIPES_INGREDIENTS.TABLE, RECIPES_INGREDIENTS.CREATE);
 		}
 		
-		private void onUpgradeTable(SQLiteDatabase db, String tableName, String createSql) {
+		// General onUpgrade (valid for each table)
+		private void onUpgradeTable(SQLiteDatabase db, String tableName, String createTable) {
 			// table might not exists yet, it will fail alter and drop
 			onCreate(db);
 			// put in a list the existing columns
@@ -89,7 +102,7 @@ public class DatabaseInterface {
 			// backup table
 			db.execSQL("alter table " + tableName + " rename to 'temp_" + tableName + ")");
 			// create new table
-			db.execSQL(createSql);
+			db.execSQL(createTable);
 			// get the intersection with the new columns, this time columns taken from the upgraded table 
 			columns.retainAll(getColumns(db, tableName));
 			// restore data
@@ -104,28 +117,53 @@ public class DatabaseInterface {
 			Cursor c = null;
 			try {
 				c = db.rawQuery("select * from " + tableName + " limit 1", null);
-				if (c != null) {
-					columns = new ArrayList<String>(Arrays.asList(c.getColumnNames()));
-				}
+				if (c != null) columns = new ArrayList<String>(Arrays.asList(c.getColumnNames()));
 			} catch (Exception e) {
 				Log.e(TAG, "getColumns: " + e.getMessage(), e);
 				e.printStackTrace();
 			} finally {
-				if (c != null)
-					c.close();
+				if (c != null) c.close();
 			}
 			return columns;
 		}
 		
-		private String join(List<String> list, String delim) {
+		// Convert a List to a String with a delimiter string
+		private String join(List<String> list, String delimiter) {
 			StringBuilder buf = new StringBuilder();
 			int num = list.size();
 			for (int i = 0; i < num; i++) {
-				if (i != 0)
-					buf.append(delim);
+				if (i != 0) buf.append(delimiter);
 				buf.append((String) list.get(i));
 			}
 			return buf.toString();
+		}
+	}
+	
+	final DbHelper dbHelper;
+
+	public DatabaseInterface(Context context) {
+		this.dbHelper = new DbHelper(context);
+		Log.i(TAG, "Initialized data");
+		insertIngredient("bread", 0.5, "kg", 0);
+		Log.i(TAG, "Insert new ingredient");
+	}
+	
+	public void close() {
+		this.dbHelper.close();
+	}
+	
+	public void insertIngredient(String name, double quantity, String unit, long expirationDate) {
+		Log.i(TAG, "insertIngredient on " + name + "," + quantity + "," + unit + "," + expirationDate);
+		SQLiteDatabase db = this.dbHelper.getWritableDatabase();
+		try {
+			ContentValues values = new ContentValues();
+			values.put(INGREDIENTS.name, name);
+			values.put(INGREDIENTS.quantity, quantity);
+			values.put(INGREDIENTS.unit, quantity);
+			values.put(INGREDIENTS.expirationDate, expirationDate);
+			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+		} finally {
+			db.close();
 		}
 	}
 }
