@@ -20,14 +20,15 @@ public class DatabaseInterface {
 	// Tables definition
 	public static final class INGREDIENTS {
 		static final String TABLE			= "Ingredients";
-		static final String id				= "id";
+		static final String id				= "_id";
 		static final String name			= "name";
 		static final String quantity		= "quantity";
 		static final String unit			= "unit";
 		static final String expirationDate	= "expirationDate";
+		static final String ORDER_BY		= name + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
-						id + " int primary key, " +
+						id + " integer primary key autoincrement, " +
 						name + " text, " +
 						quantity + " float, " +
 						unit + " text, " +
@@ -40,6 +41,7 @@ public class DatabaseInterface {
 		static final String dish		= "dish";
 		static final String time		= "time";
 		static final String description	= "description";
+		static final String ORDER_BY	= name + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
 						id + " int primary key, " +
@@ -54,6 +56,7 @@ public class DatabaseInterface {
 		static final String ingredientId	= "ingredientId";
 		static final String ingredientNeed	= "ingredientNeed";
 		static final String unit			= "unit";
+		static final String ORDER_BY		= recipeId + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
 						recipeId + " int, " +
@@ -83,8 +86,14 @@ public class DatabaseInterface {
 			db.execSQL(INGREDIENTS.CREATE);
 			db.execSQL(RECIPES.CREATE);
 			db.execSQL(RECIPES_INGREDIENTS.CREATE);
-			insertIngredient("bread", 0.5, "kg", 0);
-			Log.d(TAG, "Insert new ingredient");
+			Log.d(TAG, "tables creted");
+			
+			// Populate database
+			ContentValues values;
+			values = ingredientContentValues("bread", 0.5, "kg", 0);
+			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+			values = ingredientContentValues("milk", 1, "l", 0);
+			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 		}
 		
 		// Called whenever newVersion != oldVersion
@@ -146,26 +155,36 @@ public class DatabaseInterface {
 	final DbHelper dbHelper;
 	
 	public DatabaseInterface(Context context) {
-		this.dbHelper = new DbHelper(context);
+		dbHelper = new DbHelper(context);
 		Log.i(TAG, "Initialized data");
 	}
 	
 	public void close() {
-		this.dbHelper.close();
+		dbHelper.close();
+	}
+	
+	public ContentValues ingredientContentValues(String name, double quantity, String unit, long expirationDate) {
+		ContentValues values = new ContentValues();
+		values.put(INGREDIENTS.name, name);
+		values.put(INGREDIENTS.quantity, quantity);
+		values.put(INGREDIENTS.unit, unit);
+		values.put(INGREDIENTS.expirationDate, expirationDate);
+		return values;
 	}
 	
 	public void insertIngredient(String name, double quantity, String unit, long expirationDate) {
 		Log.d(TAG, "insertIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
-		SQLiteDatabase db = this.dbHelper.getWritableDatabase();
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			ContentValues values = new ContentValues();
-			values.put(INGREDIENTS.name, name);
-			values.put(INGREDIENTS.quantity, quantity);
-			values.put(INGREDIENTS.unit, quantity);
-			values.put(INGREDIENTS.expirationDate, expirationDate);
+			ContentValues values = ingredientContentValues(name, quantity, unit, expirationDate);
 			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 		} finally {
 			db.close();
 		}
+	}
+	
+	public Cursor getIngredientList() {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
 	}
 }
