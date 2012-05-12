@@ -2,6 +2,7 @@ package com.indrimuska.kulinaria;
 
 import java.util.ArrayList;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -10,8 +11,12 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.LinearLayout.LayoutParams;
 
+import com.indrimuska.kulinaria.DatabaseInterface.INGREDIENTS;
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TabPageIndicator;
 import com.viewpagerindicator.TitleProvider;
@@ -45,8 +50,8 @@ public class MainActivity extends FragmentActivity {
 		
 		public SliderAdapter(FragmentManager fragmentManager) {
 			super(fragmentManager);
-			pages.add(new InventoryPage());
 			pages.add(new MenuPage());
+			pages.add(new InventoryPage());
 			pages.add(new RecipesPage());
 			pages.add(new ShoppingListPage());
 		}
@@ -69,14 +74,15 @@ public class MainActivity extends FragmentActivity {
 	
 	// Generic page to implement
 	abstract class Page {
-		String pageName;
+		protected String pageName;
+		public Page(String pageName) { this.pageName = pageName; }
 		public String getTitle() { return pageName; }
 		public abstract View getView(FragmentActivity activity);
 	}
 	
 	// Slider's pages implementation
-	final class InventoryPage extends Page {
-		public InventoryPage() { pageName = "Inventory"; }
+	final class MenuPage extends Page {
+		public MenuPage() { super("Menu"); }
 		
 		@Override
 		public View getView(FragmentActivity activity) {
@@ -88,21 +94,37 @@ public class MainActivity extends FragmentActivity {
 			return text;
 		}
 	}
-	final class MenuPage extends Page {
-		public MenuPage() { pageName = "Menu"; }
+	final class InventoryPage extends Page {
+		public InventoryPage() { super("Inventory"); }
 		
 		@Override
 		public View getView(FragmentActivity activity) {
-			TextView text = new TextView(activity);
-			text.setGravity(Gravity.CENTER);
-			text.setText(pageName);
-			text.setTextSize(20 * getResources().getDisplayMetrics().density);
-			text.setPadding(20, 20, 20, 20);
-			return text;
+			// Get the data from the database
+			Cursor cursor = db.getIngredientList();
+			startManagingCursor(cursor);
+			
+			// Columns
+			String[] FROM = {
+					INGREDIENTS.name,
+					INGREDIENTS.quantity,
+					INGREDIENTS.unit
+			};
+			// Layout IDs
+			int[] TO = {
+					R.id.ingredientName,
+					R.id.ingredientQuantity,
+					R.id.ingredientUnit
+			};
+			
+			// Putting rows using SimpleCursorAdapter
+			ListView list = new ListView(activity);
+			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+			list.setAdapter(new SimpleCursorAdapter(activity, R.layout.ingredient, cursor, FROM, TO));
+			return list;
 		}
 	}
 	final class RecipesPage extends Page {
-		public RecipesPage() { pageName = "Recipes"; }
+		public RecipesPage() { super("Recipes"); }
 		
 		@Override
 		public View getView(FragmentActivity activity) {
@@ -115,7 +137,7 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 	final class ShoppingListPage extends Page {
-		public ShoppingListPage() { pageName = "Shopping List"; }
+		public ShoppingListPage() { super("Shopping List"); }
 		
 		@Override
 		public View getView(FragmentActivity activity) {
