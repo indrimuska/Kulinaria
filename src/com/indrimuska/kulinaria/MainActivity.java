@@ -20,6 +20,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -134,12 +135,20 @@ public class MainActivity extends FragmentActivity {
 					builder.setCancelable(true);
 					builder.setTitle(R.string.addIngredient);
 					
+					// Inflating auto-complete list
+					Cursor cursor = db.getIngredientList();
+					startManagingCursor(cursor);
+					ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
+					while (cursor.moveToNext()) textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+					final AutoCompleteTextView name = (AutoCompleteTextView) view.findViewById(R.id.elementIngredientName);
+			        name.setAdapter(textAdapter);
+					
 					// Inflating spinner
 					final Spinner unit = (Spinner) view.findViewById(R.id.elementIngredientUnit);
-					ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+					ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
 							MainActivity.this, R.array.units, R.layout.spinner_text_white);
-					adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-					unit.setAdapter(adapter);
+					spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+					unit.setAdapter(spinnerAdapter);
 					
 					// Expired date's button
 					final Calendar date = Calendar.getInstance();
@@ -160,17 +169,16 @@ public class MainActivity extends FragmentActivity {
 					});
 					
 					// Setting buttons and open the dialog
-					final EditText name = (EditText) view.findViewById(R.id.elementIngredientName);
 					final EditText quantity = (EditText) view.findViewById(R.id.elementIngredientQuantity);
 					builder.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
+							// TODO: Check if the product is already in the inventory (insert or update?)
 							// Insert new ingredient in database
-							db.insertIngredient(
-									name.getText().toString(),
-									new Double(quantity.getText().toString()),
-									unit.getSelectedItem().toString(),
-									date.getTime().getTime());
+							db.insertIngredient(name.getText().toString(),
+									new Double(quantity.getText().toString()), unit.getSelectedItem().toString(),
+									expirationDate.getText().toString().equals(R.string.ingredientExpiredDateNoExpiry)
+										? 0 : date.getTime().getTime());
 							// Updating the inventory page
 							layout.removeViewAt(0);
 							layout.addView(getInventoryFromDatabase(activity), 0);

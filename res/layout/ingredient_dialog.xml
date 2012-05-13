@@ -9,7 +9,7 @@
 			android:text="@string/ingredientName"
 			android:paddingLeft="10dp"
 			android:paddingRight="10dp" />
-		<EditText
+		<AutoCompleteTextView
 			android:id="@+id/elementIngredientName"
 			android:layout_width="150dp"
 			android:layout_height="wrap_content"
@@ -17,7 +17,7 @@
 			android:textColor="#fff"
 			android:background="@drawable/edit_text_holo_dark">
 			<requestFocus />
-		</EditText>
+		</AutoCompleteTextView>
 	</TableRow>
 	<TableRow
 		android:gravity="center_vertical">
@@ -33,7 +33,7 @@
 			android:orientation="horizontal"
 			android:layout_margin="0dp"
 			android:padding="0dp">
-			<EditText
+			<AutoCompleteTextView
 				android:id="@+id/elementIngredientQuantity"
 				android:layout_width="60dp"
 				android:layout_height="wrap_content"
@@ -66,7 +66,7 @@
 				android:id="@+id/elementIngredientExpiredDate"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/ingredientExpiredDateNoExpirty"
+				android:text="@string/ingredientExpiredDateNoExpiry"
 			    style="?android:attr/buttonStyleSmall"
 				android:layout_margin="5dp"
 				android:paddingLeft="20dp"
