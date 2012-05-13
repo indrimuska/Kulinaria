@@ -11,6 +11,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -34,10 +36,8 @@ public class MainActivity extends FragmentActivity {
 		
 		// Initializing slider
 		sliderAdapter = new SliderAdapter(getSupportFragmentManager());
-		
 		pager = (ViewPager) findViewById(R.id.pager);
 		pager.setAdapter(sliderAdapter);
-		
 		indicator = (TabPageIndicator) findViewById(R.id.indicator);
 		indicator.setViewPager(pager);
 		
@@ -103,24 +103,37 @@ public class MainActivity extends FragmentActivity {
 			Cursor cursor = db.getIngredientList();
 			startManagingCursor(cursor);
 			
-			// Columns
-			String[] FROM = {
-					INGREDIENTS.name,
-					INGREDIENTS.quantity,
-					INGREDIENTS.unit
-			};
-			// Layout IDs
-			int[] TO = {
-					R.id.ingredientName,
-					R.id.ingredientQuantity,
-					R.id.ingredientUnit
-			};
+			// Creating view
+			LinearLayout layout = new LinearLayout(activity);
+			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+			layout.setOrientation(LinearLayout.VERTICAL);
 			
 			// Putting rows using SimpleCursorAdapter
 			ListView list = new ListView(activity);
-			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-			list.setAdapter(new SimpleCursorAdapter(activity, R.layout.ingredient, cursor, FROM, TO));
-			return list;
+			list.setScrollingCacheEnabled(false);
+			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+			list.setAdapter(new SimpleCursorAdapter(activity, R.layout.ingredient, cursor,
+					new String[] {
+							INGREDIENTS.name,
+							INGREDIENTS.quantity,
+							INGREDIENTS.unit
+					},
+					new int[] {
+							R.id.ingredientName,
+							R.id.ingredientQuantity,
+							R.id.ingredientUnit
+					}));
+			layout.addView(list);
+			
+			// Add ingredient's button
+			Button button = new Button(activity);
+			LayoutParams buttonParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			buttonParams.gravity = Gravity.CENTER;
+			button.setLayoutParams(buttonParams);
+			button.setText(R.string.addIngredient);
+			layout.addView(button);
+			
+			return layout;
 		}
 	}
 	final class RecipesPage extends Page {

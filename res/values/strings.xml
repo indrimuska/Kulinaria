@@ -2,5 +2,7 @@
 <resources>
 
     <string name="app_name">Kulinaria</string>
+    
+    <string name="addIngredient">Add ingredient</string>
 
 </resources>
