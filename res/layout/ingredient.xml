@@ -6,7 +6,7 @@
 	android:padding="5dp">
 	
 	<TextView
-		android:id="@+id/ingredientName"
+		android:id="@+id/listIngredientName"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -16,11 +16,11 @@
 		android:layout_height="match_parent"
 		android:orientation="horizontal">
 		<TextView
-			android:id="@+id/ingredientQuantity"
+			android:id="@+id/listIngredientQuantity"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content" />
 		<TextView
-			android:id="@+id/ingredientUnit"
+			android:id="@+id/listIngredientUnit"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content" />
 	</LinearLayout>

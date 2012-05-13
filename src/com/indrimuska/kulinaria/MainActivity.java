@@ -1,7 +1,11 @@
 package com.indrimuska.kulinaria;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
+import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
+import android.app.Dialog;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,16 +13,20 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
 
-import com.indrimuska.kulinaria.DatabaseInterface.INGREDIENTS;
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TabPageIndicator;
 import com.viewpagerindicator.TitleProvider;
@@ -114,14 +122,14 @@ public class MainActivity extends FragmentActivity {
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 			list.setAdapter(new SimpleCursorAdapter(activity, R.layout.ingredient, cursor,
 					new String[] {
-							INGREDIENTS.name,
-							INGREDIENTS.quantity,
-							INGREDIENTS.unit
+							DatabaseInterface.INGREDIENTS.name,
+							DatabaseInterface.INGREDIENTS.quantity,
+							DatabaseInterface.INGREDIENTS.unit
 					},
 					new int[] {
-							R.id.ingredientName,
-							R.id.ingredientQuantity,
-							R.id.ingredientUnit
+							R.id.listIngredientName,
+							R.id.listIngredientQuantity,
+							R.id.listIngredientUnit
 					}));
 			layout.addView(list);
 			
@@ -131,6 +139,43 @@ public class MainActivity extends FragmentActivity {
 			buttonParams.gravity = Gravity.CENTER;
 			button.setLayoutParams(buttonParams);
 			button.setText(R.string.addIngredient);
+			button.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					// Creating the dialog
+					Dialog dialog = new Dialog(MainActivity.this);
+					dialog.setContentView(R.layout.ingredient_dialog);
+					dialog.setTitle(R.string.addIngredient);
+					dialog.setCancelable(true);
+					
+					// Inflating spinner
+					Spinner spinner = (Spinner) dialog.findViewById(R.id.elementIngredientUnit);
+					ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+							MainActivity.this, R.array.units, R.layout.spinner_text_white);
+					adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+					spinner.setAdapter(adapter);
+					
+					// Expired date's button
+					final Calendar date = Calendar.getInstance();
+					Button button = (Button) dialog.findViewById(R.id.elementIngredientExpiredDate);
+					button.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							new DatePickerDialog(MainActivity.this, dateSetListener,
+									date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH)).show();
+						}
+						private OnDateSetListener dateSetListener = new OnDateSetListener() {
+							@Override
+							public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+								Log.d("PICKER", "----i'm in-----");
+								date.set(year, monthOfYear, dayOfMonth);
+							}
+						};
+					});
+					
+					dialog.show();
+				}
+			});
 			layout.addView(button);
 			
 			return layout;
