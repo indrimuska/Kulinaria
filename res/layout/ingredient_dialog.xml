@@ -1,89 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical" >
-	
-	<TableLayout
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content">
-		<TableRow>
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/ingredientName"
-				android:paddingLeft="10dp"
-				android:paddingRight="10dp" />
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	<TableRow>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/ingredientName"
+			android:paddingLeft="10dp"
+			android:paddingRight="10dp" />
+		<EditText
+			android:id="@+id/elementIngredientName"
+			android:layout_width="150dp"
+			android:layout_height="wrap_content"
+			android:inputType="text"
+			android:textColor="#fff"
+			android:background="@drawable/edit_text_holo_dark">
+			<requestFocus />
+		</EditText>
+	</TableRow>
+	<TableRow
+		android:gravity="center_vertical">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/ingredientQuantity"
+			android:paddingLeft="10dp"
+			android:paddingRight="10dp" />
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:layout_margin="0dp"
+			android:padding="0dp">
 			<EditText
-				android:id="@+id/elementIngredientName"
-				android:layout_width="150dp"
+				android:id="@+id/elementIngredientQuantity"
+				android:layout_width="60dp"
 				android:layout_height="wrap_content"
-				android:inputType="text"
+				android:inputType="numberDecimal"
 				android:textColor="#fff"
-				android:background="@drawable/edit_text_holo_dark">
-				<requestFocus />
-			</EditText>
-		</TableRow>
-		<TableRow
-			android:gravity="center_vertical">
-			<TextView
+				android:background="@drawable/edit_text_holo_dark" />
+			<Spinner
+				android:id="@+id/elementIngredientUnit"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/ingredientQuantity"
-				android:paddingLeft="10dp"
-				android:paddingRight="10dp" />
-			<LinearLayout
+				android:prompt="@string/ingredientUnit"
+				android:background="@drawable/spinner_background_holo_dark" />
+		</LinearLayout>
+	</TableRow>
+	<TableRow
+		android:gravity="center_vertical">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/ingredientExpiredDate"
+			android:paddingLeft="10dp"
+			android:paddingRight="10dp" />
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:layout_margin="0dp"
+			android:padding="0dp">
+			<Button
+				android:id="@+id/elementIngredientExpiredDate"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:layout_margin="0dp"
-				android:padding="0dp">
-				<EditText
-					android:id="@+id/elementIngredientQuantity"
-					android:layout_width="60dp"
-					android:layout_height="wrap_content"
-					android:inputType="numberDecimal"
-					android:textColor="#fff"
-					android:background="@drawable/edit_text_holo_dark" />
-				<Spinner
-					android:id="@+id/elementIngredientUnit"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:prompt="@string/ingredientUnit"
-					android:background="@drawable/spinner_background_holo_dark" />
-			</LinearLayout>
-		</TableRow>
-		<TableRow
-			android:gravity="center_vertical">
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/ingredientExpiredDate"
-				android:paddingLeft="10dp"
-				android:paddingRight="10dp" />
-			<LinearLayout
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:layout_margin="0dp"
-				android:padding="0dp">
-				<Button
-					android:id="@+id/elementIngredientExpiredDate"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/ingredientExpiredDateChange"
-				    style="?android:attr/buttonStyleSmall"
-					android:layout_margin="5dp"
-					android:paddingLeft="20dp"
-					android:paddingRight="20dp" />
-			</LinearLayout>
-		</TableRow>
-	</TableLayout>
-	
-	<Button
-		android:id="@+id/elementIngredientSave"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:text="@string/ingredientSave" />
-
-</LinearLayout>
+				android:text="@string/ingredientExpiredDateNoExpirty"
+			    style="?android:attr/buttonStyleSmall"
+				android:layout_margin="5dp"
+				android:paddingLeft="20dp"
+				android:paddingRight="20dp" />
+		</LinearLayout>
+	</TableRow>
+</TableLayout>

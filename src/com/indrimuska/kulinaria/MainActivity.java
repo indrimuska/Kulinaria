@@ -3,9 +3,10 @@ package com.indrimuska.kulinaria;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
-import android.app.Dialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,7 +14,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -143,13 +143,14 @@ public class MainActivity extends FragmentActivity {
 				@Override
 				public void onClick(View v) {
 					// Creating the dialog
-					Dialog dialog = new Dialog(MainActivity.this);
-					dialog.setContentView(R.layout.ingredient_dialog);
-					dialog.setTitle(R.string.addIngredient);
-					dialog.setCancelable(true);
+					View view = getLayoutInflater().inflate(R.layout.ingredient_dialog, null);
+					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+					builder.setView(view);
+					builder.setCancelable(true);
+					builder.setTitle(R.string.addIngredient);
 					
 					// Inflating spinner
-					Spinner spinner = (Spinner) dialog.findViewById(R.id.elementIngredientUnit);
+					Spinner spinner = (Spinner) view.findViewById(R.id.elementIngredientUnit);
 					ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
 							MainActivity.this, R.array.units, R.layout.spinner_text_white);
 					adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -157,7 +158,7 @@ public class MainActivity extends FragmentActivity {
 					
 					// Expired date's button
 					final Calendar date = Calendar.getInstance();
-					Button button = (Button) dialog.findViewById(R.id.elementIngredientExpiredDate);
+					final Button button = (Button) view.findViewById(R.id.elementIngredientExpiredDate);
 					button.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
@@ -167,13 +168,26 @@ public class MainActivity extends FragmentActivity {
 						private OnDateSetListener dateSetListener = new OnDateSetListener() {
 							@Override
 							public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-								Log.d("PICKER", "----i'm in-----");
 								date.set(year, monthOfYear, dayOfMonth);
+								button.setText(String.format("%s/%s/%s",
+										date.get(Calendar.DAY_OF_MONTH), date.get(Calendar.MONTH), date.get(Calendar.YEAR)));
 							}
 						};
 					});
 					
-					dialog.show();
+					// Setting buttons and open the dialog
+					builder.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+						}
+					});
+					builder.setNegativeButton(R.string.ingredientCancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+						}
+					});
+					builder.show();
 				}
 			});
 			layout.addView(button);
