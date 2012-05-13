@@ -6,6 +6,7 @@ import java.util.Calendar;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -14,12 +15,14 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -106,32 +109,14 @@ public class MainActivity extends FragmentActivity {
 		public InventoryPage() { super("Inventory"); }
 		
 		@Override
-		public View getView(FragmentActivity activity) {
-			// Get the data from the database
-			Cursor cursor = db.getIngredientList();
-			startManagingCursor(cursor);
-			
+		public View getView(final FragmentActivity activity) {
 			// Creating view
-			LinearLayout layout = new LinearLayout(activity);
+			final LinearLayout layout = new LinearLayout(activity);
 			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 			layout.setOrientation(LinearLayout.VERTICAL);
 			
-			// Putting rows using SimpleCursorAdapter
-			ListView list = new ListView(activity);
-			list.setScrollingCacheEnabled(false);
-			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-			list.setAdapter(new SimpleCursorAdapter(activity, R.layout.ingredient, cursor,
-					new String[] {
-							DatabaseInterface.INGREDIENTS.name,
-							DatabaseInterface.INGREDIENTS.quantity,
-							DatabaseInterface.INGREDIENTS.unit
-					},
-					new int[] {
-							R.id.listIngredientName,
-							R.id.listIngredientQuantity,
-							R.id.listIngredientUnit
-					}));
-			layout.addView(list);
+			// List all ingredients
+			layout.addView(getInventoryFromDatabase(activity));
 			
 			// Add ingredient's button
 			Button button = new Button(activity);
@@ -150,16 +135,16 @@ public class MainActivity extends FragmentActivity {
 					builder.setTitle(R.string.addIngredient);
 					
 					// Inflating spinner
-					Spinner spinner = (Spinner) view.findViewById(R.id.elementIngredientUnit);
+					final Spinner unit = (Spinner) view.findViewById(R.id.elementIngredientUnit);
 					ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
 							MainActivity.this, R.array.units, R.layout.spinner_text_white);
 					adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-					spinner.setAdapter(adapter);
+					unit.setAdapter(adapter);
 					
 					// Expired date's button
 					final Calendar date = Calendar.getInstance();
-					final Button button = (Button) view.findViewById(R.id.elementIngredientExpiredDate);
-					button.setOnClickListener(new OnClickListener() {
+					final Button expirationDate = (Button) view.findViewById(R.id.elementIngredientExpiredDate);
+					expirationDate.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
 							new DatePickerDialog(MainActivity.this, dateSetListener,
@@ -169,16 +154,26 @@ public class MainActivity extends FragmentActivity {
 							@Override
 							public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 								date.set(year, monthOfYear, dayOfMonth);
-								button.setText(String.format("%s/%s/%s",
-										date.get(Calendar.DAY_OF_MONTH), date.get(Calendar.MONTH), date.get(Calendar.YEAR)));
+								expirationDate.setText(DateFormat.format("dd/mm/yyyy", date.getTime().getTime()));
 							}
 						};
 					});
 					
 					// Setting buttons and open the dialog
+					final EditText name = (EditText) view.findViewById(R.id.elementIngredientName);
+					final EditText quantity = (EditText) view.findViewById(R.id.elementIngredientQuantity);
 					builder.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
+							// Insert new ingredient in database
+							db.insertIngredient(
+									name.getText().toString(),
+									new Double(quantity.getText().toString()),
+									unit.getSelectedItem().toString(),
+									date.getTime().getTime());
+							// Updating the inventory page
+							layout.removeViewAt(0);
+							layout.addView(getInventoryFromDatabase(activity), 0);
 						}
 					});
 					builder.setNegativeButton(R.string.ingredientCancel, new DialogInterface.OnClickListener() {
@@ -193,6 +188,30 @@ public class MainActivity extends FragmentActivity {
 			layout.addView(button);
 			
 			return layout;
+		}
+
+		// Inflate rows using SimpleCursorAdapter
+		private ListView getInventoryFromDatabase(Context activity) {
+			// Get the data from the database
+			Cursor cursor = db.getIngredientList();
+			startManagingCursor(cursor);
+			
+			// Inflate rows using SimpleCursorAdapter
+			ListView list = new ListView(activity);
+			list.setScrollingCacheEnabled(false);
+			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+			list.setAdapter(new SimpleCursorAdapter(activity, R.layout.ingredient, cursor,
+					new String[] {
+							DatabaseInterface.INGREDIENTS.name,
+							DatabaseInterface.INGREDIENTS.quantity,
+							DatabaseInterface.INGREDIENTS.unit
+					},
+					new int[] {
+							R.id.listIngredientName,
+							R.id.listIngredientQuantity,
+							R.id.listIngredientUnit
+					}));
+			return list;
 		}
 	}
 	final class RecipesPage extends Page {
