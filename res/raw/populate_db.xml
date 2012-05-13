@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<table name="Ingredients">
+	<row>
+		<name>bread</name>
+		<quantity>0.5</quantity>
+		<unit>kg</unit>
+		<expiredDate>0</expiredDate>
+	</row>
+	<row>
+		<name>milk</name>
+		<quantity>1</quantity>
+		<unit>l</unit>
+		<expiredDate>0</expiredDate>
+	</row>
+</table>

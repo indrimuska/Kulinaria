@@ -2,7 +2,17 @@ package com.indrimuska.kulinaria;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -75,9 +85,12 @@ public class DatabaseInterface {
 	
 	// DbHelper implementation
 	class DbHelper extends SQLiteOpenHelper {
+		Context context;
+		
 		// Constructor
 		public DbHelper(Context context) {
 			super(context, DATABASE, null, VERSION);
+			this.context = context;
 		}
 		
 		// Called only once, first time the DB is created
@@ -88,12 +101,17 @@ public class DatabaseInterface {
 			db.execSQL(RECIPES_INGREDIENTS.CREATE);
 			Log.d(TAG, "tables creted");
 			
-			// Populate database
-			ContentValues values;
-			values = ingredientContentValues("bread", 0.5, "kg", 0);
-			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-			values = ingredientContentValues("milk", 1, "l", 0);
-			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+			// Populate database (from XML)
+			Map<String, ArrayList<ArrayList<String>>> tables = getTablesFromXML(context, R.raw.populate_db);
+			for (Map.Entry<String, ArrayList<ArrayList<String>>> table : tables.entrySet()) {
+				ArrayList<ArrayList<String>> rows = table.getValue();
+				for (ArrayList<String> value : rows) {
+					if (table.getKey().equals(INGREDIENTS.TABLE)) {
+						ContentValues contentValues = ingredientContentValues(value.get(0), new Float(value.get(1)), value.get(2), new Long(value.get(3)));
+						db.insertWithOnConflict(INGREDIENTS.TABLE, null, contentValues, SQLiteDatabase.CONFLICT_IGNORE);
+					}
+				}
+			}
 		}
 		
 		// Called whenever newVersion != oldVersion
@@ -150,6 +168,40 @@ public class DatabaseInterface {
 			}
 			return buf.toString();
 		}
+		
+		// Get table contents from an XML file
+		Map<String, ArrayList<ArrayList<String>>> getTablesFromXML(Context context, int XML) {
+			Map<String, ArrayList<ArrayList<String>>> tables = new HashMap<String, ArrayList<ArrayList<String>>>();
+			try {
+				// Getting XML contents
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+				Document doc = documentBuilder.parse(context.getResources().openRawResource(XML));
+				doc.getDocumentElement().normalize();
+				
+				// Save XML content into ArrayList<String>
+				NodeList tableList = doc.getElementsByTagName("table");
+				for (int t = 0; t < tableList.getLength(); t++) {
+					ArrayList<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
+					NodeList rowList = ((Element) tableList.item(t)).getElementsByTagName("row");
+					for (int r = 0; r < rowList.getLength(); r++) {
+						ArrayList<String> values = new ArrayList<String>();
+						NodeList columns = ((Element) rowList.item(r)).getChildNodes();
+						for (int c = 0; c < columns.getLength(); c++) {
+							Node column = columns.item(c);
+							if (column.getNodeType() == 1)
+								values.add(column.getChildNodes().item(0).getNodeValue());
+						}
+						rows.add(values);
+					}
+					Log.d(TAG, ((Element) tableList.item(t)).getAttribute("name"));
+					tables.put(((Element) tableList.item(t)).getAttribute("name"), rows);
+				}
+			} catch (Exception e) {
+				Log.e(TAG, e.getMessage(), e);
+			}
+			return tables;
+		}
 	}
 	
 	final DbHelper dbHelper;
@@ -163,7 +215,8 @@ public class DatabaseInterface {
 		dbHelper.close();
 	}
 	
-	public ContentValues ingredientContentValues(String name, double quantity, String unit, long expirationDate) {
+	// Convert ingredient values to ContentValues
+	private ContentValues ingredientContentValues(String name, double quantity, String unit, long expirationDate) {
 		ContentValues values = new ContentValues();
 		values.put(INGREDIENTS.name, name);
 		values.put(INGREDIENTS.quantity, quantity);
@@ -172,6 +225,7 @@ public class DatabaseInterface {
 		return values;
 	}
 	
+	// Insert an ingredient in database
 	public void insertIngredient(String name, double quantity, String unit, long expirationDate) {
 		Log.d(TAG, "insertIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -183,6 +237,7 @@ public class DatabaseInterface {
 		}
 	}
 	
+	// Get the list of ingredients stored
 	public Cursor getIngredientList() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
