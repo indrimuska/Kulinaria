@@ -23,7 +23,7 @@ public final class SliderFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		if (savedInstanceState != null && savedInstanceState.containsKey(KEY_CONTENT))
 			page = (Page) savedInstanceState.getSerializable(KEY_CONTENT);
-		return page.getView(getActivity());
+		return page.getView();
 	}
 	
 	@Override
