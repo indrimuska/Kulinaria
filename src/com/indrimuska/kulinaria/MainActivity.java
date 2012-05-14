@@ -25,8 +25,6 @@ import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -133,16 +131,17 @@ public class MainActivity extends FragmentActivity {
 			LayoutParams buttonParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 			buttonParams.gravity = Gravity.CENTER;
 			button.setLayoutParams(buttonParams);
-			button.setText(R.string.addIngredient);
+			button.setText(R.string.ingredientAdd);
 			button.setOnClickListener(new OnClickListener() {
+				AlertDialog dialog;
 				@Override
 				public void onClick(View v) {
 					// Creating the dialog
 					View view = getLayoutInflater().inflate(R.layout.ingredient_dialog, null);
-					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+					final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 					builder.setView(view);
 					builder.setCancelable(true);
-					builder.setTitle(R.string.addIngredient);
+					builder.setTitle(R.string.ingredientAdd);
 					
 					// Inflating auto-complete list
 					Cursor cursor = db.getIngredientList();
@@ -180,23 +179,41 @@ public class MainActivity extends FragmentActivity {
 					
 					// On name changed
 					name.addTextChangedListener(new TextWatcher() {
+						// @SuppressWarnings is for conversion from SpinnerAdapter to ArrayAdapter<String>
 						@Override
+						@SuppressWarnings("unchecked")
 						public void onTextChanged(CharSequence text, int start, int before, int count) {
-							if (db.ingredientAlreadyExists(text.toString().trim()))
-								setIngredient(name, quantity, unit, expirationDate, date);
-							else resetIngredient(quantity, unit, expirationDate);
+							if (db.ingredientAlreadyExists(text.toString().trim())) {
+								// Set ingredient's informations into dialog
+								dialog.setTitle(R.string.ingredientUpdate);
+								Cursor cursor = db.getIngredient(name.getText().toString().trim());
+								startManagingCursor(cursor);
+								cursor.moveToFirst();
+								Double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.quantity));
+								Long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.expirationDate));
+								String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.unit));
+								quantity.setText(Double.toString(quantityDouble));
+								unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
+								if (expirationDateLong > 0) {
+									date.setTime(new Date(expirationDateLong));
+									expirationDate.setText(DateFormat.format(getString(R.string.dateFormat), date.getTime().getTime()));
+									if (expirationDateLong < new Date().getTime())
+										expirationDate.getBackground().setColorFilter(
+												new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
+									else expirationDate.getBackground().clearColorFilter();
+								}
+							} else {
+								// Reset dialog interface
+								dialog.setTitle(R.string.ingredientAdd);
+								quantity.setText("");
+								unit.setSelection(0);
+								expirationDate.getBackground().clearColorFilter();
+								expirationDate.setText(getString(R.string.ingredientExpiredDateNoExpiry));
+							}
 						}
 						// other methods to override (nothing to do)
 						@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 						@Override public void afterTextChanged(Editable s) { }
-					});
-					
-					// On auto-complete
-					name.setOnItemClickListener(new OnItemClickListener() {
-						@Override
-						public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-							setIngredient(name, quantity, unit, expirationDate, date);
-						}
 					});
 					
 					// Setting buttons and open the dialog
@@ -211,7 +228,7 @@ public class MainActivity extends FragmentActivity {
 									? 0 : date.getTime().getTime();
 							// Check if an ingredient is already stored
 							if (db.ingredientAlreadyExists(ingredientName)) {
-								String ingredientUpdate = getString(R.string.ingredientUpdate).replaceFirst("\\?", ingredientName);
+								String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
 								db.updateIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
 							} else db.insertIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
@@ -226,7 +243,8 @@ public class MainActivity extends FragmentActivity {
 							dialog.dismiss();
 						}
 					});
-					builder.show();
+					dialog = builder.create();
+					dialog.show();
 				}
 			});
 			layout.addView(button);
@@ -256,35 +274,6 @@ public class MainActivity extends FragmentActivity {
 							R.id.listIngredientUnit
 					}));
 			return list;
-		}
-		
-		// Set ingredient's informations into dialog
-		// @SuppressWarnings is for conversion from SpinnerAdapter to ArrayAdapter<String>
-		@SuppressWarnings("unchecked")
-		private void setIngredient(AutoCompleteTextView name, EditText quantity, Spinner unit, Button expirationDate, Calendar date) {
-			Cursor cursor = db.getIngredient(name.getText().toString().trim());
-			startManagingCursor(cursor);
-			cursor.moveToFirst();
-			Double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.quantity));
-			Long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.expirationDate));
-			String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.unit));
-			quantity.setText(Double.toString(quantityDouble));
-			unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
-			if (expirationDateLong > 0) {
-				date.setTime(new Date(expirationDateLong));
-				expirationDate.setText(DateFormat.format(getString(R.string.dateFormat), date.getTime().getTime()));
-				if (expirationDateLong < new Date().getTime())
-					expirationDate.getBackground().setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP));
-				else expirationDate.getBackground().clearColorFilter();
-			}
-		}
-		
-		// Reset dialog interface
-		private void resetIngredient(EditText quantity, Spinner unit, Button expirationDate) {
-			quantity.setText("");
-			unit.setSelection(0);
-			expirationDate.getBackground().clearColorFilter();
-			expirationDate.setText(getString(R.string.ingredientExpiredDateNoExpiry));
 		}
 	}
 	final class RecipesPage extends Page {
