@@ -231,15 +231,51 @@ public class DatabaseInterface {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
 			ContentValues values = ingredientContentValues(name, quantity, unit, expirationDate);
-			db.insertWithOnConflict(INGREDIENTS.TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+			db.insert(INGREDIENTS.TABLE, null, values);
 		} finally {
 			db.close();
 		}
 	}
 	
+	// Get ingredient
+	public Cursor getIngredient(String ingredientName) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(INGREDIENTS.TABLE, null,
+				INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+	}
+
 	// Get the list of ingredients stored
 	public Cursor getIngredientList() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
 	}
+	
+	// Check if an ingredient is already stored
+	public boolean ingredientAlreadyExists(String ingredientName) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		try {
+			Cursor cursor = db.query(INGREDIENTS.TABLE, null,
+					INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+			try {
+				return cursor.getCount() > 0;
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
+	}
+	
+	// Update a stored ingredient
+	public void updateIngredient(String name, double quantity, String unit, long expirationDate) {
+		Log.d(TAG, "insertIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try {
+			ContentValues values = ingredientContentValues(name, quantity, unit, expirationDate);
+			db.update(INGREDIENTS.TABLE, values, INGREDIENTS.name+"=?", new String[] { name });
+		} finally {
+			db.close();
+		}
+	}
+	
 }

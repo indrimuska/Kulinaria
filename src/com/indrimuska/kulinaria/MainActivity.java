@@ -19,6 +19,8 @@ import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -29,6 +31,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.viewpagerindicator.PageIndicator;
@@ -144,6 +147,7 @@ public class MainActivity extends FragmentActivity {
 			        name.setAdapter(textAdapter);
 					
 					// Inflating spinner
+					final EditText quantity = (EditText) view.findViewById(R.id.elementIngredientQuantity);
 					final Spinner unit = (Spinner) view.findViewById(R.id.elementIngredientUnit);
 					ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
 							MainActivity.this, R.array.units, R.layout.spinner_text_white);
@@ -168,17 +172,33 @@ public class MainActivity extends FragmentActivity {
 						};
 					});
 					
+					// On auto-complete
+					name.setOnItemClickListener(new OnItemClickListener() {
+						@Override
+						public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+							Cursor cursor = db.getIngredient(name.getText().toString().trim());
+							cursor.moveToFirst();
+							Double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.quantity));
+							quantity.setText(Double.toString(quantityDouble));
+						}
+					});
+					
 					// Setting buttons and open the dialog
-					final EditText quantity = (EditText) view.findViewById(R.id.elementIngredientQuantity);
 					builder.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							// TODO: Check if the product is already in the inventory (insert or update?)
-							// Insert new ingredient in database
-							db.insertIngredient(name.getText().toString(),
-									new Double(quantity.getText().toString()), unit.getSelectedItem().toString(),
+							String ingredientName = name.getText().toString().trim();
+							Double ingredientQuantity = new Double(quantity.getText().toString());
+							String ingredientUnit = unit.getSelectedItem().toString();
+							Long ingredientExpirationDate =
 									expirationDate.getText().toString().equals(R.string.ingredientExpiredDateNoExpiry)
-										? 0 : date.getTime().getTime());
+									? 0 : date.getTime().getTime();
+							// Check if an ingredient is already stored
+							if (db.ingredientAlreadyExists(ingredientName)) {
+								String ingredientUpdate = getString(R.string.ingredientUpdate).replaceFirst("\\?", ingredientName);
+								db.updateIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+							} else db.insertIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 							// Updating the inventory page
 							layout.removeViewAt(0);
 							layout.addView(getInventoryFromDatabase(activity), 0);

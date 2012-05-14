@@ -4,6 +4,7 @@
 	<string name="app_name">Kulinaria</string>
 	
 	<string name="addIngredient">Add ingredient</string>
+	<string name="updateIngredient">Update ingredient</string>
 	<string name="ingredientName">Name</string>
 	<string name="ingredientQuantity">Quantity</string>
 	<string name="ingredientUnit">Unit</string>
@@ -11,5 +12,6 @@
 	<string name="ingredientExpiredDateNoExpiry">No expiry</string>
 	<string name="ingredientSave">Save</string>
 	<string name="ingredientCancel">Cancel</string>
+	<string name="ingredientUpdate">Ingredient ? updated</string>
 	
 </resources>
