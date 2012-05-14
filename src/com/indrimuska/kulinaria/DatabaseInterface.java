@@ -240,8 +240,7 @@ public class DatabaseInterface {
 	// Get ingredient
 	public Cursor getIngredient(String ingredientName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(INGREDIENTS.TABLE, null,
-				INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+		return db.query(INGREDIENTS.TABLE, null, INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
 	}
 
 	// Get the list of ingredients stored

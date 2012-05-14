@@ -2,6 +2,7 @@ package com.indrimuska.kulinaria;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -9,12 +10,17 @@ import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
@@ -167,19 +173,29 @@ public class MainActivity extends FragmentActivity {
 							@Override
 							public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 								date.set(year, monthOfYear, dayOfMonth);
-								expirationDate.setText(DateFormat.format("dd/mm/yyyy", date.getTime().getTime()));
+								expirationDate.setText(DateFormat.format(getString(R.string.dateFormat), date.getTime().getTime()));
 							}
 						};
+					});
+					
+					// On name changed
+					name.addTextChangedListener(new TextWatcher() {
+						@Override
+						public void onTextChanged(CharSequence text, int start, int before, int count) {
+							if (db.ingredientAlreadyExists(text.toString().trim()))
+								setIngredient(name, quantity, unit, expirationDate, date);
+							else resetIngredient(quantity, unit, expirationDate);
+						}
+						// other methods to override (nothing to do)
+						@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+						@Override public void afterTextChanged(Editable s) { }
 					});
 					
 					// On auto-complete
 					name.setOnItemClickListener(new OnItemClickListener() {
 						@Override
 						public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-							Cursor cursor = db.getIngredient(name.getText().toString().trim());
-							cursor.moveToFirst();
-							Double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.quantity));
-							quantity.setText(Double.toString(quantityDouble));
+							setIngredient(name, quantity, unit, expirationDate, date);
 						}
 					});
 					
@@ -240,6 +256,35 @@ public class MainActivity extends FragmentActivity {
 							R.id.listIngredientUnit
 					}));
 			return list;
+		}
+		
+		// Set ingredient's informations into dialog
+		// @SuppressWarnings is for conversion from SpinnerAdapter to ArrayAdapter<String>
+		@SuppressWarnings("unchecked")
+		private void setIngredient(AutoCompleteTextView name, EditText quantity, Spinner unit, Button expirationDate, Calendar date) {
+			Cursor cursor = db.getIngredient(name.getText().toString().trim());
+			startManagingCursor(cursor);
+			cursor.moveToFirst();
+			Double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.quantity));
+			Long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.expirationDate));
+			String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.unit));
+			quantity.setText(Double.toString(quantityDouble));
+			unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
+			if (expirationDateLong > 0) {
+				date.setTime(new Date(expirationDateLong));
+				expirationDate.setText(DateFormat.format(getString(R.string.dateFormat), date.getTime().getTime()));
+				if (expirationDateLong < new Date().getTime())
+					expirationDate.getBackground().setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP));
+				else expirationDate.getBackground().clearColorFilter();
+			}
+		}
+		
+		// Reset dialog interface
+		private void resetIngredient(EditText quantity, Spinner unit, Button expirationDate) {
+			quantity.setText("");
+			unit.setSelection(0);
+			expirationDate.getBackground().clearColorFilter();
+			expirationDate.setText(getString(R.string.ingredientExpiredDateNoExpiry));
 		}
 	}
 	final class RecipesPage extends Page {

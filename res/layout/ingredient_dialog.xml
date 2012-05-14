@@ -11,10 +11,10 @@
 			android:paddingRight="10dp" />
 		<AutoCompleteTextView
 			android:id="@+id/elementIngredientName"
-			android:layout_width="150dp"
+			android:layout_width="160dp"
 			android:layout_height="wrap_content"
 			android:inputType="text"
-			android:textColor="#fff"
+			android:textColor="@android:color/white"
 			android:background="@drawable/edit_text_holo_dark">
 			<requestFocus />
 		</AutoCompleteTextView>
@@ -38,7 +38,7 @@
 				android:layout_width="60dp"
 				android:layout_height="wrap_content"
 				android:inputType="numberDecimal"
-				android:textColor="#fff"
+				android:textColor="@android:color/white"
 				android:background="@drawable/edit_text_holo_dark" />
 			<Spinner
 				android:id="@+id/elementIngredientUnit"

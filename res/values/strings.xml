@@ -3,6 +3,8 @@
 	
 	<string name="app_name">Kulinaria</string>
 	
+	<string name="dateFormat">dd/MM/yyyy</string>
+	
 	<string name="addIngredient">Add ingredient</string>
 	<string name="updateIngredient">Update ingredient</string>
 	<string name="ingredientName">Name</string>
