@@ -242,6 +242,23 @@ public class DatabaseInterface {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		return db.query(INGREDIENTS.TABLE, null, INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
 	}
+	
+	// Get ingredient ID
+	public int getIngredientID(String ingredientName) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		try {
+			Cursor cursor = db.query(INGREDIENTS.TABLE, new String[] { INGREDIENTS.id },
+					INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+			try {
+				cursor.moveToFirst();
+				return cursor.getInt(0);
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
+	}
 
 	// Get the list of ingredients stored
 	public Cursor getIngredientList() {
@@ -266,12 +283,12 @@ public class DatabaseInterface {
 	}
 	
 	// Update a stored ingredient
-	public void updateIngredient(String name, double quantity, String unit, long expirationDate) {
-		Log.d(TAG, "insertIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
+	public void updateIngredient(int id, String name, double quantity, String unit, long expirationDate) {
+		Log.d(TAG, "updateIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
 			ContentValues values = ingredientContentValues(name, quantity, unit, expirationDate);
-			db.update(INGREDIENTS.TABLE, values, INGREDIENTS.name+"=?", new String[] { name });
+			db.update(INGREDIENTS.TABLE, values, INGREDIENTS.id+"=?", new String[] { Integer.toString(id) });
 		} finally {
 			db.close();
 		}

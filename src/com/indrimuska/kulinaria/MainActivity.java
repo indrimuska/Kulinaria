@@ -46,10 +46,10 @@ import com.viewpagerindicator.TabPageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
 public class MainActivity extends FragmentActivity {
-	SliderAdapter sliderAdapter;
-	ViewPager pager;
-	PageIndicator indicator;
-	DatabaseInterface db;
+	private SliderAdapter sliderAdapter;
+	private ViewPager pager;
+	private PageIndicator indicator;
+	private DatabaseInterface db;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +127,7 @@ public class MainActivity extends FragmentActivity {
 			layout.setOrientation(LinearLayout.VERTICAL);
 			
 			// List all ingredients
-			layout.addView(getInventoryFromDatabase());
+			layout.addView(getInventoryListViewFromDatabase());
 			
 			// Add ingredient's button
 			Button addIngredientButton = new Button(MainActivity.this);
@@ -148,7 +148,7 @@ public class MainActivity extends FragmentActivity {
 		}
 		
 		// Inflate rows using SimpleCursorAdapter
-		private ListView getInventoryFromDatabase() {
+		private ListView getInventoryListViewFromDatabase() {
 			// Get the data from the database
 			Cursor cursor = db.getIngredientList();
 			startManagingCursor(cursor);
@@ -176,6 +176,7 @@ public class MainActivity extends FragmentActivity {
 						.show(childView.findViewById(R.id.listIngredientName));
 				}
 			});
+			db.close();
 			return list;
 		}
 		
@@ -189,6 +190,7 @@ public class MainActivity extends FragmentActivity {
 				this.layout = layout;
 			}
 			
+			// Show empty dialog
 			public void show() {
 				// Creating the dialog
 				View view = getLayoutInflater().inflate(R.layout.ingredient_dialog, null);
@@ -214,7 +216,7 @@ public class MainActivity extends FragmentActivity {
 				unit.setAdapter(spinnerAdapter);
 				
 				// Expired date's button
-				final Button expirationDate = (Button) view.findViewById(R.id.elementIngredientExpiredDate);
+				final Button expirationDate = (Button) view.findViewById(R.id.elementIngredientExpirationDate);
 				expirationDate.setOnClickListener(new OnClickListener() {
 					Calendar calendar = Calendar.getInstance();
 					@Override
@@ -247,43 +249,67 @@ public class MainActivity extends FragmentActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						Date date = new Date();
 						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.dateFormat));
-						try {
-							date = dateFormat.parse(expirationDate.getText().toString());
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
+						try { date = dateFormat.parse(expirationDate.getText().toString()); }
+						catch (ParseException e) { }
 						String ingredientName = name.getText().toString().trim();
 						Double ingredientQuantity = new Double(quantity.getText().toString());
 						String ingredientUnit = unit.getSelectedItem().toString();
 						Long ingredientExpirationDate =
-								expirationDate.getText().toString().equals(R.string.ingredientExpiredDateNoExpiry)
+								expirationDate.getText().toString().equals(R.string.ingredientExpirationDateNoExpiry)
 								? 0 : date.getTime();
 						// Check if an ingredient is already stored
 						if (db.ingredientAlreadyExists(ingredientName)) {
+							int ingredientID = db.getIngredientID(ingredientName);
 							String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
-							db.updateIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+							db.updateIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 							Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
 						} else db.insertIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 						// Updating the inventory page
 						layout.removeViewAt(0);
-						layout.addView(getInventoryFromDatabase(), 0);
+						layout.addView(getInventoryListViewFromDatabase(), 0);
 					}
 				});
 				builder.setNegativeButton(R.string.ingredientCancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
+					@Override public void onClick(DialogInterface dialog, int which) { }
 				});
 				dialog = builder.create();
 				dialog.show();
 			}
 			
+			// Show filled dialog
 			public void show(View view) {
 				show();
-				AutoCompleteTextView name = (AutoCompleteTextView) dialog.findViewById(R.id.elementIngredientName);
+				final AutoCompleteTextView name = (AutoCompleteTextView) dialog.findViewById(R.id.elementIngredientName);
 				name.setText(((TextView) view).getText());
+				name.setAdapter(null);
 				name.removeTextChangedListener(ingredientNameWatcher);
+				dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.ingredientSave), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialogInterface, int which) {
+						Button expirationDate = (Button) dialog.findViewById(R.id.elementIngredientExpirationDate);
+						EditText quantity = (EditText) dialog.findViewById(R.id.elementIngredientQuantity);
+						Spinner unit = (Spinner) dialog.findViewById(R.id.elementIngredientUnit);
+						Date date = new Date();
+						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.dateFormat));
+						try { date = dateFormat.parse(expirationDate.getText().toString()); }
+						catch (ParseException e) { }
+						String ingredientName = name.getText().toString().trim();
+						Double ingredientQuantity = new Double(quantity.getText().toString());
+						String ingredientUnit = unit.getSelectedItem().toString();
+						Long ingredientExpirationDate =
+								expirationDate.getText().toString().equals(R.string.ingredientExpirationDateNoExpiry)
+								? 0 : date.getTime();
+						// Check if an ingredient is already stored
+						int ingredientID = db.getIngredientID(ingredientName);
+						String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
+						db.updateIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+						Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+						// Updating the inventory page
+						LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+						linearLayout.removeViewAt(0);
+						linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+					}
+				});
 			}
 			
 			private TextWatcher ingredientNameWatcher = new TextWatcher() {
@@ -293,7 +319,7 @@ public class MainActivity extends FragmentActivity {
 				public void onTextChanged(CharSequence text, int start, int before, int count) {
 					EditText quantity = (EditText) dialog.findViewById(R.id.elementIngredientQuantity);
 					Spinner unit = (Spinner) dialog.findViewById(R.id.elementIngredientUnit);
-					Button expirationDate = (Button) dialog.findViewById(R.id.elementIngredientExpiredDate);
+					Button expirationDate = (Button) dialog.findViewById(R.id.elementIngredientExpirationDate);
 					if (db.ingredientAlreadyExists(text.toString().trim())) {
 						// Set ingredient's informations into dialog
 						dialog.setTitle(R.string.ingredientUpdate);
@@ -323,7 +349,7 @@ public class MainActivity extends FragmentActivity {
 						quantity.setText("");
 						unit.setSelection(0);
 						expirationDate.getBackground().clearColorFilter();
-						expirationDate.setText(getString(R.string.ingredientExpiredDateNoExpiry));
+						expirationDate.setText(getString(R.string.ingredientExpirationDateNoExpiry));
 					}
 				}
 				// other methods to override (nothing to do)

@@ -10,8 +10,8 @@
 	<string name="ingredientName">Name</string>
 	<string name="ingredientQuantity">Quantity</string>
 	<string name="ingredientUnit">Unit</string>
-	<string name="ingredientExpiredDate">Expired date</string>
-	<string name="ingredientExpiredDateNoExpiry">No expiry</string>
+	<string name="ingredientExpirationDate">Expiration date</string>
+	<string name="ingredientExpirationDateNoExpiry">No expiry</string>
 	<string name="ingredientSave">Save</string>
 	<string name="ingredientCancel">Cancel</string>
 	<string name="ingredientUpdated">Ingredient ? updated</string>
