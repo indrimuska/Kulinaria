@@ -294,4 +294,14 @@ public class DatabaseInterface {
 		}
 	}
 	
+	// Delete an ingredient
+	public void deleteIngredient(int id) {
+		Log.d(TAG, "deleteIngredient: " + id);
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try {
+			db.delete(INGREDIENTS.TABLE, INGREDIENTS.id+"=?", new String[] { Integer.toString(id) });
+		} finally {
+			db.close();
+		}
+	}
 }

@@ -5,6 +5,9 @@
 	
 	<string name="dateFormat">dd/MM/yyyy</string>
 	
+	<string name="menuPage">Menu</string>
+	
+	<string name="inventoryPage">Inventory</string>
 	<string name="ingredientAdd">Add ingredient</string>
 	<string name="ingredientUpdate">Update ingredient</string>
 	<string name="ingredientName">Name</string>
@@ -15,5 +18,10 @@
 	<string name="ingredientSave">Save</string>
 	<string name="ingredientCancel">Cancel</string>
 	<string name="ingredientUpdated">Ingredient ? updated</string>
+	<string name="ingredientAlreadyExists">Ingredient ? already exists. Do you want to upgrade quantities?</string>
+	
+	<string name="recipesPage">Recipes</string>
+	
+	<string name="shoppingListPage">Shopping List</string>
 	
 </resources>

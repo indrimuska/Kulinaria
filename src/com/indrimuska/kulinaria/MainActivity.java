@@ -97,14 +97,14 @@ public class MainActivity extends FragmentActivity {
 	// Generic page to implement
 	abstract class Page {
 		protected String pageName;
-		public Page(String pageName) { this.pageName = pageName; }
+		public Page(int name) { this.pageName = getString(name); }
 		public String getTitle() { return pageName; }
 		public abstract View getView();
 	}
 	
 	// Slider's pages implementation
 	final class MenuPage extends Page {
-		public MenuPage() { super("Menu"); }
+		public MenuPage() { super(R.string.menuPage); }
 		
 		@Override
 		public View getView() {
@@ -117,7 +117,7 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 	final class InventoryPage extends Page {
-		public InventoryPage() { super("Inventory"); }
+		public InventoryPage() { super(R.string.inventoryPage); }
 		
 		@Override
 		public View getView() {
@@ -244,6 +244,7 @@ public class MainActivity extends FragmentActivity {
 				name.addTextChangedListener(ingredientNameWatcher);
 				
 				// Setting buttons and open the dialog
+				builder.setNegativeButton(R.string.ingredientCancel, null);
 				builder.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
@@ -269,17 +270,15 @@ public class MainActivity extends FragmentActivity {
 						layout.addView(getInventoryListViewFromDatabase(), 0);
 					}
 				});
-				builder.setNegativeButton(R.string.ingredientCancel, new DialogInterface.OnClickListener() {
-					@Override public void onClick(DialogInterface dialog, int which) { }
-				});
 				dialog = builder.create();
 				dialog.show();
 			}
 			
-			// Show filled dialog
-			public void show(View view) {
+			// Show dialog filled with the selected ingredient 
+			public void show(final View view) {
 				show();
 				final AutoCompleteTextView name = (AutoCompleteTextView) dialog.findViewById(R.id.elementIngredientName);
+				final int ingredientID = db.getIngredientID(((TextView) view).getText().toString());
 				name.setText(((TextView) view).getText());
 				name.setAdapter(null);
 				name.removeTextChangedListener(ingredientNameWatcher);
@@ -293,21 +292,41 @@ public class MainActivity extends FragmentActivity {
 						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.dateFormat));
 						try { date = dateFormat.parse(expirationDate.getText().toString()); }
 						catch (ParseException e) { }
-						String ingredientName = name.getText().toString().trim();
-						Double ingredientQuantity = new Double(quantity.getText().toString());
-						String ingredientUnit = unit.getSelectedItem().toString();
-						Long ingredientExpirationDate =
+						final String ingredientName = name.getText().toString().trim();
+						final Double ingredientQuantity = new Double(quantity.getText().toString());
+						final String ingredientUnit = unit.getSelectedItem().toString();
+						final Long ingredientExpirationDate =
 								expirationDate.getText().toString().equals(R.string.ingredientExpirationDateNoExpiry)
 								? 0 : date.getTime();
-						// Check if an ingredient is already stored
-						int ingredientID = db.getIngredientID(ingredientName);
-						String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
-						db.updateIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
-						Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
-						// Updating the inventory page
-						LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
-						linearLayout.removeViewAt(0);
-						linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+						final int existingIngredientID = db.getIngredientID(ingredientName);
+						// Check if another ingredient is already stored with the same name
+						if (existingIngredientID != ingredientID) {
+							String ingredientAlreadyExists = getString(R.string.ingredientAlreadyExists).replaceFirst("\\?", ingredientName);
+							new AlertDialog.Builder(MainActivity.this)
+								.setMessage(ingredientAlreadyExists)
+								.setNegativeButton(R.string.ingredientCancel, null)
+								.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										db.deleteIngredient(existingIngredientID);
+										String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
+										db.updateIngredient(ingredientID, ingredientName,ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+										Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+										// Updating the inventory page
+										LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+										linearLayout.removeViewAt(0);
+										linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+									}
+								}).show();
+						} else {
+							String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
+							db.updateIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+							Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+							// Updating the inventory page
+							LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+							linearLayout.removeViewAt(0);
+							linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+						}
 					}
 				});
 			}
@@ -359,7 +378,7 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 	final class RecipesPage extends Page {
-		public RecipesPage() { super("Recipes"); }
+		public RecipesPage() { super(R.string.recipesPage); }
 		
 		@Override
 		public View getView() {
@@ -372,7 +391,7 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 	final class ShoppingListPage extends Page {
-		public ShoppingListPage() { super("Shopping List"); }
+		public ShoppingListPage() { super(R.string.shoppingListPage); }
 		
 		@Override
 		public View getView() {
