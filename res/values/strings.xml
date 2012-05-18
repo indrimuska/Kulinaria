@@ -15,8 +15,10 @@
 	<string name="ingredientUnit">Unit</string>
 	<string name="ingredientExpirationDate">Expiration date</string>
 	<string name="ingredientExpirationDateNoExpiry">No expiry</string>
+	<string name="ingredientRemoveExpirationDate">Remove expiration date</string>
 	<string name="ingredientSave">Save</string>
 	<string name="ingredientCancel">Cancel</string>
+	<string name="ingredientAdded">Added ingredient ?</string>
 	<string name="ingredientUpdated">Ingredient ? updated</string>
 	<string name="ingredientAlreadyExists">Ingredient ? already exists. Do you want to upgrade quantities?</string>
 	

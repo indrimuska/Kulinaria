@@ -259,7 +259,7 @@ public class DatabaseInterface {
 			db.close();
 		}
 	}
-
+	
 	// Get the list of ingredients stored
 	public Cursor getIngredientList() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
