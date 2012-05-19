@@ -186,16 +186,33 @@ public class MainActivity extends FragmentActivity {
 								}, new DialogInterface.OnClickListener() {
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										LinearLayout layout = (LinearLayout) view.getParent();
+										final LinearLayout layout = (LinearLayout) view.getParent();
+										final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
 										switch (which) {
 										case 0:
 											// Update ingredient
-											new IngredientDialog(layout)
-												.show((TextView) layout.findViewById(R.id.listIngredientName));
+											new IngredientDialog(layout).show(name);
 											break;
 										case 1:
 											// Delete ingredient
-											Toast.makeText(MainActivity.this, "PIPPONE", Toast.LENGTH_LONG).show();
+											new AlertDialog.Builder(MainActivity.this)
+												.setTitle(R.string.ingredientDelete)
+												.setMessage(R.string.ingredientDeleteQuestion)
+												.setNegativeButton(R.string.ingredientCancel, null)
+												.setPositiveButton(R.string.ingredientDeleteButton, new AlertDialog.OnClickListener() {
+													@Override
+													public void onClick(DialogInterface dialog, int which) {
+														String ingredientName = name.getText().toString().trim();
+														db.deleteIngredient(db.getIngredientID(ingredientName));
+														String ingredientUpdate = getString(R.string.ingredientDeleted)
+																.replaceFirst("\\?", ingredientName);
+														Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+														// Updating the inventory page
+														LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+														linearLayout.removeViewAt(0);
+														linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+													}
+												}).show();
 											break;
 										}
 									}
@@ -213,6 +230,7 @@ public class MainActivity extends FragmentActivity {
 		
 		// Open the dialog
 		private class IngredientDialog {
+			// TODO: find max id from database
 			int ingredientID = 300;
 			AlertDialog dialog;
 			LinearLayout layout;
@@ -361,6 +379,7 @@ public class MainActivity extends FragmentActivity {
 								db.updateIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
 								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+								layout = (LinearLayout) layout.getParent().getParent();
 							}
 							// Updating the inventory page
 							layout.removeViewAt(0);

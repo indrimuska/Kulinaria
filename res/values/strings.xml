@@ -20,8 +20,10 @@
 	<string name="ingredientRemoveExpirationDate">Remove expiration date</string>
 	<string name="ingredientSave">Save</string>
 	<string name="ingredientCancel">Cancel</string>
+	<string name="ingredientDeleteButton">Delete</string>
 	<string name="ingredientAdded">Added ingredient ?</string>
 	<string name="ingredientUpdated">Ingredient ? updated</string>
+	<string name="ingredientDeleted">Ingredient ? deleted</string>
 	<string name="ingredientAlreadyExists">Ingredient ? already exists. Do you want to upgrade quantities?</string>
 	<string name="ingredientDeleteQuestion">Are you sure you want to delete the ingredient?</string>
 	
