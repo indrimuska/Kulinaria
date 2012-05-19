@@ -10,6 +10,8 @@
 	<string name="inventoryPage">Inventory</string>
 	<string name="ingredientAdd">Add ingredient</string>
 	<string name="ingredientUpdate">Update ingredient</string>
+	<string name="ingredientDelete">Delete ingredient</string>
+	<string name="ingredientOptions">Ingredient options</string>
 	<string name="ingredientName">Name</string>
 	<string name="ingredientQuantity">Quantity</string>
 	<string name="ingredientUnit">Unit</string>
@@ -21,6 +23,7 @@
 	<string name="ingredientAdded">Added ingredient ?</string>
 	<string name="ingredientUpdated">Ingredient ? updated</string>
 	<string name="ingredientAlreadyExists">Ingredient ? already exists. Do you want to upgrade quantities?</string>
+	<string name="ingredientDeleteQuestion">Are you sure you want to delete the ingredient?</string>
 	
 	<string name="recipesPage">Recipes</string>
 	

@@ -2,27 +2,45 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:padding="5dp">
-	
-	<TextView
-		android:id="@+id/listIngredientName"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:textAppearance="?android:attr/textAppearanceMedium" />
+	android:orientation="horizontal">
 	
 	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:orientation="horizontal">
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_gravity="left"
+		android:layout_weight="1"
+		android:orientation="vertical"
+		android:padding="5dp">
 		<TextView
-			android:id="@+id/listIngredientQuantity"
+			android:id="@+id/listIngredientName"
 			android:layout_width="wrap_content"
-			android:layout_height="wrap_content" />
-		<TextView
-			android:id="@+id/listIngredientUnit"
+			android:layout_height="wrap_content"
+			android:textStyle="bold"
+			android:textColor="@android:color/tertiary_text_dark"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+		<LinearLayout
 			android:layout_width="wrap_content"
-			android:layout_height="wrap_content" />
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+			<TextView
+				android:id="@+id/listIngredientQuantity"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+			<TextView
+				android:id="@+id/listIngredientUnit"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+		</LinearLayout>
 	</LinearLayout>
+	
+	<ImageButton
+		android:id="@+id/listIngredientOptions"
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:layout_gravity="right|center_vertical"
+		android:contentDescription="@string/ingredientOptions"
+		android:padding="10dp"
+		android:src="@drawable/btn_options_light"
+		android:background="@drawable/btn_options_light_background" />
 	
 </LinearLayout>

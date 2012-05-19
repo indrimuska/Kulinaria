@@ -24,8 +24,6 @@ import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -140,10 +138,9 @@ public class MainActivity extends FragmentActivity {
 			addIngredientButton.setLayoutParams(buttonParams);
 			addIngredientButton.setText(R.string.ingredientAdd);
 			addIngredientButton.setOnClickListener(new OnClickListener() {
-				AlertDialog dialog;
 				@Override
 				public void onClick(View v) {
-					new IngredientDialog(dialog, layout).show(null);
+					new IngredientDialog(layout).show(null);
 				}
 			});
 			layout.addView(addIngredientButton);
@@ -161,25 +158,55 @@ public class MainActivity extends FragmentActivity {
 			ListView list = new ListView(MainActivity.this);
 			list.setScrollingCacheEnabled(false);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-			list.setAdapter(new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient, cursor,
+			SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient, cursor,
 					new String[] {
 							DatabaseInterface.INGREDIENTS.name,
 							DatabaseInterface.INGREDIENTS.quantity,
-							DatabaseInterface.INGREDIENTS.unit
+							DatabaseInterface.INGREDIENTS.unit,
+							DatabaseInterface.INGREDIENTS.id
 					},
 					new int[] {
 							R.id.listIngredientName,
 							R.id.listIngredientQuantity,
-							R.id.listIngredientUnit
-					}));
-			list.setOnItemClickListener(new OnItemClickListener() {
-				AlertDialog dialog;
+							R.id.listIngredientUnit,
+							R.id.listIngredientOptions
+					});
+			adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
 				@Override
-				public void onItemClick(AdapterView<?> parentView, View childView, int position, long id) {
-					new IngredientDialog(dialog, (LinearLayout) childView.getParent().getParent())
-						.show((TextView) childView.findViewById(R.id.listIngredientName));
+				public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+					if (view.getId() != R.id.listIngredientOptions) return false;
+					view.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(final View view) {
+							// Create dialog menu
+							new AlertDialog.Builder(MainActivity.this)
+								.setItems(new String[] {
+										getString(R.string.ingredientUpdate),
+										getString(R.string.ingredientDelete)
+								}, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										LinearLayout layout = (LinearLayout) view.getParent();
+										switch (which) {
+										case 0:
+											// Update ingredient
+											new IngredientDialog(layout)
+												.show((TextView) layout.findViewById(R.id.listIngredientName));
+											break;
+										case 1:
+											// Delete ingredient
+											Toast.makeText(MainActivity.this, "PIPPONE", Toast.LENGTH_LONG).show();
+											break;
+										}
+									}
+								}).show();
+						}
+					});
+					return true;
 				}
 			});
+			list.setAdapter(adapter);
+			
 			db.close();
 			return list;
 		}
@@ -190,8 +217,7 @@ public class MainActivity extends FragmentActivity {
 			AlertDialog dialog;
 			LinearLayout layout;
 			
-			public IngredientDialog(AlertDialog dialog, LinearLayout layout) {
-				this.dialog = dialog;
+			public IngredientDialog(LinearLayout layout) {
 				this.layout = layout;
 			}
 
@@ -202,7 +228,6 @@ public class MainActivity extends FragmentActivity {
 				View dialogView = getLayoutInflater().inflate(R.layout.ingredient_dialog, null);
 				final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 				builder.setTitle(R.string.ingredientAdd);
-				builder.setCancelable(true);
 				builder.setView(dialogView);
 				
 				// Identifying elements
