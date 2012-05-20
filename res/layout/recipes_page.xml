@@ -28,7 +28,7 @@
 		android:paddingLeft="10dp"
 		android:paddingRight="10dp"
 		android:paddingBottom="8dp"
-		android:background="#dcdcdc">
+		android:background="@color/bottom_light">
 		<ImageView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
