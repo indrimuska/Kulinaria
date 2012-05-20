@@ -155,7 +155,7 @@ public class MainActivity extends FragmentActivity {
 		// Inflate rows using SimpleCursorAdapter
 		private ListView getInventoryListViewFromDatabase() {
 			// Get the data from the database
-			Cursor cursor = db.getIngredientList();
+			Cursor cursor = db.getInventory();
 			startManagingCursor(cursor);
 			
 			// Inflate rows using SimpleCursorAdapter
@@ -164,10 +164,10 @@ public class MainActivity extends FragmentActivity {
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 			SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient, cursor,
 					new String[] {
-							DatabaseInterface.INGREDIENTS.name,
-							DatabaseInterface.INGREDIENTS.quantity,
-							DatabaseInterface.INGREDIENTS.unit,
-							DatabaseInterface.INGREDIENTS.id
+							DatabaseInterface.INVENTORY.name,
+							DatabaseInterface.INVENTORY.quantity,
+							DatabaseInterface.INVENTORY.unit,
+							DatabaseInterface.INVENTORY.id
 					},
 					new int[] {
 							R.id.listIngredientName,
@@ -207,7 +207,7 @@ public class MainActivity extends FragmentActivity {
 													@Override
 													public void onClick(DialogInterface dialog, int which) {
 														String ingredientName = name.getText().toString().trim();
-														db.deleteIngredient(db.getIngredientID(ingredientName));
+														db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
 														String ingredientUpdate = getString(R.string.ingredientDeleted)
 																.replaceFirst("\\?", ingredientName);
 														Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
@@ -239,7 +239,7 @@ public class MainActivity extends FragmentActivity {
 			LinearLayout layout;
 			
 			public IngredientDialog(LinearLayout layout) {
-				this.ingredientID = db.getMaxIngredientID()+1;
+				this.ingredientID = db.getMaxInventoryIngredientID()+1;
 				this.layout = layout;
 			}
 			
@@ -260,10 +260,10 @@ public class MainActivity extends FragmentActivity {
 				final ImageButton removeExpirationDate = (ImageButton) dialogView.findViewById(R.id.elementIngredientRemoveExpirationDate);
 				
 				// Inflating auto-complete list
-				Cursor cursor = db.getIngredientList();
+				Cursor cursor = db.getInventory();
 				startManagingCursor(cursor);
 				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
-				while (cursor.moveToNext()) textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+				while (cursor.moveToNext()) textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.name)));
 				name.setAdapter(textAdapter);
 				
 				// Inflating spinner
@@ -311,13 +311,13 @@ public class MainActivity extends FragmentActivity {
 				if (ingredientView != null) {
 					builder.setTitle(R.string.ingredientUpdate);
 					String ingredienName = ingredientView.getText().toString().trim();
-					cursor = db.getIngredient(ingredienName);
+					cursor = db.getInventoryIngredient(ingredienName);
 					startManagingCursor(cursor);
 					cursor.moveToFirst();
-					ingredientID = cursor.getInt(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.id));
-					String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.unit));
-					double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.quantity));
-					long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.expirationDate));
+					ingredientID = cursor.getInt(cursor.getColumnIndex(DatabaseInterface.INVENTORY.id));
+					String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.unit));
+					double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INVENTORY.quantity));
+					long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INVENTORY.expirationDate));
 					name.setText(ingredienName);
 					name.setAdapter(null);
 					quantity.setText(Double.toString(quantityDouble));
@@ -350,8 +350,8 @@ public class MainActivity extends FragmentActivity {
 								? 0 : date.getTime();
 						final int existingIngredientID;
 						// Check if another ingredient is already stored with the same name
-						if (db.ingredientAlreadyExists(ingredientName) &&
-							(existingIngredientID = db.getIngredientID(ingredientName)) != ingredientID) {
+						if (db.inventoryIngredientAlreadyExists(ingredientName) &&
+							(existingIngredientID = db.getInventoryIngredientID(ingredientName)) != ingredientID) {
 							String ingredientAlreadyExists = getString(R.string.ingredientAlreadyExists).replaceFirst("\\?", ingredientName);
 							new AlertDialog.Builder(MainActivity.this)
 								.setMessage(ingredientAlreadyExists)
@@ -359,12 +359,12 @@ public class MainActivity extends FragmentActivity {
 								.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										db.deleteIngredient(existingIngredientID);
+										db.deleteInventoryIngredient(existingIngredientID);
 										// New ingredient replace existing one
-										if (ingredientView == null) db.insertIngredient(
+										if (ingredientView == null) db.insertInventoryIngredient(
 												ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 										// Existing ingredient replace another one
-										else db.updateIngredient(ingredientID,
+										else db.updateInventoryIngredient(ingredientID,
 												ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 										String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
 										Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
@@ -376,12 +376,12 @@ public class MainActivity extends FragmentActivity {
 						} else {
 							if (ingredientView == null) {
 								// Insert new ingredient
-								db.insertIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+								db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);
 								Toast.makeText(MainActivity.this, ingredientAdded, Toast.LENGTH_LONG).show();
 							} else {
 								// Update existing ingredient
-								db.updateIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+								db.updateInventoryIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
 								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
 								layout = (LinearLayout) layout.getParent().getParent();

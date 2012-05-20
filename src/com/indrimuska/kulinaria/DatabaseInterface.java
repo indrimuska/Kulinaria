@@ -28,8 +28,8 @@ public class DatabaseInterface {
 	static final String DATABASE = "kulinaria.db";
 	
 	// Tables definition
-	public static final class INGREDIENTS {
-		static final String TABLE			= "Ingredients";
+	public static final class INVENTORY {
+		static final String TABLE			= "Inventory";
 		static final String id				= "_id";
 		static final String name			= "name";
 		static final String quantity		= "quantity";
@@ -44,20 +44,34 @@ public class DatabaseInterface {
 						unit + " text, " +
 						expirationDate + " int )";
 	}
-	public static final class RECIPES {
-		static final String TABLE		= "Recipes";
-		static final String id			= "id";
-		static final String name		= "name";
-		static final String dish		= "dish";
-		static final String time		= "time";
-		static final String description	= "description";
-		static final String ORDER_BY	= name + " ASC";
+	public static final class INGREDIENTS {
+		static final String TABLE			= "Ingredients";
+		static final String id				= "_id";
+		static final String name			= "name";
+		static final String ORDER_BY		= name + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
-						id + " int primary key, " +
+						id + " integer primary key autoincrement, " +
+						name + " text )";
+	}
+	public static final class RECIPES {
+		static final String TABLE			= "Recipes";
+		static final String id				= "_id";
+		static final String name			= "name";
+		static final String dish			= "dish";
+		static final String preparationTime	= "preparationTime";
+		static final String readyTime		= "readyTime";
+		static final String servings		= "servings";
+		static final String description		= "description";
+		static final String ORDER_BY		= name + " ASC";
+		static final String CREATE =
+				"create table if not exists " + TABLE + " ( " +
+						id + " integer primary key autoincrement, " +
 						name + " text, " +
 						dish + " text, " +
-						time + " int, " +
+						preparationTime + " int, " +
+						readyTime + " int, " +
+						servings + " int, " +
 						description + " text )";
 	}
 	public static final class RECIPES_INGREDIENTS {
@@ -96,6 +110,7 @@ public class DatabaseInterface {
 		// Called only once, first time the DB is created
 		@Override
 		public void onCreate(SQLiteDatabase db) {
+			db.execSQL(INVENTORY.CREATE);
 			db.execSQL(INGREDIENTS.CREATE);
 			db.execSQL(RECIPES.CREATE);
 			db.execSQL(RECIPES_INGREDIENTS.CREATE);
@@ -106,10 +121,18 @@ public class DatabaseInterface {
 			for (Map.Entry<String, ArrayList<ArrayList<String>>> table : tables.entrySet()) {
 				ArrayList<ArrayList<String>> rows = table.getValue();
 				for (ArrayList<String> value : rows) {
-					if (table.getKey().equals(INGREDIENTS.TABLE)) {
-						ContentValues contentValues = ingredientContentValues(value.get(0), new Float(value.get(1)), value.get(2), new Long(value.get(3)));
-						db.insertWithOnConflict(INGREDIENTS.TABLE, null, contentValues, SQLiteDatabase.CONFLICT_IGNORE);
-					}
+					if (table.getKey().equals(INVENTORY.TABLE))
+						db.insert(INVENTORY.TABLE, null, inventoryIngredientContentValues(
+								value.get(0), new Float(value.get(1)), value.get(2), new Long(value.get(3))));
+					if (table.getKey().equals(INGREDIENTS.TABLE))
+						db.insert(INGREDIENTS.TABLE, null, ingredientContentValues(value.get(0)));
+					if (table.getKey().equals(RECIPES.TABLE))
+						db.insert(RECIPES.TABLE, null, recipeContentValues(
+								value.get(0), value.get(1), new Integer(value.get(2)), new Integer(value.get(3)),
+								new Integer(value.get(4)), value.get(5)));
+					if (table.getKey().equals(RECIPES_INGREDIENTS.TABLE))
+						db.insert(RECIPES_INGREDIENTS.TABLE, null, recipeIngredientContentValues(
+								new Integer(value.get(0)), new Integer(value.get(1)), new Integer(value.get(2)), value.get(3)));
 				}
 			}
 		}
@@ -117,6 +140,7 @@ public class DatabaseInterface {
 		// Called whenever newVersion != oldVersion
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			onUpgradeTable(db, INVENTORY.TABLE, INVENTORY.CREATE);
 			onUpgradeTable(db, INGREDIENTS.TABLE, INGREDIENTS.CREATE);
 			onUpgradeTable(db, RECIPES.TABLE, RECIPES.CREATE);
 			onUpgradeTable(db, RECIPES_INGREDIENTS.TABLE, RECIPES_INGREDIENTS.CREATE);
@@ -170,7 +194,7 @@ public class DatabaseInterface {
 		}
 		
 		// Get table contents from an XML file
-		Map<String, ArrayList<ArrayList<String>>> getTablesFromXML(Context context, int XML) {
+		private Map<String, ArrayList<ArrayList<String>>> getTablesFromXML(Context context, int XML) {
 			Map<String, ArrayList<ArrayList<String>>> tables = new HashMap<String, ArrayList<ArrayList<String>>>();
 			try {
 				// Getting XML contents
@@ -215,33 +239,33 @@ public class DatabaseInterface {
 		dbHelper.close();
 	}
 	
-	// Convert ingredient values to ContentValues
-	private ContentValues ingredientContentValues(String name, double quantity, String unit, long expirationDate) {
+	// Convert inventory ingredient informations to ContentValues
+	private ContentValues inventoryIngredientContentValues(String name, double quantity, String unit, long expirationDate) {
 		ContentValues values = new ContentValues();
-		values.put(INGREDIENTS.name, name);
-		values.put(INGREDIENTS.quantity, quantity);
-		values.put(INGREDIENTS.unit, unit);
-		values.put(INGREDIENTS.expirationDate, expirationDate);
+		values.put(INVENTORY.name, name);
+		values.put(INVENTORY.quantity, quantity);
+		values.put(INVENTORY.unit, unit);
+		values.put(INVENTORY.expirationDate, expirationDate);
 		return values;
 	}
 	
 	// Insert an ingredient in database
-	public void insertIngredient(String name, double quantity, String unit, long expirationDate) {
-		Log.d(TAG, "insertIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
+	public void insertInventoryIngredient(String name, double quantity, String unit, long expirationDate) {
+		Log.d(TAG, "insertInventoryIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			ContentValues values = ingredientContentValues(name, quantity, unit, expirationDate);
-			db.insert(INGREDIENTS.TABLE, null, values);
+			ContentValues values = inventoryIngredientContentValues(name, quantity, unit, expirationDate);
+			db.insert(INVENTORY.TABLE, null, values);
 		} finally {
 			db.close();
 		}
 	}
 	
-	// Get max ingredient ID
-	public int getMaxIngredientID() {
+	// Get max ingredient ID from inventory
+	public int getMaxInventoryIngredientID() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		try {
-			Cursor cursor = db.query(INGREDIENTS.TABLE,new String[] { "max(" + INGREDIENTS.id + ")" },
+			Cursor cursor = db.query(INVENTORY.TABLE,new String[] { "max(" + INVENTORY.id + ")" },
 					null, null, null, null, null);
 			try {
 				cursor.moveToFirst();
@@ -254,18 +278,18 @@ public class DatabaseInterface {
 		}
 	}
 	
-	// Get ingredient
-	public Cursor getIngredient(String ingredientName) {
+	// Get ingredient from inventory
+	public Cursor getInventoryIngredient(String ingredientName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(INGREDIENTS.TABLE, null, INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+		return db.query(INVENTORY.TABLE, null, INVENTORY.name+"=?", new String[] { ingredientName }, null, null, null);
 	}
 	
 	// Get ingredient ID
-	public int getIngredientID(String ingredientName) {
+	public int getInventoryIngredientID(String ingredientName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		try {
-			Cursor cursor = db.query(INGREDIENTS.TABLE, new String[] { INGREDIENTS.id },
-					INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+			Cursor cursor = db.query(INVENTORY.TABLE, new String[] { INVENTORY.id },
+					INVENTORY.name+"=?", new String[] { ingredientName }, null, null, null);
 			try {
 				cursor.moveToFirst();
 				return cursor.getInt(0);
@@ -278,17 +302,17 @@ public class DatabaseInterface {
 	}
 	
 	// Get the list of ingredients stored
-	public Cursor getIngredientList() {
+	public Cursor getInventory() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
+		return db.query(INVENTORY.TABLE, null, null, null, null, null, INVENTORY.ORDER_BY);
 	}
 	
 	// Check if an ingredient is already stored
-	public boolean ingredientAlreadyExists(String ingredientName) {
+	public boolean inventoryIngredientAlreadyExists(String ingredientName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		try {
-			Cursor cursor = db.query(INGREDIENTS.TABLE, null,
-					INGREDIENTS.name+"=?", new String[] { ingredientName }, null, null, null);
+			Cursor cursor = db.query(INVENTORY.TABLE, null,
+					INVENTORY.name+"=?", new String[] { ingredientName }, null, null, null);
 			try {
 				return cursor.getCount() > 0;
 			} finally {
@@ -300,25 +324,55 @@ public class DatabaseInterface {
 	}
 	
 	// Update a stored ingredient
-	public void updateIngredient(int id, String name, double quantity, String unit, long expirationDate) {
-		Log.d(TAG, "updateIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
+	public void updateInventoryIngredient(int id, String name, double quantity, String unit, long expirationDate) {
+		Log.d(TAG, "updateInventoryIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			ContentValues values = ingredientContentValues(name, quantity, unit, expirationDate);
-			db.update(INGREDIENTS.TABLE, values, INGREDIENTS.id+"=?", new String[] { Integer.toString(id) });
+			ContentValues values = inventoryIngredientContentValues(name, quantity, unit, expirationDate);
+			db.update(INVENTORY.TABLE, values, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
 		} finally {
 			db.close();
 		}
 	}
 	
-	// Delete an ingredient
-	public void deleteIngredient(int id) {
-		Log.d(TAG, "deleteIngredient: " + id);
+	// Delete a stored ingredient
+	public void deleteInventoryIngredient(int id) {
+		Log.d(TAG, "deleteInventoryIngredient: " + id);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			db.delete(INGREDIENTS.TABLE, INGREDIENTS.id+"=?", new String[] { Integer.toString(id) });
+			db.delete(INVENTORY.TABLE, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
 		} finally {
 			db.close();
 		}
+	}
+	
+	// Convert ingredient informations to ContentValues
+	private ContentValues ingredientContentValues(String name) {
+		ContentValues values = new ContentValues();
+		values.put(INGREDIENTS.name, name);
+		return values;
+	}
+	
+	// Convert recipe informations to ContentValues
+	private ContentValues recipeContentValues(String name, String dish, int preparationTime, int readyTime,
+			int servings, String description) {
+		ContentValues values = new ContentValues();
+		values.put(RECIPES.name, name);
+		values.put(RECIPES.dish, dish);
+		values.put(RECIPES.preparationTime, preparationTime);
+		values.put(RECIPES.readyTime, readyTime);
+		values.put(RECIPES.servings, servings);
+		values.put(RECIPES.description, description);
+		return values;
+	}
+	
+	// Convert recipe-ingredient informations to ContentValues
+	private ContentValues recipeIngredientContentValues(int recipeId, int ingredientId, int ingredientNeed, String unit) {
+		ContentValues values = new ContentValues();
+		values.put(RECIPES_INGREDIENTS.recipeId, recipeId);
+		values.put(RECIPES_INGREDIENTS.ingredientId, ingredientId);
+		values.put(RECIPES_INGREDIENTS.ingredientNeed, ingredientNeed);
+		values.put(RECIPES_INGREDIENTS.unit, unit);
+		return values;
 	}
 }

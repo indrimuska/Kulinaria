@@ -2,10 +2,28 @@
 <resources>
 	
 	<string-array name="units">
+		<item>g</item>
 		<item>kg</item>
 		<item>l</item>
+		<item>ml</item>
 		<item>cm</item>
 		<item>u</item>
+	</string-array>
+	
+	<string-array name="meals">
+		<item>Breakfast</item>
+		<item>Lunch</item>
+		<item>Snack</item>
+		<item>Dinner</item>
+	</string-array>
+	
+	<string-array name="dishes">
+		<item>Appetizer</item>
+		<item>Drink</item>
+		<item>Main dish</item>
+		<item>Slide dish</item>
+		<item>Salad</item>
+		<item>Dessert</item>
 	</string-array>
 	
 </resources>
