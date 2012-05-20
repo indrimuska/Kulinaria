@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -81,6 +82,7 @@ public class MainActivity extends FragmentActivity {
 		// Close inventory ingredient ListView's cursor
 		((SimpleCursorAdapter) ((ListView) inventoryPage.layout.getChildAt(0)).getAdapter()).getCursor().close();
 		
+		// Close database
 		db.close();
 	}
 	
@@ -482,6 +484,8 @@ public class MainActivity extends FragmentActivity {
 			list.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					startActivity(new Intent(MainActivity.this, RecipesListActivity.class)
+						.putExtra("dish", ((TextView) view.findViewById(R.id.listDishName)).getText().toString()));
 				}
 			});
 			

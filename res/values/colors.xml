@@ -3,4 +3,5 @@
 	<color name="light_blue">#ff0099cc</color>
 	<color name="light_green">#2699cc00</color>
 	<color name="bottom_light">#dcdcdc</color>
+	<color name="default_background">#E7EBF2</color>
 </resources>

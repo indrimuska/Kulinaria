@@ -378,13 +378,19 @@ public class DatabaseInterface {
 		try {
 			Cursor cursor = db.query(RECIPES.TABLE, null, RECIPES.dish+"=?", new String[] { dish }, null, null, null);
 			try {
-				return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+				return cursor.moveToFirst() ? cursor.getCount() : 0;
 			} finally {
 				cursor.close();
 			}
 		} finally {
 			db.close();
 		}
+	}
+	
+	// Get all the recipes for a dish
+	public Cursor getRecipes(String dish) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(RECIPES.TABLE, null, RECIPES.dish+"=?", new String[] { dish }, null, null, RECIPES.ORDER_BY);
 	}
 	
 	// Convert recipe-ingredient informations to ContentValues
