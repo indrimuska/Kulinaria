@@ -56,6 +56,8 @@ public class MainActivity extends FragmentActivity {
 	private PageIndicator indicator;
 	private DatabaseInterface db;
 	
+	private InventoryPage inventoryPage;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,17 +75,37 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	@Override
+	protected void onPause() {
+		super.onPause();
+		
+		// Close inventory ingredient ListView's cursor
+		((SimpleCursorAdapter) ((ListView) inventoryPage.layout.getChildAt(0)).getAdapter()).getCursor().close();
+		
+		db.close();
+	}
+	
+	@Override
 	protected void onResume() {
 		super.onResume();
+		
+		// Filling inventory ingredient ListView
+		ListView listView = (ListView) inventoryPage.layout.getChildAt(0);
+		if (listView != null) {
+			SimpleCursorAdapter adapter = (SimpleCursorAdapter) listView.getAdapter();
+			if (adapter.getCursor() != null) adapter.getCursor().close();
+		}
+		inventoryPage.layout.addView(inventoryPage.getInventoryListViewFromDatabase(), 0);
 	}
-
+	
 	class SliderAdapter extends FragmentPagerAdapter implements TitleProvider {
 		ArrayList<Page> pages = new ArrayList<Page>();
 		
 		public SliderAdapter(FragmentManager fragmentManager) {
 			super(fragmentManager);
+			inventoryPage = new InventoryPage();
+			
 			pages.add(new MenuPage());
-			pages.add(new InventoryPage());
+			pages.add(inventoryPage);
 			pages.add(new RecipesPage());
 			pages.add(new ShoppingListPage());
 		}
@@ -128,16 +150,13 @@ public class MainActivity extends FragmentActivity {
 	}
 	final class InventoryPage extends Page {
 		public InventoryPage() { super(R.string.inventoryPage); }
+		public LinearLayout layout = new LinearLayout(MainActivity.this);
 		
 		@Override
 		public View getView() {
 			// Creating view
-			final LinearLayout layout = new LinearLayout(MainActivity.this);
 			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 			layout.setOrientation(LinearLayout.VERTICAL);
-			
-			// List all ingredients
-			layout.addView(getInventoryListViewFromDatabase());
 			
 			// Add separator
 			ImageView separator = new ImageView(MainActivity.this);
@@ -154,7 +173,7 @@ public class MainActivity extends FragmentActivity {
 			addIngredientButton.setTextColor(Color.rgb(116, 116, 116));
 			addIngredientButton.setTextSize(12 * getResources().getDisplayMetrics().density);
 			addIngredientButton.setPadding(10, 8, 10, 8);
-			addIngredientButton.setBackgroundColor(Color.rgb(220, 220, 220));
+			addIngredientButton.setBackgroundResource(R.color.bottom_light);
 			Drawable addIngredientImage = getApplicationContext().getResources().getDrawable(R.drawable.add_element);
 			addIngredientImage.setBounds(0, 0, 60, 60);
 			addIngredientButton.setCompoundDrawables(addIngredientImage, null, null, null);
@@ -170,96 +189,94 @@ public class MainActivity extends FragmentActivity {
 			return layout;
 		}
 		
-		// Inflate rows using SimpleCursorAdapter
-		private View getInventoryListViewFromDatabase() {
+		// Return a ListView filled with all ingredients in the inventory
+		public View getInventoryListViewFromDatabase() {
 			// Get the data from the database
 			Cursor cursor = db.getInventory();
 			startManagingCursor(cursor);
 			
-			try {
-				// Check if there are any ingredients stored
-				if (cursor.getCount() <= 0) {
-					TextView text = new TextView(MainActivity.this);
-					text.setGravity(Gravity.CENTER);
-					text.setText(R.string.inventoryNoIngredients);
-					text.setTextSize(20 * getResources().getDisplayMetrics().density);
-					text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-					text.setPadding(20, 20, 20, 20);
-					return text;
-				}
-				// Inflate rows using SimpleCursorAdapter
-				ListView list = new ListView(MainActivity.this);
-				list.setScrollingCacheEnabled(false);
-				list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-				SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient_list_item, cursor,
-						new String[] {
-								DatabaseInterface.INVENTORY.name,
-								DatabaseInterface.INVENTORY.quantity,
-								DatabaseInterface.INVENTORY.unit,
-								DatabaseInterface.INVENTORY.id
-						},
-						new int[] {
-								R.id.listIngredientName,
-								R.id.listIngredientQuantity,
-								R.id.listIngredientUnit,
-								R.id.listIngredientOptions
-						});
-				adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-					@Override
-					public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-						if (view.getId() != R.id.listIngredientOptions) return false;
-						view.setOnClickListener(new OnClickListener() {
-							@Override
-							public void onClick(final View view) {
-								// Create dialog menu
-								new AlertDialog.Builder(MainActivity.this)
-									.setItems(new String[] {
-											getString(R.string.ingredientUpdate),
-											getString(R.string.ingredientDelete)
-									}, new DialogInterface.OnClickListener() {
-										@Override
-										public void onClick(DialogInterface dialog, int which) {
-											final LinearLayout layout = (LinearLayout) view.getParent();
-											final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
-											switch (which) {
-											case 0:
-												// Update ingredient
-												new IngredientDialog(layout).show(name);
-												break;
-											case 1:
-												// Delete ingredient
-												new AlertDialog.Builder(MainActivity.this)
-													.setTitle(R.string.ingredientDelete)
-													.setMessage(R.string.ingredientDeleteQuestion)
-													.setNegativeButton(R.string.ingredientCancel, null)
-													.setPositiveButton(R.string.ingredientDeleteButton, new AlertDialog.OnClickListener() {
-														@Override
-														public void onClick(DialogInterface dialog, int which) {
-															String ingredientName = name.getText().toString().trim();
-															db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
-															String ingredientUpdate = getString(R.string.ingredientDeleted)
-																	.replaceFirst("\\?", ingredientName);
-															Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
-															// Updating the inventory page
-															LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
-															linearLayout.removeViewAt(0);
-															linearLayout.addView(getInventoryListViewFromDatabase(), 0);
-														}
-													}).show();
-												break;
-											}
-										}
-									}).show();
-							}
-						});
-						return true;
-					}
-				});
-				list.setAdapter(adapter);
-				return list;
-			} finally {
-				db.close();
+			// Check if there are any ingredients stored
+			if (cursor.getCount() <= 0) {
+				TextView text = new TextView(MainActivity.this);
+				text.setGravity(Gravity.CENTER);
+				text.setText(R.string.inventoryNoIngredients);
+				text.setTextSize(20 * getResources().getDisplayMetrics().density);
+				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+				text.setPadding(20, 20, 20, 20);
+				return text;
 			}
+			
+			// Inflate rows using SimpleCursorAdapter
+			ListView list = new ListView(MainActivity.this);
+			list.setScrollingCacheEnabled(false);
+			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+			SimpleCursorAdapter inventoryListAdapter = new SimpleCursorAdapter(
+					MainActivity.this, R.layout.ingredient_list_item, cursor,
+					new String[] {
+							DatabaseInterface.INVENTORY.name,
+							DatabaseInterface.INVENTORY.quantity,
+							DatabaseInterface.INVENTORY.unit,
+							DatabaseInterface.INVENTORY.id
+					},
+					new int[] {
+							R.id.listIngredientName,
+							R.id.listIngredientQuantity,
+							R.id.listIngredientUnit,
+							R.id.listIngredientOptions
+					});
+			inventoryListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+				@Override
+				public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+					if (view.getId() != R.id.listIngredientOptions) return false;
+					view.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(final View view) {
+							// Create dialog menu
+							new AlertDialog.Builder(MainActivity.this)
+								.setItems(new String[] {
+										getString(R.string.ingredientUpdate),
+										getString(R.string.ingredientDelete)
+								}, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										final LinearLayout layout = (LinearLayout) view.getParent();
+										final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
+										switch (which) {
+										case 0:
+											// Update ingredient
+											new IngredientDialog(layout).show(name);
+											break;
+										case 1:
+											// Delete ingredient
+											new AlertDialog.Builder(MainActivity.this)
+												.setTitle(R.string.ingredientDelete)
+												.setMessage(R.string.ingredientDeleteQuestion)
+												.setNegativeButton(R.string.ingredientCancel, null)
+												.setPositiveButton(R.string.ingredientDeleteButton, new AlertDialog.OnClickListener() {
+													@Override
+													public void onClick(DialogInterface dialog, int which) {
+														String ingredientName = name.getText().toString().trim();
+														db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
+														String ingredientUpdate = getString(R.string.ingredientDeleted)
+																.replaceFirst("\\?", ingredientName);
+														Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+														// Updating the inventory page
+														LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+														linearLayout.removeViewAt(0);
+														linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+													}
+												}).show();
+											break;
+										}
+									}
+								}).show();
+						}
+					});
+					return true;
+				}
+			});
+			list.setAdapter(inventoryListAdapter);
+			return list;
 		}
 		
 		// Open the dialog
@@ -294,8 +311,12 @@ public class MainActivity extends FragmentActivity {
 				startManagingCursor(cursor);
 				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
 				try {
-					while (cursor.moveToNext())
-						textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+					try {
+						while (cursor.moveToNext())
+							textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+					} finally {
+						cursor.close();
+					}
 				} finally {
 					db.close();
 				}
@@ -353,6 +374,7 @@ public class MainActivity extends FragmentActivity {
 					String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.unit));
 					double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INVENTORY.quantity));
 					long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INVENTORY.expirationDate));
+					cursor.close();
 					name.setText(ingredienName);
 					name.setAdapter(null);
 					quantity.setText(Double.toString(quantityDouble));
@@ -460,8 +482,6 @@ public class MainActivity extends FragmentActivity {
 			list.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					// TODO Auto-generated method stub
-					
 				}
 			});
 			
