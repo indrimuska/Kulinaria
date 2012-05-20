@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -137,6 +138,9 @@ public class MainActivity extends FragmentActivity {
 			buttonParams.gravity = Gravity.CENTER;
 			addIngredientButton.setLayoutParams(buttonParams);
 			addIngredientButton.setText(R.string.ingredientAdd);
+			Drawable addIngredientImage = getApplicationContext().getResources().getDrawable(R.drawable.add_element);
+			addIngredientImage.setBounds(0, 0, 60, 60);
+			addIngredientButton.setCompoundDrawables(addIngredientImage, null, null, null);
 			addIngredientButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -333,6 +337,7 @@ public class MainActivity extends FragmentActivity {
 				builder.setPositiveButton(R.string.ingredientSave, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
+						if (name.getText().toString().trim().length() == 0 || quantity.getText().length() == 0) return;
 						Date date = new Date();
 						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.dateFormat));
 						try { date = dateFormat.parse(expirationDate.getText().toString()); }
