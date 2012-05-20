@@ -230,15 +230,15 @@ public class MainActivity extends FragmentActivity {
 		
 		// Open the dialog
 		private class IngredientDialog {
-			// TODO: find max id from database
-			int ingredientID = 300;
+			int ingredientID;
 			AlertDialog dialog;
 			LinearLayout layout;
 			
 			public IngredientDialog(LinearLayout layout) {
+				this.ingredientID = db.getMaxIngredientID()+1;
 				this.layout = layout;
 			}
-
+			
 			// Show dialog window
 			@SuppressWarnings("unchecked")
 			public void show(final TextView ingredientView) {

@@ -237,6 +237,23 @@ public class DatabaseInterface {
 		}
 	}
 	
+	// Get max ingredient ID
+	public int getMaxIngredientID() {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		try {
+			Cursor cursor = db.query(INGREDIENTS.TABLE,new String[] { "max(" + INGREDIENTS.id + ")" },
+					null, null, null, null, null);
+			try {
+				cursor.moveToFirst();
+				return cursor.getInt(0);
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
+	}
+	
 	// Get ingredient
 	public Cursor getIngredient(String ingredientName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
