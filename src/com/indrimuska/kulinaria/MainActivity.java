@@ -5,11 +5,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -31,8 +34,11 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -132,15 +138,26 @@ public class MainActivity extends FragmentActivity {
 			// List all ingredients
 			layout.addView(getInventoryListViewFromDatabase());
 			
+			// Add separator
+			ImageView separator = new ImageView(MainActivity.this);
+			separator.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+			separator.setImageResource(R.drawable.list_divider_holo_light);
+			separator.setScaleType(ScaleType.FIT_XY);
+			layout.addView(separator);
+			
 			// Add ingredient's button
 			Button addIngredientButton = new Button(MainActivity.this);
-			LayoutParams buttonParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			buttonParams.gravity = Gravity.CENTER;
-			addIngredientButton.setLayoutParams(buttonParams);
+			addIngredientButton.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+			addIngredientButton.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
 			addIngredientButton.setText(R.string.ingredientAdd);
+			addIngredientButton.setTextColor(Color.rgb(116, 116, 116));
+			addIngredientButton.setTextSize(12 * getResources().getDisplayMetrics().density);
+			addIngredientButton.setPadding(10, 8, 10, 8);
+			addIngredientButton.setBackgroundColor(Color.rgb(220, 220, 220));
 			Drawable addIngredientImage = getApplicationContext().getResources().getDrawable(R.drawable.add_element);
 			addIngredientImage.setBounds(0, 0, 60, 60);
 			addIngredientButton.setCompoundDrawables(addIngredientImage, null, null, null);
+			addIngredientButton.setCompoundDrawablePadding(10);
 			addIngredientButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -173,7 +190,7 @@ public class MainActivity extends FragmentActivity {
 				ListView list = new ListView(MainActivity.this);
 				list.setScrollingCacheEnabled(false);
 				list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-				SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient, cursor,
+				SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient_list_item, cursor,
 						new String[] {
 								DatabaseInterface.INVENTORY.name,
 								DatabaseInterface.INVENTORY.quantity,
@@ -275,7 +292,12 @@ public class MainActivity extends FragmentActivity {
 				Cursor cursor = db.getIngredients();
 				startManagingCursor(cursor);
 				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
-				while (cursor.moveToNext()) textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+				try {
+					while (cursor.moveToNext())
+						textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+				} finally {
+					db.close();
+				}
 				name.setAdapter(textAdapter);
 				
 				// Inflating spinner
@@ -414,12 +436,23 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public View getView() {
-			TextView text = new TextView(MainActivity.this);
-			text.setGravity(Gravity.CENTER);
-			text.setText(pageName);
-			text.setTextSize(20 * getResources().getDisplayMetrics().density);
-			text.setPadding(20, 20, 20, 20);
-			return text;
+			// Setting view
+			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.recipes_page, null);
+			ListView list = (ListView) layout.findViewById(R.id.recipesDishesList);
+			list.setScrollingCacheEnabled(false);
+			ArrayList<Map<String, Object>> dishes = new ArrayList<Map<String, Object>>();
+			String[] dishesList = getResources().getStringArray(R.array.dishes);
+			for (int i = 0; i < dishesList.length; i++) {
+				Map<String, Object> dishInfo = new HashMap<String, Object>();
+				dishInfo.put("image", getResources().getIdentifier("drawable/dishes_" + i, "drawable", getPackageName()));
+				dishInfo.put("name", dishesList[i]);
+				dishInfo.put("other", dishesList[i]);
+				dishes.add(dishInfo);
+			}
+			list.setAdapter(new SimpleAdapter(MainActivity.this, dishes, R.layout.recipe_list_item,
+					new String[] { "image", "name", "other" },
+					new int[] { R.id.listDishImage, R.id.listDishName, R.id.listDishOther }));
+			return layout;
 		}
 	}
 	final class ShoppingListPage extends Page {

@@ -29,10 +29,12 @@
 	<string name="ingredientDeleteQuestion">Are you sure you want to delete the ingredient?</string>
 	
 	<string name="recipesPage">Recipes</string>
+	<string name="recipesSearch">Search a recipe</string>
 	
 	<string name="shoppingListPage">Shopping List</string>
 	
 	<!-- Other strings -->
 	<string name="separator">Separator</string>
+	<string name="search">Search</string>
 	
 </resources>
