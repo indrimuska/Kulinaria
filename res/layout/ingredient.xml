@@ -33,6 +33,16 @@
 		</LinearLayout>
 	</LinearLayout>
 	
+	<ImageView
+	    android:id="@+id/listIngredientSeparator"
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:scaleType="fitXY"
+		android:layout_marginBottom="5dp"
+		android:layout_marginTop="5dp"
+		android:src="@drawable/separator_grey"
+		android:contentDescription="@string/separator" />
+	
 	<ImageButton
 		android:id="@+id/listIngredientOptions"
 		android:layout_width="wrap_content"

@@ -31,4 +31,7 @@
 	
 	<string name="shoppingListPage">Shopping List</string>
 	
+	<!-- Other strings -->
+	<string name="separator">Separator</string>
+	
 </resources>
