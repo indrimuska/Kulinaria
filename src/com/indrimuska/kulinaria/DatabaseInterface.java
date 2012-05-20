@@ -353,6 +353,12 @@ public class DatabaseInterface {
 		return values;
 	}
 	
+	// Get the list of ingredients stored
+	public Cursor getIngredients() {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
+	}
+	
 	// Convert recipe informations to ContentValues
 	private ContentValues recipeContentValues(String name, String dish, int preparationTime, int readyTime,
 			int servings, String description) {

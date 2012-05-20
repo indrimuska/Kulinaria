@@ -8,6 +8,7 @@
 	<string name="menuPage">Menu</string>
 	
 	<string name="inventoryPage">Inventory</string>
+	<string name="inventoryNoIngredients">No ingredients in inventory</string>
 	<string name="ingredientAdd">Add ingredient</string>
 	<string name="ingredientUpdate">Update ingredient</string>
 	<string name="ingredientDelete">Delete ingredient</string>

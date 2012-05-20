@@ -153,83 +153,95 @@ public class MainActivity extends FragmentActivity {
 		}
 		
 		// Inflate rows using SimpleCursorAdapter
-		private ListView getInventoryListViewFromDatabase() {
+		private View getInventoryListViewFromDatabase() {
 			// Get the data from the database
 			Cursor cursor = db.getInventory();
 			startManagingCursor(cursor);
 			
-			// Inflate rows using SimpleCursorAdapter
-			ListView list = new ListView(MainActivity.this);
-			list.setScrollingCacheEnabled(false);
-			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-			SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient, cursor,
-					new String[] {
-							DatabaseInterface.INVENTORY.name,
-							DatabaseInterface.INVENTORY.quantity,
-							DatabaseInterface.INVENTORY.unit,
-							DatabaseInterface.INVENTORY.id
-					},
-					new int[] {
-							R.id.listIngredientName,
-							R.id.listIngredientQuantity,
-							R.id.listIngredientUnit,
-							R.id.listIngredientOptions
-					});
-			adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-				@Override
-				public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-					if (view.getId() != R.id.listIngredientOptions) return false;
-					view.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(final View view) {
-							// Create dialog menu
-							new AlertDialog.Builder(MainActivity.this)
-								.setItems(new String[] {
-										getString(R.string.ingredientUpdate),
-										getString(R.string.ingredientDelete)
-								}, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										final LinearLayout layout = (LinearLayout) view.getParent();
-										final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
-										switch (which) {
-										case 0:
-											// Update ingredient
-											new IngredientDialog(layout).show(name);
-											break;
-										case 1:
-											// Delete ingredient
-											new AlertDialog.Builder(MainActivity.this)
-												.setTitle(R.string.ingredientDelete)
-												.setMessage(R.string.ingredientDeleteQuestion)
-												.setNegativeButton(R.string.ingredientCancel, null)
-												.setPositiveButton(R.string.ingredientDeleteButton, new AlertDialog.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														String ingredientName = name.getText().toString().trim();
-														db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
-														String ingredientUpdate = getString(R.string.ingredientDeleted)
-																.replaceFirst("\\?", ingredientName);
-														Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
-														// Updating the inventory page
-														LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
-														linearLayout.removeViewAt(0);
-														linearLayout.addView(getInventoryListViewFromDatabase(), 0);
-													}
-												}).show();
-											break;
-										}
-									}
-								}).show();
-						}
-					});
-					return true;
+			try {
+				// Check if there are any ingredients stored
+				if (cursor.getCount() <= 0) {
+					TextView text = new TextView(MainActivity.this);
+					text.setGravity(Gravity.CENTER);
+					text.setText(R.string.inventoryNoIngredients);
+					text.setTextSize(20 * getResources().getDisplayMetrics().density);
+					text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+					text.setPadding(20, 20, 20, 20);
+					return text;
 				}
-			});
-			list.setAdapter(adapter);
-			
-			db.close();
-			return list;
+				// Inflate rows using SimpleCursorAdapter
+				ListView list = new ListView(MainActivity.this);
+				list.setScrollingCacheEnabled(false);
+				list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+				SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.ingredient, cursor,
+						new String[] {
+								DatabaseInterface.INVENTORY.name,
+								DatabaseInterface.INVENTORY.quantity,
+								DatabaseInterface.INVENTORY.unit,
+								DatabaseInterface.INVENTORY.id
+						},
+						new int[] {
+								R.id.listIngredientName,
+								R.id.listIngredientQuantity,
+								R.id.listIngredientUnit,
+								R.id.listIngredientOptions
+						});
+				adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+					@Override
+					public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+						if (view.getId() != R.id.listIngredientOptions) return false;
+						view.setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(final View view) {
+								// Create dialog menu
+								new AlertDialog.Builder(MainActivity.this)
+									.setItems(new String[] {
+											getString(R.string.ingredientUpdate),
+											getString(R.string.ingredientDelete)
+									}, new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int which) {
+											final LinearLayout layout = (LinearLayout) view.getParent();
+											final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
+											switch (which) {
+											case 0:
+												// Update ingredient
+												new IngredientDialog(layout).show(name);
+												break;
+											case 1:
+												// Delete ingredient
+												new AlertDialog.Builder(MainActivity.this)
+													.setTitle(R.string.ingredientDelete)
+													.setMessage(R.string.ingredientDeleteQuestion)
+													.setNegativeButton(R.string.ingredientCancel, null)
+													.setPositiveButton(R.string.ingredientDeleteButton, new AlertDialog.OnClickListener() {
+														@Override
+														public void onClick(DialogInterface dialog, int which) {
+															String ingredientName = name.getText().toString().trim();
+															db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
+															String ingredientUpdate = getString(R.string.ingredientDeleted)
+																	.replaceFirst("\\?", ingredientName);
+															Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+															// Updating the inventory page
+															LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+															linearLayout.removeViewAt(0);
+															linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+														}
+													}).show();
+												break;
+											}
+										}
+									}).show();
+							}
+						});
+						return true;
+					}
+				});
+				list.setAdapter(adapter);
+				return list;
+			} finally {
+				db.close();
+			}
 		}
 		
 		// Open the dialog
@@ -260,10 +272,10 @@ public class MainActivity extends FragmentActivity {
 				final ImageButton removeExpirationDate = (ImageButton) dialogView.findViewById(R.id.elementIngredientRemoveExpirationDate);
 				
 				// Inflating auto-complete list
-				Cursor cursor = db.getInventory();
+				Cursor cursor = db.getIngredients();
 				startManagingCursor(cursor);
 				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
-				while (cursor.moveToNext()) textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.name)));
+				while (cursor.moveToNext()) textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
 				name.setAdapter(textAdapter);
 				
 				// Inflating spinner
