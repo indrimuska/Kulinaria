@@ -40,8 +40,8 @@
 		android:scaleType="fitXY"
 		android:layout_marginBottom="5dp"
 		android:layout_marginTop="5dp"
-		android:src="@drawable/list_divider_holo_light"
-		android:contentDescription="@string/separator" />
+		android:contentDescription="@null"
+		android:src="@drawable/list_divider_holo_light" />
 	
 	<ImageButton
 		android:id="@+id/listIngredientOptions"

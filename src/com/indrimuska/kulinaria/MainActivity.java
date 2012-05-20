@@ -12,7 +12,6 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -28,6 +27,8 @@ import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -440,18 +441,30 @@ public class MainActivity extends FragmentActivity {
 			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.recipes_page, null);
 			ListView list = (ListView) layout.findViewById(R.id.recipesDishesList);
 			list.setScrollingCacheEnabled(false);
+			
+			// Filling contents using SimpleAdapter
 			ArrayList<Map<String, Object>> dishes = new ArrayList<Map<String, Object>>();
 			String[] dishesList = getResources().getStringArray(R.array.dishes);
 			for (int i = 0; i < dishesList.length; i++) {
 				Map<String, Object> dishInfo = new HashMap<String, Object>();
 				dishInfo.put("image", getResources().getIdentifier("drawable/dishes_" + i, "drawable", getPackageName()));
 				dishInfo.put("name", dishesList[i]);
-				dishInfo.put("other", dishesList[i]);
+				dishInfo.put("other", getString(R.string.recipeNumber)
+						.replaceFirst("\\?", Integer.toString(db.getRecipeCount(dishesList[i]))));
 				dishes.add(dishInfo);
 			}
-			list.setAdapter(new SimpleAdapter(MainActivity.this, dishes, R.layout.recipe_list_item,
+			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, dishes, R.layout.recipe_list_item,
 					new String[] { "image", "name", "other" },
-					new int[] { R.id.listDishImage, R.id.listDishName, R.id.listDishOther }));
+					new int[] { R.id.listDishImage, R.id.listDishName, R.id.listDishOther });
+			list.setAdapter(adapter);
+			list.setOnItemClickListener(new OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			
 			return layout;
 		}
 	}

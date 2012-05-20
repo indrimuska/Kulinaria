@@ -372,6 +372,21 @@ public class DatabaseInterface {
 		return values;
 	}
 	
+	// Get the number of recipes for a dish
+	public int getRecipeCount(String dish) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		try {
+			Cursor cursor = db.query(RECIPES.TABLE, null, RECIPES.dish+"=?", new String[] { dish }, null, null, null);
+			try {
+				return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
+	}
+	
 	// Convert recipe-ingredient informations to ContentValues
 	private ContentValues recipeIngredientContentValues(int recipeId, int ingredientId, int ingredientNeed, String unit) {
 		ContentValues values = new ContentValues();

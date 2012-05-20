@@ -22,14 +22,16 @@
 			android:id="@+id/listDishName"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="@string/recipesPage"
+			android:text="@null"
+			android:textStyle="bold"
+			android:textColor="@android:color/tertiary_text_dark"
 			android:textAppearance="?android:attr/textAppearanceMedium" />
 		
 		<TextView
 			android:id="@+id/listDishOther"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="@string/recipesPage" />
+			android:text="@null" />
 		
 	</LinearLayout>
 	
