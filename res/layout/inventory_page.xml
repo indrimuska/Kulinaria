@@ -24,7 +24,7 @@
 		android:paddingRight="10dp"
 		android:paddingBottom="9dp"
 		android:background="@color/bottom_light"
-		android:drawableLeft="@drawable/add_element"
+		android:drawableLeft="@drawable/create_contact"
 		android:drawablePadding="10dp" />
 	
 </LinearLayout>

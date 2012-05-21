@@ -29,6 +29,7 @@
 	<string name="ingredientDeleteQuestion">Are you sure you want to delete the ingredient?</string>
 	
 	<string name="recipesPage">Recipes</string>
+	<string name="recipesNoRecipes">No recipes found for this dish</string>
 	<string name="recipesSearch">Search a recipe</string>
 	<string name="recipeNumber">\? recipes found</string>
 	

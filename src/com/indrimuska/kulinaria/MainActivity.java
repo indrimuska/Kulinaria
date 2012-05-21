@@ -459,7 +459,7 @@ public class MainActivity extends FragmentActivity {
 						.replaceFirst("\\?", Integer.toString(db.getRecipeCount(dishesList[i]))));
 				dishes.add(dishInfo);
 			}
-			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, dishes, R.layout.recipe_list_item,
+			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, dishes, R.layout.dishes_list_item,
 					new String[] { "image", "name", "other" },
 					new int[] { R.id.listDishImage, R.id.listDishName, R.id.listDishOther });
 			list.setAdapter(adapter);
