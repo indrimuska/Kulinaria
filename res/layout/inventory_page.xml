@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+	
+	<ImageView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:scaleType="fitXY"
+		android:src="@drawable/list_divider_holo_light"
+		android:contentDescription="@null" />
+			
+	<Button
+		android:id="@+id/listIngredientAdd"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="left|center_vertical"
+		android:text="@string/ingredientAdd"
+		android:textColor="#747474"
+		android:textSize="18dp"
+		android:paddingTop="9dp"
+		android:paddingLeft="10dp"
+		android:paddingRight="10dp"
+		android:paddingBottom="9dp"
+		android:background="@color/bottom_light"
+		android:drawableLeft="@drawable/add_element"
+		android:drawablePadding="10dp" />
+	
+</LinearLayout>

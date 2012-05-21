@@ -17,7 +17,6 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -36,8 +35,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -91,12 +88,10 @@ public class MainActivity extends FragmentActivity {
 		super.onResume();
 		
 		// Filling inventory ingredient ListView
-		ListView listView = (ListView) inventoryPage.layout.getChildAt(0);
-		if (listView != null) {
-			SimpleCursorAdapter adapter = (SimpleCursorAdapter) listView.getAdapter();
-			if (adapter.getCursor() != null) adapter.getCursor().close();
+		if (inventoryPage.layout != null) {
+			((SimpleCursorAdapter) ((ListView) inventoryPage.layout.getChildAt(0)).getAdapter()).getCursor().close();
+			inventoryPage.layout.addView(inventoryPage.getInventoryListViewFromDatabase(), 0);
 		}
-		inventoryPage.layout.addView(inventoryPage.getInventoryListViewFromDatabase(), 0);
 	}
 	
 	class SliderAdapter extends FragmentPagerAdapter implements TitleProvider {
@@ -152,41 +147,22 @@ public class MainActivity extends FragmentActivity {
 	}
 	final class InventoryPage extends Page {
 		public InventoryPage() { super(R.string.inventoryPage); }
-		public LinearLayout layout = new LinearLayout(MainActivity.this);
+		public LinearLayout layout = null;
 		
 		@Override
 		public View getView() {
-			// Creating view
-			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-			layout.setOrientation(LinearLayout.VERTICAL);
-			
-			// Add separator
-			ImageView separator = new ImageView(MainActivity.this);
-			separator.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-			separator.setImageResource(R.drawable.list_divider_holo_light);
-			separator.setScaleType(ScaleType.FIT_XY);
-			layout.addView(separator);
+			// Inflating view
+			layout = (LinearLayout) getLayoutInflater().inflate(R.layout.inventory_page, null);
+			layout.addView(getInventoryListViewFromDatabase(), 0);
 			
 			// Add ingredient's button
-			Button addIngredientButton = new Button(MainActivity.this);
-			addIngredientButton.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-			addIngredientButton.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
-			addIngredientButton.setText(R.string.ingredientAdd);
-			addIngredientButton.setTextColor(Color.rgb(116, 116, 116));
-			addIngredientButton.setTextSize(12 * getResources().getDisplayMetrics().density);
-			addIngredientButton.setPadding(10, 8, 10, 8);
-			addIngredientButton.setBackgroundResource(R.color.bottom_light);
-			Drawable addIngredientImage = getApplicationContext().getResources().getDrawable(R.drawable.add_element);
-			addIngredientImage.setBounds(0, 0, 60, 60);
-			addIngredientButton.setCompoundDrawables(addIngredientImage, null, null, null);
-			addIngredientButton.setCompoundDrawablePadding(10);
+			Button addIngredientButton = (Button) layout.findViewById(R.id.listIngredientAdd);
 			addIngredientButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					new IngredientDialog(layout).show(null);
 				}
 			});
-			layout.addView(addIngredientButton);
 			
 			return layout;
 		}
@@ -212,7 +188,7 @@ public class MainActivity extends FragmentActivity {
 			ListView list = new ListView(MainActivity.this);
 			list.setScrollingCacheEnabled(false);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-			SimpleCursorAdapter inventoryListAdapter = new SimpleCursorAdapter(
+			SimpleCursorAdapter adapter = new SimpleCursorAdapter(
 					MainActivity.this, R.layout.ingredient_list_item, cursor,
 					new String[] {
 							DatabaseInterface.INVENTORY.name,
@@ -226,7 +202,7 @@ public class MainActivity extends FragmentActivity {
 							R.id.listIngredientUnit,
 							R.id.listIngredientOptions
 					});
-			inventoryListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+			adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
 				@Override
 				public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 					if (view.getId() != R.id.listIngredientOptions) return false;
@@ -277,7 +253,7 @@ public class MainActivity extends FragmentActivity {
 					return true;
 				}
 			});
-			list.setAdapter(inventoryListAdapter);
+			list.setAdapter(adapter);
 			return list;
 		}
 		
@@ -371,12 +347,18 @@ public class MainActivity extends FragmentActivity {
 					String ingredienName = ingredientView.getText().toString().trim();
 					cursor = db.getInventoryIngredient(ingredienName);
 					startManagingCursor(cursor);
-					cursor.moveToFirst();
-					ingredientID = cursor.getInt(cursor.getColumnIndex(DatabaseInterface.INVENTORY.id));
-					String unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.unit));
-					double quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INVENTORY.quantity));
-					long expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INVENTORY.expirationDate));
-					cursor.close();
+					String unitString;
+					double quantityDouble;
+					long expirationDateLong;
+					try {
+						cursor.moveToFirst();
+						ingredientID = cursor.getInt(cursor.getColumnIndex(DatabaseInterface.INVENTORY.id));
+						unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.unit));
+						quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INVENTORY.quantity));
+						expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INVENTORY.expirationDate));
+					} finally {
+						cursor.close();
+					}
 					name.setText(ingredienName);
 					name.setAdapter(null);
 					quantity.setText(Double.toString(quantityDouble));
