@@ -64,7 +64,7 @@ public class RecipeActivity extends Activity {
 		db.close();
 	}
 	
-	public String secondsToTime(int seconds) {
+	static public String secondsToTime(int seconds) {
 		int minutes = seconds / 60;
 		int hours = minutes / 60;
 		seconds = seconds - minutes * 60;

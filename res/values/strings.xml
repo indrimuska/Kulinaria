@@ -38,6 +38,7 @@
 	<string name="recipeReadyTime">Ready time:</string>
 	<string name="recipeServings">Servings:</string>
 	<string name="recipeIngredients">Ingredients:</string>
+	<string name="recipeReadyIn">Ready in ?</string>
 	
 	<string name="shoppingListPage">Shopping List</string>
 	
