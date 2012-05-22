@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import android.app.AlertDialog;
@@ -126,12 +127,12 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public View getView() {
-			TextView text = new TextView(MainActivity.this);
-			text.setGravity(Gravity.CENTER);
-			text.setText(pageName);
-			text.setTextSize(20 * getResources().getDisplayMetrics().density);
-			text.setPadding(20, 20, 20, 20);
-			return text;
+			Locale.setDefault(new Locale(getString(R.string.language)));
+			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_page, null);
+			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(new Date()));
+			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
+					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(new Date()));
+			return layout;
 		}
 	}
 	final class InventoryPage extends Page {
@@ -303,7 +304,7 @@ public class MainActivity extends FragmentActivity {
 					@Override
 					public void onClick(View v) {
 						Date date = new Date();
-						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.dateFormat));
+						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
 						try { date = dateFormat.parse(expirationDate.getText().toString()); }
 						catch (ParseException e) { }
 						calendar.setTime(date);
@@ -311,7 +312,7 @@ public class MainActivity extends FragmentActivity {
 							@Override
 							public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 								calendar.set(year, monthOfYear, dayOfMonth);
-								expirationDate.setText(DateFormat.format(getString(R.string.dateFormat), calendar.getTime().getTime()));
+								expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), calendar.getTime().getTime()));
 								if (calendar.getTime().getDate() < new Date().getDate())
 									expirationDate.getBackground().setColorFilter(
 											new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
@@ -355,7 +356,7 @@ public class MainActivity extends FragmentActivity {
 					unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
 					if (expirationDateLong > 0) {
 						Date date = new Date(expirationDateLong);
-						expirationDate.setText(DateFormat.format(getString(R.string.dateFormat), date.getTime()));
+						expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), date.getTime()));
 						if (new Date(expirationDateLong).getDate() < new Date().getDate())
 							expirationDate.getBackground().setColorFilter(
 									new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
@@ -370,7 +371,7 @@ public class MainActivity extends FragmentActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						if (name.getText().toString().trim().length() == 0 || quantity.getText().length() == 0) return;
 						Date date = new Date();
-						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.dateFormat));
+						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
 						try { date = dateFormat.parse(expirationDate.getText().toString()); }
 						catch (ParseException e) { }
 						final String ingredientName = name.getText().toString().trim();

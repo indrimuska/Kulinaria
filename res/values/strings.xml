@@ -3,9 +3,13 @@
 	
 	<string name="app_name">Kulinaria</string>
 	
-	<string name="dateFormat">dd/MM/yyyy</string>
+	<string name="language">en</string>
+	<string name="simpleDateFormat">dd/MM/yyyy</string>
+	<string name="extendedDateFormat">cccc, dd MMMM yyyy</string>
 	
 	<string name="menuPage">Menu</string>
+	<string name="menuToday">Today</string>
+	<string name="menuTodaysMenu">Today\'s menu</string>
 	
 	<string name="inventoryPage">Inventory</string>
 	<string name="inventoryNoIngredients">No ingredients in inventory</string>
