@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="@color/default_background">
+	
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="50dp"
+		android:orientation="vertical"
+		android:background="@color/bottom_light">
+		
+		<ImageView
+			android:id="@+id/recipeBackButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:contentDescription="@null"
+			android:padding="8dp"
+			android:scaleType="fitXY"
+			android:src="@drawable/ic_ab_back_holo_light" />
+
+		<TextView
+			android:id="@+id/recipeName"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:layout_toRightOf="@id/recipeBackButton"
+			android:gravity="center"
+			android:padding="5dp"
+			android:text="@null"
+			android:textColor="#8a8a8a"
+			android:textAppearance="?android:attr/textAppearanceLarge" />
+		
+	</RelativeLayout>
+	
+	<ImageView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:scaleType="fitXY"
+		android:contentDescription="@null"
+		android:src="@drawable/list_divider_holo_light" />
+	
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:padding="10dp">
+			
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:padding="10dp">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/recipeDish"
+					android:textSize="14dp"
+					android:textStyle="bold"
+					android:paddingRight="10dp" />
+				<TextView
+					android:id="@+id/recipeDish"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@null"
+					android:textSize="14dp" />
+			</LinearLayout>
+			
+			<ImageView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:scaleType="fitXY"
+				android:contentDescription="@null"
+				android:src="@drawable/list_divider_holo_light" />
+			
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:padding="10dp">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/recipePreparationTime"
+					android:textSize="14dp"
+					android:textStyle="bold"
+					android:paddingRight="10dp" />
+				<TextView
+					android:id="@+id/recipePreparationTime"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@null"
+					android:textSize="14dp" />
+			</LinearLayout>
+			
+			<ImageView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:scaleType="fitXY"
+				android:contentDescription="@null"
+				android:src="@drawable/list_divider_holo_light" />
+			
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:padding="10dp">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/recipeReadyTime"
+					android:textSize="14dp"
+					android:textStyle="bold"
+					android:paddingRight="10dp" />
+				<TextView
+					android:id="@+id/recipeReadyTime"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@null"
+					android:textSize="14dp" />
+			</LinearLayout>
+			
+			<ImageView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:scaleType="fitXY"
+				android:contentDescription="@null"
+				android:src="@drawable/list_divider_holo_light" />
+			
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:padding="10dp">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/recipeServings"
+					android:textSize="14dp"
+					android:textStyle="bold"
+					android:paddingRight="10dp" />
+				<TextView
+					android:id="@+id/recipeServings"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@null"
+					android:textSize="14dp" />
+			</LinearLayout>
+			
+			<ImageView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:scaleType="fitXY"
+				android:contentDescription="@null"
+				android:src="@drawable/list_divider_holo_light" />
+			
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical"
+				android:padding="10dp">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/recipeIngredients"
+					android:textSize="14dp"
+					android:textStyle="bold"
+					android:paddingBottom="5dp" />
+				<TextView
+					android:id="@+id/recipeIngredients"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@null"
+					android:textSize="14dp"
+					android:paddingLeft="30dp" />
+			</LinearLayout>
+			
+			<ImageView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:scaleType="fitXY"
+				android:contentDescription="@null"
+				android:src="@drawable/list_divider_holo_light" />
+			
+			<TextView
+				android:id="@+id/recipeDescription"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:padding="10dp"
+				android:text="@null"
+				android:textSize="14dp" />
+			
+		</LinearLayout>
+		
+	</ScrollView>
+	
+</LinearLayout>
