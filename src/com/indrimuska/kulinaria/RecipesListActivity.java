@@ -54,7 +54,7 @@ public class RecipesListActivity extends Activity {
 		};
 		
 		try {
-			if (cursor.getCount() > 0) recipesList = new ArrayCursorAdapter(this, cursor, from).getList();
+			if (cursor.getCount() > 0) recipesList = db.cursorToMapArray(cursor, from);
 			else {
 				TextView noRecipes = new TextView(this);
 				noRecipes.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1));

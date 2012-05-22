@@ -92,6 +92,23 @@ public class DatabaseInterface {
 							ingredientId + " ) " +
 						")";
 	}
+	public static final class MENU {
+		static final String TABLE		= "Menu";
+		static final String date		= "date";
+		static final String meal		= "meal";
+		static final String recipeId	= "recipeId";
+		static final String ORDER_BY	= date + " ASC";
+		static final String CREATE =
+				"create table if not exists " + TABLE + " (" +
+						date +" date, " +
+						meal + " text, " +
+						recipeId + " int, " +
+						"primary key( " +
+							date + ", " +
+							meal + ", " +
+							recipeId + " ) " +
+						")";
+	}
 	public static final class SHOPPING_LIST {
 		static final String TABLE	= "ShoppingList";
 		static final String CREATE = "";
@@ -114,7 +131,8 @@ public class DatabaseInterface {
 			db.execSQL(INGREDIENTS.CREATE);
 			db.execSQL(RECIPES.CREATE);
 			db.execSQL(RECIPES_INGREDIENTS.CREATE);
-			Log.d(TAG, "tables creted");
+			db.execSQL(MENU.CREATE);
+			Log.d(TAG, "tables created");
 			
 			// Populate database (from XML)
 			Map<String, ArrayList<ArrayList<String>>> tables = getTablesFromXML(context, R.raw.populate_db);
@@ -144,16 +162,17 @@ public class DatabaseInterface {
 			onUpgradeTable(db, INGREDIENTS.TABLE, INGREDIENTS.CREATE);
 			onUpgradeTable(db, RECIPES.TABLE, RECIPES.CREATE);
 			onUpgradeTable(db, RECIPES_INGREDIENTS.TABLE, RECIPES_INGREDIENTS.CREATE);
+			onUpgradeTable(db, MENU.TABLE, MENU.CREATE);
 		}
 		
 		// General onUpgrade (valid for each table)
 		private void onUpgradeTable(SQLiteDatabase db, String tableName, String createTable) {
 			// table might not exists yet, it will fail alter and drop
-			onCreate(db);
+			//onCreate(db);
 			// put in a list the existing columns
 			List<String> columns = getColumns(db, tableName);
 			// backup table
-			db.execSQL("alter table " + tableName + " rename to 'temp_" + tableName);
+			db.execSQL("alter table " + tableName + " rename to temp_" + tableName);
 			// create new table
 			db.execSQL(createTable);
 			// get the intersection with the new columns, this time columns taken from the upgraded table 
@@ -162,7 +181,7 @@ public class DatabaseInterface {
 			String cols = join(columns, ",");
 			db.execSQL(String.format("insert into %s (%s) select %s from temp_%s", tableName, cols, cols, tableName));
 			// remove backup table
-			db.execSQL("drop table 'temp_" + tableName);
+			db.execSQL("drop table temp_" + tableName);
 			Log.d(TAG, "database updated");
 		}
 		
@@ -237,6 +256,17 @@ public class DatabaseInterface {
 	
 	public void close() {
 		dbHelper.close();
+	}
+	
+	// Convert cursor to a map-array
+	public ArrayList<Map<String, Object>> cursorToMapArray(Cursor cursor, String[] columns) {
+		ArrayList<Map<String, Object>> array = new ArrayList<Map<String, Object>>();
+		while (cursor.moveToNext()) {
+			Map<String, Object> element = new HashMap<String, Object>();
+			for (String column : columns) element.put(column, cursor.getString(cursor.getColumnIndex(column)));
+			array.add(element);
+		}
+		return array;
 	}
 	
 	// Convert inventory ingredient informations to ContentValues
@@ -415,6 +445,7 @@ public class DatabaseInterface {
 		return db.query(RECIPES.TABLE, null, RECIPES.id+"=?", new String[] { Integer.toString(recipeId) }, null, null, null);
 	}
 	
+	// Search one o more recipes in database
 	public Cursor searchRecipe(String name) {
 		Log.d(TAG, "searchRecipe: " + name);
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -457,4 +488,6 @@ public class DatabaseInterface {
 			db.close();
 		}
 	}
+	
+	
 }

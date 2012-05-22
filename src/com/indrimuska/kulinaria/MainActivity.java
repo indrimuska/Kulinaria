@@ -29,14 +29,18 @@ import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -132,6 +136,34 @@ public class MainActivity extends FragmentActivity {
 			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(new Date()));
 			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
 					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(new Date()));
+			ExpandableListView menuMealsList = (ExpandableListView) layout.findViewById(R.id.menuMealsList);
+			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
+				private String[] groups = getResources().getStringArray(R.array.meals);
+				private String[][] children = { {}, {}, {}, {} };
+				
+				@Override public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+					TextView meal = new TextView(MainActivity.this);
+					meal.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+					meal.setText(getGroup(groupPosition).toString());
+					meal.setPadding(60, 20, 20, 20);
+					return meal;
+				}
+				@Override public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+					TextView textView = new TextView(MainActivity.this);
+					textView.setText(getChild(groupPosition, childPosition).toString());
+					textView.setPadding(60, 10, 20, 10);
+					return textView;
+				}
+				// Other methods
+				@Override public Object getGroup(int groupPosition) { return groups[groupPosition]; }
+				@Override public long getGroupId(int groupPosition) { return groupPosition; }
+				@Override public int getGroupCount() { return groups.length; }
+				@Override public Object getChild(int groupPosition, int childPosition) { return children[groupPosition][childPosition]; }
+				@Override public long getChildId(int groupPosition, int childPosition) { return childPosition; }
+				@Override public int getChildrenCount(int groupPosition) { return children[groupPosition].length; }
+				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
+				@Override public boolean hasStableIds() { return true; }
+			});
 			return layout;
 		}
 	}
@@ -170,7 +202,7 @@ public class MainActivity extends FragmentActivity {
 			
 			try {
 				// Check if there are any ingredients stored
-				if (cursor.getCount() > 0) inventoryList = new ArrayCursorAdapter(MainActivity.this, cursor, from).getList();
+				if (cursor.getCount() > 0) inventoryList = db.cursorToMapArray(cursor, from);
 				else {
 					TextView text = new TextView(MainActivity.this);
 					text.setGravity(Gravity.CENTER);
@@ -496,7 +528,7 @@ public class MainActivity extends FragmentActivity {
 							DatabaseInterface.RECIPES.name,
 							DatabaseInterface.RECIPES.readyTime
 					};
-					try { recipesList = new ArrayCursorAdapter(MainActivity.this, cursor, from).getList(); }
+					try { recipesList = db.cursorToMapArray(cursor, from); }
 					finally { cursor.close(); }
 					SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, recipesList, R.layout.recipes_list_item, from,
 							new int[] {

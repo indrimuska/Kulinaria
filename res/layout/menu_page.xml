@@ -2,50 +2,71 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:paddingLeft="20dp"
-	android:paddingRight="20dp">
+	android:orientation="vertical">
 
 	<LinearLayout
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="horizontal"
-		android:gravity="center_vertical">
-
-		<TextView
-			android:id="@+id/menuTodayNumber"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:gravity="center"
-			android:text="@null"
-			android:textSize="70dp"
-			android:textColor="@color/light_blue"
-			android:paddingRight="10dp" />
-
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:orientation="vertical"
+		android:paddingLeft="20dp"
+		android:paddingRight="20dp">
+		
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:orientation="vertical">
-
+			android:orientation="horizontal"
+			android:gravity="center_vertical">
+			
 			<TextView
+				android:id="@+id/menuTodayNumber"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/menuTodaysMenu"
-				android:textStyle="bold"
-				android:textColor="@color/bottom_ligh_text"
-				android:textAppearance="?android:attr/textAppearanceLarge" />
-
-			<TextView
-				android:id="@+id/menuTodayDate"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:lines="1"
+				android:gravity="center"
 				android:text="@null"
-				android:textColor="@color/text_second_line"
-				android:textAppearance="?android:attr/textAppearanceSmall" />
-
+				android:textSize="70dp"
+				android:textColor="@color/light_blue"
+				android:paddingRight="10dp" />
+			
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+				
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/menuTodaysMenu"
+					android:textStyle="bold"
+					android:textColor="@color/bottom_ligh_text"
+					android:textAppearance="?android:attr/textAppearanceLarge" />
+				
+				<TextView
+					android:id="@+id/menuTodayDate"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:lines="1"
+					android:text="@null"
+					android:textColor="@color/text_second_line"
+					android:textAppearance="?android:attr/textAppearanceSmall" />
+				
+			</LinearLayout>
+			
 		</LinearLayout>
-
+		
+		<ImageView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:scaleType="fitXY"
+			android:src="@drawable/list_divider_holo_light"
+			android:contentDescription="@null" />
+		
+		<ExpandableListView
+			android:id="@+id/menuMealsList"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:cacheColorHint="@android:color/transparent" />
+		
 	</LinearLayout>
 	
 	<ImageView
@@ -54,5 +75,21 @@
 		android:scaleType="fitXY"
 		android:src="@drawable/list_divider_holo_light"
 		android:contentDescription="@null" />
-
+	
+	<Button
+		android:id="@+id/menuAdd"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="left|center_vertical"
+		android:text="@null"
+		android:textColor="@color/bottom_ligh_text"
+		android:textSize="18dp"
+		android:paddingTop="9dp"
+		android:paddingLeft="10dp"
+		android:paddingRight="10dp"
+		android:paddingBottom="9dp"
+		android:background="@color/bottom_light"
+		android:drawableLeft="@drawable/create_contact"
+		android:drawablePadding="10dp" />
+	
 </LinearLayout>

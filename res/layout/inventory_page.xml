@@ -10,7 +10,7 @@
 		android:scaleType="fitXY"
 		android:src="@drawable/list_divider_holo_light"
 		android:contentDescription="@null" />
-			
+	
 	<Button
 		android:id="@+id/listIngredientAdd"
 		android:layout_width="fill_parent"
