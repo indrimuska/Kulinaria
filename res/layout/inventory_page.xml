@@ -17,7 +17,7 @@
 		android:layout_height="wrap_content"
 		android:gravity="left|center_vertical"
 		android:text="@string/ingredientAdd"
-		android:textColor="#747474"
+		android:textColor="@color/bottom_ligh_text"
 		android:textSize="18dp"
 		android:paddingTop="9dp"
 		android:paddingLeft="10dp"

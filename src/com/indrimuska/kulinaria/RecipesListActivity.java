@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -35,6 +36,9 @@ public class RecipesListActivity extends Activity {
 				getResources().getIdentifier("drawable/" + dish.toLowerCase().replace(" ", "_"), "drawable", getPackageName()));
 		((TextView) findViewById(R.id.dishName)).setText(dish);
 		list = (ListView) findViewById(R.id.dishList);
+		((Button) findViewById(R.id.dishBackButton)).setOnClickListener(new View.OnClickListener() {
+			@Override public void onClick(View view) { finish(); }
+		});
 	}
 	
 	@Override

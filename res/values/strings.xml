@@ -32,6 +32,7 @@
 	<string name="recipesNoRecipes">No recipes found for this dish</string>
 	<string name="recipesSearch">Search a recipe</string>
 	<string name="recipesNumber">\? recipes found</string>
+	<string name="recipesBack">Back to dishes list</string>
 	<string name="recipeDish">Dish:</string>
 	<string name="recipePreparationTime">Preparation time:</string>
 	<string name="recipeReadyTime">Ready time:</string>

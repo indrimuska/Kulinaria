@@ -29,7 +29,7 @@
 			android:gravity="center"
 			android:padding="5dp"
 			android:text="@null"
-			android:textColor="#8a8a8a"
+			android:textColor="@color/bottom_ligh_text"
 			android:textAppearance="?android:attr/textAppearanceLarge" />
 		
 	</RelativeLayout>

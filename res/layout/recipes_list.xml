@@ -37,5 +37,28 @@
 		android:layout_height="0dp"
 		android:layout_weight="1"
 		android:cacheColorHint="@android:color/transparent" />
+			
+	<ImageView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:scaleType="fitXY"
+		android:contentDescription="@null"
+		android:src="@drawable/list_divider_holo_light" />
+	
+	<Button
+		android:id="@+id/dishBackButton"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="left|center_vertical"
+		android:text="@string/recipesBack"
+		android:textColor="@color/bottom_ligh_text"
+		android:textSize="18dp"
+		android:paddingTop="13dp"
+		android:paddingLeft="10dp"
+		android:paddingRight="10dp"
+		android:paddingBottom="13dp"
+		android:background="@color/bottom_light"
+		android:drawableLeft="@drawable/ic_ab_back_holo_light"
+		android:drawablePadding="10dp" />
 	
 </LinearLayout>
