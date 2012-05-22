@@ -513,6 +513,13 @@ public class MainActivity extends FragmentActivity {
 						}
 					});
 					search.setAdapter(adapter);
+					search.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+						@Override
+						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+							startActivity(new Intent(MainActivity.this, RecipeActivity.class)
+							.putExtra("recipeId", Integer.parseInt(((TextView) view.findViewById(R.id.recipesListId)).getText().toString())));
+						}
+					});
 				}
 				// Other methods
 				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
