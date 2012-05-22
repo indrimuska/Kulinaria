@@ -77,16 +77,19 @@ public class RecipesListActivity extends Activity {
 			list = null;
 		} else {
 			list.setAdapter(new SimpleCursorAdapter(this, R.layout.recipes_list_item, cursor, new String[] {
+					DatabaseInterface.RECIPES.id,
 					DatabaseInterface.RECIPES.name,
 					DatabaseInterface.RECIPES.dish
 			}, new int[] {
+					R.id.recipesListId,
 					R.id.recipesListName,
 					R.id.recipesListOther
 			}));
 			list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					startActivity(new Intent(RecipesListActivity.this, RecipeActivity.class).putExtra("recipeId", 1));
+					startActivity(new Intent(RecipesListActivity.this, RecipeActivity.class)
+						.putExtra("recipeId", Integer.parseInt(((TextView) view.findViewById(R.id.recipesListId)).getText().toString())));
 				}
 			});
 		}

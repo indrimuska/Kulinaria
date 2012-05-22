@@ -23,7 +23,7 @@ public class RecipeActivity extends Activity {
 		setContentView(R.layout.recipe);
 		
 		// Get recipe id
-		recipeId = 1;//(Integer) getIntent().getExtras().get("recipeId");
+		recipeId = (Integer) getIntent().getExtras().get("recipeId");
 
 		// Open the database
 		db = new DatabaseInterface(this);
@@ -38,8 +38,10 @@ public class RecipeActivity extends Activity {
 			cursor.moveToFirst();
 			((TextView) findViewById(R.id.recipeName)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.name)));
 			((TextView) findViewById(R.id.recipeDish)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.dish)));
-			((TextView) findViewById(R.id.recipePreparationTime)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.preparationTime)));
-			((TextView) findViewById(R.id.recipeReadyTime)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.readyTime)));
+			((TextView) findViewById(R.id.recipePreparationTime)).setText(
+					secondsToTime(cursor.getInt(cursor.getColumnIndex(RECIPES.preparationTime)) * 60));
+			((TextView) findViewById(R.id.recipeReadyTime)).setText(
+					secondsToTime(cursor.getInt(cursor.getColumnIndex(RECIPES.readyTime)) * 60));
 			((TextView) findViewById(R.id.recipeServings)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.servings)));
 			((TextView) findViewById(R.id.recipeDescription)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.description)));
 		} finally {
@@ -47,25 +49,30 @@ public class RecipeActivity extends Activity {
 		}
 		String ingredients = "";
 		ArrayList<Map<String, Object>> recipeIngredients = db.getRecipeIngredients(recipeId);
-		final String ingredientsChild[] = new String[recipeIngredients.size()];
-		int i = 0;
-		for (Map<String, Object> ingredient : recipeIngredients) {
+		for (Map<String, Object> ingredient : recipeIngredients)
 			ingredients += "\n" + ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString() + " " +
 					ingredient.get(RECIPES_INGREDIENTS.unit) + " " +
 					db.getIngredientName((Integer) ingredient.get(RECIPES_INGREDIENTS.ingredientId));
-			ingredientsChild[i] = ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString() + " " +
-					ingredient.get(RECIPES_INGREDIENTS.unit) + " " +
-					db.getIngredientName((Integer) ingredient.get(RECIPES_INGREDIENTS.ingredientId));
-			i++;
-		}
 		((TextView) findViewById(R.id.recipeIngredients)).setText(ingredients.substring(1));
 	}
 	
 	@Override
 	protected void onPause() {
-		super.onStop();
+		super.onPause();
 
 		// Close database
 		db.close();
+	}
+	
+	public String secondsToTime(int seconds) {
+		int minutes = seconds / 60;
+		int hours = minutes / 60;
+		seconds = seconds - minutes * 60;
+		minutes = minutes - hours * 60;
+		String time =
+				(hours > 0 ? Integer.toString(hours) + " h " : "") +
+				(minutes > 0 ? Integer.toString(minutes) + " m " : "") +
+				(seconds > 0 ? Integer.toString(seconds) + " s " : "");
+		return time.substring(0, time.length() - 1);
 	}
 }
