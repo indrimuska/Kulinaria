@@ -23,6 +23,8 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.View;
@@ -38,7 +40,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,8 +54,6 @@ public class MainActivity extends FragmentActivity {
 	private ViewPager pager;
 	private PageIndicator indicator;
 	private DatabaseInterface db;
-	
-	private InventoryPage inventoryPage;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,9 +75,6 @@ public class MainActivity extends FragmentActivity {
 	protected void onPause() {
 		super.onPause();
 		
-		// Close inventory ingredient ListView's cursor
-		((SimpleCursorAdapter) ((ListView) inventoryPage.layout.getChildAt(0)).getAdapter()).getCursor().close();
-		
 		// Close database
 		db.close();
 	}
@@ -86,12 +82,6 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
-		// Filling inventory ingredient ListView
-		if (inventoryPage.layout != null) {
-			((SimpleCursorAdapter) ((ListView) inventoryPage.layout.getChildAt(0)).getAdapter()).getCursor().close();
-			inventoryPage.layout.addView(inventoryPage.getInventoryListViewFromDatabase(), 0);
-		}
 	}
 	
 	class SliderAdapter extends FragmentPagerAdapter implements TitleProvider {
@@ -99,10 +89,9 @@ public class MainActivity extends FragmentActivity {
 		
 		public SliderAdapter(FragmentManager fragmentManager) {
 			super(fragmentManager);
-			inventoryPage = new InventoryPage();
 			
 			pages.add(new MenuPage());
-			pages.add(inventoryPage);
+			pages.add(new InventoryPage());
 			pages.add(new RecipesPage());
 			pages.add(new ShoppingListPage());
 		}
@@ -147,12 +136,11 @@ public class MainActivity extends FragmentActivity {
 	}
 	final class InventoryPage extends Page {
 		public InventoryPage() { super(R.string.inventoryPage); }
-		public LinearLayout layout = null;
 		
 		@Override
 		public View getView() {
 			// Inflating view
-			layout = (LinearLayout) getLayoutInflater().inflate(R.layout.inventory_page, null);
+			final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.inventory_page, null);
 			layout.addView(getInventoryListViewFromDatabase(), 0);
 			
 			// Add ingredient's button
@@ -171,40 +159,44 @@ public class MainActivity extends FragmentActivity {
 		public View getInventoryListViewFromDatabase() {
 			// Get the data from the database
 			Cursor cursor = db.getInventory();
-			startManagingCursor(cursor);
+			ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String, Object>>();
+			String[] from = new String[] {
+					DatabaseInterface.INVENTORY.name,
+					DatabaseInterface.INVENTORY.quantity,
+					DatabaseInterface.INVENTORY.unit,
+					DatabaseInterface.INVENTORY.id
+			};
 			
-			// Check if there are any ingredients stored
-			if (cursor.getCount() <= 0) {
-				TextView text = new TextView(MainActivity.this);
-				text.setGravity(Gravity.CENTER);
-				text.setText(R.string.inventoryNoIngredients);
-				text.setTextSize(20 * getResources().getDisplayMetrics().density);
-				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-				text.setPadding(20, 20, 20, 20);
-				return text;
+			try {
+				// Check if there are any ingredients stored
+				if (cursor.getCount() > 0) inventoryList = new ArrayCursorAdapter(MainActivity.this, cursor, from).getList();
+				else {
+					TextView text = new TextView(MainActivity.this);
+					text.setGravity(Gravity.CENTER);
+					text.setText(R.string.inventoryNoIngredients);
+					text.setTextSize(20 * getResources().getDisplayMetrics().density);
+					text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+					text.setPadding(20, 20, 20, 20);
+					return text;
+				}
+			} finally {
+				cursor.close();
 			}
 			
 			// Inflate rows using SimpleCursorAdapter
 			ListView list = new ListView(MainActivity.this);
 			list.setScrollingCacheEnabled(false);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-			SimpleCursorAdapter adapter = new SimpleCursorAdapter(
-					MainActivity.this, R.layout.ingredient_list_item, cursor,
-					new String[] {
-							DatabaseInterface.INVENTORY.name,
-							DatabaseInterface.INVENTORY.quantity,
-							DatabaseInterface.INVENTORY.unit,
-							DatabaseInterface.INVENTORY.id
-					},
+			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.ingredient_list_item, from,
 					new int[] {
 							R.id.listIngredientName,
 							R.id.listIngredientQuantity,
 							R.id.listIngredientUnit,
 							R.id.listIngredientOptions
 					});
-			adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+			adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
 				@Override
-				public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+				public boolean setViewValue(View view, Object data, String textRepresentation) {
 					if (view.getId() != R.id.listIngredientOptions) return false;
 					view.setOnClickListener(new OnClickListener() {
 						@Override
@@ -286,7 +278,6 @@ public class MainActivity extends FragmentActivity {
 				
 				// Inflating auto-complete list
 				Cursor cursor = db.getIngredients();
-				startManagingCursor(cursor);
 				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
 				try {
 					try {
@@ -346,7 +337,6 @@ public class MainActivity extends FragmentActivity {
 					builder.setTitle(R.string.ingredientUpdate);
 					String ingredienName = ingredientView.getText().toString().trim();
 					cursor = db.getInventoryIngredient(ingredienName);
-					startManagingCursor(cursor);
 					String unitString;
 					double quantityDouble;
 					long expirationDateLong;
@@ -440,13 +430,19 @@ public class MainActivity extends FragmentActivity {
 	}
 	final class RecipesPage extends Page {
 		public RecipesPage() { super(R.string.recipesPage); }
+		public ListView list = null;
+		public ListView search = null;
+		public EditText searchField = null;
 		
 		@Override
 		public View getView() {
 			// Setting view
 			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.recipes_page, null);
-			ListView list = (ListView) layout.findViewById(R.id.recipesDishesList);
+			list = (ListView) layout.findViewById(R.id.recipesDishesList);
+			search = (ListView) layout.findViewById(R.id.recipesSearchList);
+			searchField = (EditText) layout.findViewById(R.id.recipesSearch);
 			list.setScrollingCacheEnabled(false);
+			search.setScrollingCacheEnabled(false);
 			
 			// Filling contents using SimpleAdapter
 			ArrayList<Map<String, Object>> dishes = new ArrayList<Map<String, Object>>();
@@ -459,16 +455,68 @@ public class MainActivity extends FragmentActivity {
 						.replaceFirst("\\?", Integer.toString(db.getRecipeCount(dishesList[i]))));
 				dishes.add(dishInfo);
 			}
-			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, dishes, R.layout.dishes_list_item,
+			list.setAdapter(new SimpleAdapter(MainActivity.this, dishes, R.layout.dishes_list_item,
 					new String[] { "image", "name", "other" },
-					new int[] { R.id.listDishImage, R.id.listDishName, R.id.listDishOther });
-			list.setAdapter(adapter);
+					new int[] { R.id.listDishImage, R.id.listDishName, R.id.listDishOther }));
 			list.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					startActivity(new Intent(MainActivity.this, RecipesListActivity.class)
 						.putExtra("dish", ((TextView) view.findViewById(R.id.listDishName)).getText().toString()));
 				}
+			});
+			
+			// Recipes search listener
+			searchField.addTextChangedListener(new TextWatcher() {
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count) {
+					LayoutParams show = new LayoutParams(LayoutParams.FILL_PARENT, 0, 1);
+					LayoutParams hidden = new LayoutParams(LayoutParams.FILL_PARENT, 0, 0);
+					int dp20 = (int) (20 * getResources().getDisplayMetrics().density);
+					show.setMargins(dp20, dp20, dp20, dp20);
+					hidden.setMargins(0, 0, 0, 0);
+					if (s.toString().trim().length() == 0) {
+						list.setLayoutParams(show);
+						search.setLayoutParams(hidden);
+						list.setVisibility(View.VISIBLE);
+						search.setVisibility(View.INVISIBLE);
+						return;
+					}
+					list.setLayoutParams(hidden);
+					search.setLayoutParams(show);
+					list.setVisibility(View.INVISIBLE);
+					search.setVisibility(View.VISIBLE);
+					
+					Cursor cursor = db.searchRecipe(((EditText) ((LinearLayout)
+							search.getParent()).findViewById(R.id.recipesSearch)).getText().toString().trim());
+					ArrayList<Map<String, Object>> recipesList = new ArrayList<Map<String, Object>>();
+					String[] from = new String[] {
+							DatabaseInterface.RECIPES.id,
+							DatabaseInterface.RECIPES.name,
+							DatabaseInterface.RECIPES.readyTime
+					};
+					try { recipesList = new ArrayCursorAdapter(MainActivity.this, cursor, from).getList(); }
+					finally { cursor.close(); }
+					SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, recipesList, R.layout.recipes_list_item, from,
+							new int[] {
+								R.id.recipesListId,
+								R.id.recipesListName,
+								R.id.recipesListOther
+						});
+					adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
+						@Override
+						public boolean setViewValue(View view, Object data, String textRepresentation) {
+							if (view.getId() != R.id.recipesListOther) return false;
+							((TextView) view).setText(getString(R.string.recipeReadyIn).replace("?",
+									RecipeActivity.secondsToTime(Integer.parseInt(data.toString()) * 60)));
+							return true;
+						}
+					});
+					search.setAdapter(adapter);
+				}
+				// Other methods
+				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+				@Override public void afterTextChanged(Editable s) { }
 			});
 			
 			return layout;

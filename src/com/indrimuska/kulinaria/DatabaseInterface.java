@@ -412,8 +412,13 @@ public class DatabaseInterface {
 	// Get recipe informations
 	public Cursor getRecipe(int recipeId) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(RECIPES.TABLE, null, RECIPES.id+"=?",
-				new String[] { Integer.toString(recipeId) }, null, null, null);
+		return db.query(RECIPES.TABLE, null, RECIPES.id+"=?", new String[] { Integer.toString(recipeId) }, null, null, null);
+	}
+	
+	public Cursor searchRecipe(String name) {
+		Log.d(TAG, "searchRecipe: " + name);
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(RECIPES.TABLE, null, RECIPES.name+" like ?", new String[] { '%'+name+'%' }, null, null, null);
 	}
 	
 	// Convert recipe-ingredient informations to ContentValues

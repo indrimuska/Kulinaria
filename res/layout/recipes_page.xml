@@ -10,8 +10,14 @@
 		android:layout_height="0dp"
 		android:layout_weight="1"
 		android:layout_margin="20dp"
-		android:orientation="vertical">
-	</ListView>
+		android:orientation="vertical" />
+	
+	<ListView
+		android:id="@+id/recipesSearchList"
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:orientation="vertical"
+		android:visibility="invisible" />
 	
 	<ImageView
 		android:layout_width="fill_parent"
@@ -36,6 +42,7 @@
 			android:contentDescription="@null"
 			android:src="@drawable/ic_btn_search" />
 		<EditText
+			android:id="@+id/recipesSearch"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:hint="@string/recipesSearch"
