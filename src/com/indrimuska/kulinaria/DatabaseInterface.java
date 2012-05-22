@@ -359,6 +359,22 @@ public class DatabaseInterface {
 		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
 	}
 	
+	// Get the name of an ingredient
+	public String getIngredientName(int ingredientId) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		try {
+			Cursor cursor = db.query(INGREDIENTS.TABLE, new String[] { INGREDIENTS.name },
+					INGREDIENTS.id+"=?", new String[] { Integer.toString(ingredientId) }, null, null, null);
+			try {
+				return cursor.moveToFirst() ? cursor.getString(0) : null;
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
+	}
+	
 	// Convert recipe informations to ContentValues
 	private ContentValues recipeContentValues(String name, String dish, int preparationTime, int readyTime,
 			int servings, String description) {
@@ -393,6 +409,13 @@ public class DatabaseInterface {
 		return db.query(RECIPES.TABLE, null, RECIPES.dish+"=?", new String[] { dish }, null, null, RECIPES.ORDER_BY);
 	}
 	
+	// Get recipe informations
+	public Cursor getRecipe(int recipeId) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(RECIPES.TABLE, null, RECIPES.id+"=?",
+				new String[] { Integer.toString(recipeId) }, null, null, null);
+	}
+	
 	// Convert recipe-ingredient informations to ContentValues
 	private ContentValues recipeIngredientContentValues(int recipeId, int ingredientId, int ingredientNeed, String unit) {
 		ContentValues values = new ContentValues();
@@ -401,5 +424,32 @@ public class DatabaseInterface {
 		values.put(RECIPES_INGREDIENTS.ingredientNeed, ingredientNeed);
 		values.put(RECIPES_INGREDIENTS.unit, unit);
 		return values;
+	}
+	
+	// Get all the ingredients of a recipe
+	public ArrayList<Map<String, Object>> getRecipeIngredients(int recipeId) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		try {
+			ArrayList<Map<String, Object>> recipeIngredient = new ArrayList<Map<String, Object>>();
+			Cursor cursor = db.query(RECIPES_INGREDIENTS.TABLE, null, RECIPES_INGREDIENTS.recipeId+"=?",
+					new String[] { Integer.toString(recipeId) }, null, null, null);
+			try {
+				while (cursor.moveToNext()) {
+					Map<String, Object> ingredient = new HashMap<String, Object>();
+					ingredient.put(RECIPES_INGREDIENTS.ingredientId,
+							cursor.getInt(cursor.getColumnIndex(RECIPES_INGREDIENTS.ingredientId)));
+					ingredient.put(RECIPES_INGREDIENTS.ingredientNeed,
+							cursor.getInt(cursor.getColumnIndex(RECIPES_INGREDIENTS.ingredientNeed)));
+					ingredient.put(RECIPES_INGREDIENTS.unit,
+							cursor.getString(cursor.getColumnIndex(RECIPES_INGREDIENTS.unit)));
+					recipeIngredient.add(ingredient);
+				}
+				return recipeIngredient;
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
 	}
 }

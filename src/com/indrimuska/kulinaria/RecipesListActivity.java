@@ -1,9 +1,12 @@
 package com.indrimuska.kulinaria;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -37,10 +40,9 @@ public class RecipesListActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-
+		
 		// Close recipes ListView's cursor
-		if (list != null)
-			((SimpleCursorAdapter) list.getAdapter()).getCursor().close();
+		if (list != null) ((SimpleCursorAdapter) list.getAdapter()).getCursor().close();
 		
 		// Close database
 		db.close();
@@ -67,8 +69,9 @@ public class RecipesListActivity extends Activity {
 			LinearLayout linearLayout = (LinearLayout) list.getParent();
 			linearLayout.removeViewAt(1);
 			linearLayout.addView(noRecipes);
+			cursor.close();
 			list = null;
-		} else
+		} else {
 			list.setAdapter(new SimpleCursorAdapter(this, R.layout.recipes_list_item, cursor, new String[] {
 					DatabaseInterface.RECIPES.name,
 					DatabaseInterface.RECIPES.dish
@@ -76,5 +79,12 @@ public class RecipesListActivity extends Activity {
 					R.id.recipesListName,
 					R.id.recipesListOther
 			}));
+			list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					startActivity(new Intent(RecipesListActivity.this, RecipeActivity.class).putExtra("recipeId", 1));
+				}
+			});
+		}
 	}
 }

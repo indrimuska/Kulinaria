@@ -455,7 +455,7 @@ public class MainActivity extends FragmentActivity {
 				Map<String, Object> dishInfo = new HashMap<String, Object>();
 				dishInfo.put("image", getResources().getIdentifier("drawable/dishes_" + i, "drawable", getPackageName()));
 				dishInfo.put("name", dishesList[i]);
-				dishInfo.put("other", getString(R.string.recipeNumber)
+				dishInfo.put("other", getString(R.string.recipesNumber)
 						.replaceFirst("\\?", Integer.toString(db.getRecipeCount(dishesList[i]))));
 				dishes.add(dishInfo);
 			}

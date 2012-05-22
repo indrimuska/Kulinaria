@@ -24,6 +24,10 @@
 			android:label="@string/recipesPage"
 			android:theme="@android:style/Theme.Black.NoTitleBar">
 		</activity>
+		<activity
+			android:name=".RecipeActivity"
+			android:theme="@android:style/Theme.Light.NoTitleBar">
+		</activity>
 		
 	</application>
 
