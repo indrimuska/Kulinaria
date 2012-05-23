@@ -445,7 +445,7 @@ public class DatabaseInterface {
 		return db.query(RECIPES.TABLE, null, RECIPES.id+"=?", new String[] { Integer.toString(recipeId) }, null, null, null);
 	}
 	
-	// Search one o more recipes in database
+	// Search one or more recipes in database
 	public Cursor searchRecipe(String name) {
 		Log.d(TAG, "searchRecipe: " + name);
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -466,21 +466,14 @@ public class DatabaseInterface {
 	public ArrayList<Map<String, Object>> getRecipeIngredients(int recipeId) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		try {
-			ArrayList<Map<String, Object>> recipeIngredient = new ArrayList<Map<String, Object>>();
 			Cursor cursor = db.query(RECIPES_INGREDIENTS.TABLE, null, RECIPES_INGREDIENTS.recipeId+"=?",
 					new String[] { Integer.toString(recipeId) }, null, null, null);
 			try {
-				while (cursor.moveToNext()) {
-					Map<String, Object> ingredient = new HashMap<String, Object>();
-					ingredient.put(RECIPES_INGREDIENTS.ingredientId,
-							cursor.getInt(cursor.getColumnIndex(RECIPES_INGREDIENTS.ingredientId)));
-					ingredient.put(RECIPES_INGREDIENTS.ingredientNeed,
-							cursor.getInt(cursor.getColumnIndex(RECIPES_INGREDIENTS.ingredientNeed)));
-					ingredient.put(RECIPES_INGREDIENTS.unit,
-							cursor.getString(cursor.getColumnIndex(RECIPES_INGREDIENTS.unit)));
-					recipeIngredient.add(ingredient);
-				}
-				return recipeIngredient;
+				return cursorToMapArray(cursor, new String[] {
+						RECIPES_INGREDIENTS.ingredientId,
+						RECIPES_INGREDIENTS.ingredientNeed,
+						RECIPES_INGREDIENTS.unit
+				});
 			} finally {
 				cursor.close();
 			}
@@ -488,6 +481,11 @@ public class DatabaseInterface {
 			db.close();
 		}
 	}
-	
-	
+
+	// Get the menu chosen for a meal
+	public Cursor getMenu(String meal) {
+		Log.d(TAG, "getMenu: " + meal);
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		return db.query(MENU.TABLE, null, MENU.meal+"=?", new String[] { meal }, null, null, null);
+	}
 }

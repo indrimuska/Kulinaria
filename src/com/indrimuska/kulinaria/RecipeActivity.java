@@ -34,7 +34,6 @@ public class RecipeActivity extends Activity {
 		});
 		Cursor cursor = db.getRecipe(recipeId);
 		try {
-			startManagingCursor(cursor);
 			cursor.moveToFirst();
 			((TextView) findViewById(R.id.recipeName)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.name)));
 			((TextView) findViewById(R.id.recipeDish)).setText(cursor.getString(cursor.getColumnIndex(RECIPES.dish)));
@@ -52,7 +51,7 @@ public class RecipeActivity extends Activity {
 		for (Map<String, Object> ingredient : recipeIngredients)
 			ingredients += "\n" + ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString() + " " +
 					ingredient.get(RECIPES_INGREDIENTS.unit) + " " +
-					db.getIngredientName((Integer) ingredient.get(RECIPES_INGREDIENTS.ingredientId));
+					db.getIngredientName(new Integer(ingredient.get(RECIPES_INGREDIENTS.ingredientId).toString()));
 		((TextView) findViewById(R.id.recipeIngredients)).setText(ingredients.substring(1));
 	}
 	

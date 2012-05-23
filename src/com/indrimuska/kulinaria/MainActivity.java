@@ -136,6 +136,8 @@ public class MainActivity extends FragmentActivity {
 			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(new Date()));
 			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
 					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(new Date()));
+			
+			// Menu grouped by meals
 			ExpandableListView menuMealsList = (ExpandableListView) layout.findViewById(R.id.menuMealsList);
 			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
 				private String[] groups = getResources().getStringArray(R.array.meals);
@@ -535,7 +537,7 @@ public class MainActivity extends FragmentActivity {
 								R.id.recipesListId,
 								R.id.recipesListName,
 								R.id.recipesListOther
-						});
+							});
 					adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
 						@Override
 						public boolean setViewValue(View view, Object data, String textRepresentation) {
@@ -550,7 +552,8 @@ public class MainActivity extends FragmentActivity {
 						@Override
 						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 							startActivity(new Intent(MainActivity.this, RecipeActivity.class)
-							.putExtra("recipeId", Integer.parseInt(((TextView) view.findViewById(R.id.recipesListId)).getText().toString())));
+								.putExtra("recipeId", Integer.parseInt(
+										((TextView) view.findViewById(R.id.recipesListId)).getText().toString())));
 						}
 					});
 				}
