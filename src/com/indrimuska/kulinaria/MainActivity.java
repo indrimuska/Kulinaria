@@ -18,6 +18,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -28,6 +29,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -501,7 +503,20 @@ public class MainActivity extends FragmentActivity {
 				}
 			});
 			
-			// Recipes search listener
+			// Recipes search listeners
+			searchField.setOnTouchListener(new View.OnTouchListener() {
+				@Override
+				public boolean onTouch(View view, MotionEvent event) {
+					Drawable clearButton = searchField.getCompoundDrawables()[2];
+					if (clearButton != null && event.getAction() == MotionEvent.ACTION_DOWN) {
+						if (event.getX() > view.getWidth() - view.getPaddingRight() - clearButton.getIntrinsicWidth()) {
+							searchField.setText("");
+							searchField.setCompoundDrawables(null, null, null, null);
+				        }
+					}
+					return false;
+				}
+			});
 			searchField.addTextChangedListener(new TextWatcher() {
 				@Override
 				public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -521,6 +536,9 @@ public class MainActivity extends FragmentActivity {
 					search.setLayoutParams(show);
 					list.setVisibility(View.INVISIBLE);
 					search.setVisibility(View.VISIBLE);
+					Drawable clearButton = getResources().getDrawable(R.drawable.ic_clear_holo_light);
+					clearButton.setBounds(0, 0, clearButton.getIntrinsicWidth(), clearButton.getIntrinsicHeight());
+					searchField.setCompoundDrawables(null, null, clearButton, null);
 					
 					Cursor cursor = db.searchRecipe(((EditText) ((LinearLayout)
 							search.getParent()).findViewById(R.id.recipesSearch)).getText().toString().trim());
