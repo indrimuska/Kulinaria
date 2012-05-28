@@ -3,7 +3,8 @@
 	<color name="light_blue">#ff0099cc</color>
 	<color name="light_green">#2699cc00</color>
 	<color name="bottom_light">#dcdcdc</color>
-	<color name="bottom_ligh_text">#7a7a7a</color>
+	<color name="bottom_light_text">#7a7a7a</color>
 	<color name="default_background">#E7EBF2</color>
 	<color name="text_second_line">#ffb2b2b2</color>
+	<color name="lighter_gray">#057a7a7a</color>
 </resources>

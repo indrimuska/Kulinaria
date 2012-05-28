@@ -38,7 +38,7 @@
 					android:layout_height="wrap_content"
 					android:text="@string/menuTodaysMenu"
 					android:textStyle="bold"
-					android:textColor="@color/bottom_ligh_text"
+					android:textColor="@color/bottom_light_text"
 					android:textAppearance="?android:attr/textAppearanceLarge" />
 				
 				<TextView
@@ -65,7 +65,8 @@
 			android:id="@+id/menuMealsList"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:cacheColorHint="@android:color/transparent" />
+			android:cacheColorHint="@android:color/transparent"
+			android:groupIndicator="@drawable/expander_group_holo_light" />
 		
 	</LinearLayout>
 	
@@ -82,7 +83,7 @@
 		android:layout_height="wrap_content"
 		android:gravity="left|center_vertical"
 		android:text="@null"
-		android:textColor="@color/bottom_ligh_text"
+		android:textColor="@color/bottom_light_text"
 		android:textSize="18dp"
 		android:paddingTop="9dp"
 		android:paddingLeft="10dp"

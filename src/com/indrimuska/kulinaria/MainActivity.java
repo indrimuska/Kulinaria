@@ -139,32 +139,42 @@ public class MainActivity extends FragmentActivity {
 			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
 					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(new Date()));
 			
-			// Menu grouped by meals
+			// Menu grouped by meal
+			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
+			for (String meal : getResources().getStringArray(R.array.meals))
+				menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal));
 			ExpandableListView menuMealsList = (ExpandableListView) layout.findViewById(R.id.menuMealsList);
 			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
 				private String[] groups = getResources().getStringArray(R.array.meals);
-				private String[][] children = { {}, {}, {}, {} };
 				
-				@Override public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+				@Override
+				public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
 					TextView meal = new TextView(MainActivity.this);
 					meal.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 					meal.setText(getGroup(groupPosition).toString());
 					meal.setPadding(60, 20, 20, 20);
 					return meal;
 				}
-				@Override public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-					TextView textView = new TextView(MainActivity.this);
-					textView.setText(getChild(groupPosition, childPosition).toString());
-					textView.setPadding(60, 10, 20, 10);
-					return textView;
+				@Override
+				public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+					LinearLayout recipe = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_list_item, null);
+					TextView recipeName = (TextView) recipe.findViewById(R.id.menuRecipeName);
+					Cursor cursor = db.getRecipe(new Integer(getChild(groupPosition, childPosition).toString()));
+					try {
+						cursor.moveToFirst();
+						recipeName.setText(cursor.getString(cursor.getColumnIndex(DatabaseInterface.RECIPES.name)));
+					} finally {
+						cursor.close();
+					}
+					return recipe;
 				}
 				// Other methods
 				@Override public Object getGroup(int groupPosition) { return groups[groupPosition]; }
 				@Override public long getGroupId(int groupPosition) { return groupPosition; }
 				@Override public int getGroupCount() { return groups.length; }
-				@Override public Object getChild(int groupPosition, int childPosition) { return children[groupPosition][childPosition]; }
+				@Override public Object getChild(int groupPosition, int childPosition) { return menuByMeal.get(groupPosition).get(childPosition).toString(); }
 				@Override public long getChildId(int groupPosition, int childPosition) { return childPosition; }
-				@Override public int getChildrenCount(int groupPosition) { return children[groupPosition].length; }
+				@Override public int getChildrenCount(int groupPosition) { return menuByMeal.get(groupPosition).size(); }
 				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
 				@Override public boolean hasStableIds() { return true; }
 			});

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="horizontal"
+	android:gravity="center_vertical"
+	android:paddingLeft="40dp"
+	android:background="@color/lighter_gray">
+	
+	<TextView
+		android:id="@+id/menuRecipeName"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:text="@null"
+		android:paddingTop="10dp"
+		android:paddingBottom="10dp" />
+	
+	<ImageButton
+		android:id="@+id/menuRecipeImage"
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:layout_gravity="right|center_vertical"
+		android:contentDescription="@string/ingredientOptions"
+		android:src="@drawable/btn_options_light"
+		android:background="@drawable/btn_options_light_background"
+		android:scaleType="fitXY"
+		android:padding="5dp" />
+	
+</LinearLayout>

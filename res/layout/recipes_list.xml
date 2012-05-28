@@ -51,7 +51,7 @@
 		android:layout_height="wrap_content"
 		android:gravity="left|center_vertical"
 		android:text="@string/recipesBack"
-		android:textColor="@color/bottom_ligh_text"
+		android:textColor="@color/bottom_light_text"
 		android:textSize="18dp"
 		android:paddingTop="13dp"
 		android:paddingLeft="10dp"

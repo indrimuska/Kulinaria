@@ -252,6 +252,9 @@ public class DatabaseInterface {
 	public DatabaseInterface(Context context) {
 		dbHelper = new DbHelper(context);
 		Log.i(TAG, "Initialized data");
+
+		//SQLiteDatabase db = dbHelper.getReadableDatabase();
+		//db.execSQL("insert into Menu values ('2012-05-28', 'Breakfast', 1)");
 	}
 	
 	public void close() {
@@ -481,11 +484,23 @@ public class DatabaseInterface {
 			db.close();
 		}
 	}
-
+	
 	// Get the menu chosen for a meal
-	public Cursor getMenu(String meal) {
+	public ArrayList<Integer> getMenu(String date, String meal) {
 		Log.d(TAG, "getMenu: " + meal);
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(MENU.TABLE, null, MENU.meal+"=?", new String[] { meal }, null, null, null);
+		try {
+			Cursor cursor = db.query(MENU.TABLE, new String[] { MENU.recipeId },
+					MENU.date+"=? and "+MENU.meal+"=?", new String[] { date, meal }, null, null, null);
+			try {
+				ArrayList<Integer> recipesId = new ArrayList<Integer>();
+				while (cursor.moveToNext()) recipesId.add(cursor.getInt(cursor.getColumnIndex(MENU.recipeId)));
+				return recipesId;
+			} finally {
+				cursor.close();
+			}
+		} finally {
+			db.close();
+		}
 	}
 }

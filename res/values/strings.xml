@@ -5,7 +5,7 @@
 	
 	<string name="language">en</string>
 	<string name="simpleDateFormat">dd/MM/yyyy</string>
-	<string name="extendedDateFormat">cccc, dd MMMM yyyy</string>
+	<string name="extendedDateFormat">EEEE, dd MMMM yyyy</string>
 	
 	<string name="menuPage">Menu</string>
 	<string name="menuToday">Today</string>
