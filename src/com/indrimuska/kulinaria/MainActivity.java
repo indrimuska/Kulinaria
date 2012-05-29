@@ -138,86 +138,10 @@ public class MainActivity extends FragmentActivity {
 			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(new Date()));
 			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
 					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(new Date()));
+			final ExpandableListView menuMealsList = (ExpandableListView) layout.findViewById(R.id.menuMealsList);
 			
-			// Menu grouped by meal
-			final String[] meals = getResources().getStringArray(R.array.meals);
-			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
-			for (String meal : getResources().getStringArray(R.array.meals))
-				menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal));
-			ExpandableListView menuMealsList = (ExpandableListView) layout.findViewById(R.id.menuMealsList);
-			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
-				@Override
-				public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-					TextView meal = new TextView(MainActivity.this);
-					meal.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-					meal.setText(getGroup(groupPosition).toString());
-					meal.setPadding(60, 20, 20, 20);
-					return meal;
-				}
-				@Override
-				public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-					final String meal = getGroup(groupPosition).toString();
-					final int recipeId = new Integer(getChild(groupPosition, childPosition).toString());
-					LinearLayout recipe = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_list_item, null);
-					TextView recipeName = (TextView) recipe.findViewById(R.id.menuDishName);
-					Cursor cursor = db.getRecipe(recipeId);
-					try {
-						cursor.moveToFirst();
-						recipeName.setText(cursor.getString(cursor.getColumnIndex(DatabaseInterface.RECIPES.name)));
-					} finally {
-						cursor.close();
-					}
-					recipe.findViewById(R.id.menuDishButton).setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(final View view) {
-							// Create dialog menu
-							new AlertDialog.Builder(MainActivity.this)
-								.setItems(new String[] {
-										getString(R.string.menuDishDelete)
-								}, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										final LinearLayout layout = (LinearLayout) view.getParent();
-										final TextView name = (TextView) layout.findViewById(R.id.menuDishName);
-										switch (which) {
-										case 0:
-											// Delete recipe
-											new AlertDialog.Builder(MainActivity.this)
-												.setTitle(R.string.menuDishDelete)
-												.setMessage(R.string.menuDishDeleteQuestion)
-												.setNegativeButton(R.string.buttonCancel, null)
-												.setPositiveButton(R.string.buttonDelete, new AlertDialog.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														String dishName = name.getText().toString().trim();
-														db.deleteTodayMenuDish(meal, recipeId);
-														String dishDelete = getString(R.string.menuDishDeleted)
-																.replaceFirst("\\?", dishName);
-														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_LONG).show();
-														// Updating the menu page
-														/*LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
-														linearLayout.removeViewAt(0);
-														linearLayout.addView(getInventoryListViewFromDatabase(), 0);*/
-													}
-												}).show();
-											break;
-										}
-									}
-								}).show();
-						}
-					});
-					return recipe;
-				}
-				// Other methods
-				@Override public Object getGroup(int groupPosition) { return meals[groupPosition]; }
-				@Override public long getGroupId(int groupPosition) { return groupPosition; }
-				@Override public int getGroupCount() { return meals.length; }
-				@Override public Object getChild(int groupPosition, int childPosition) { return menuByMeal.get(groupPosition).get(childPosition).toString(); }
-				@Override public long getChildId(int groupPosition, int childPosition) { return childPosition; }
-				@Override public int getChildrenCount(int groupPosition) { return menuByMeal.get(groupPosition).size(); }
-				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
-				@Override public boolean hasStableIds() { return true; }
-			});
+			// Filling menu
+			inflateMenuMealsList(menuMealsList);
 			
 			// Add dish button
 			((Button) layout.findViewById(R.id.menuAdd)).setOnClickListener(new OnClickListener() {
@@ -292,11 +216,17 @@ public class MainActivity extends FragmentActivity {
 									.replaceFirst("\\?", recipe.getSelectedItem().toString())
 									.replaceFirst("\\?", meal.getSelectedItem().toString());
 							Toast.makeText(MainActivity.this, menuDishAdded, Toast.LENGTH_LONG).show();
+							inflateMenuMealsList(menuMealsList);
 						}
 					});
 					builder.show();
 				}
+				
 				private ArrayList<Integer> recipesToExclude() {
+					String[] meals = getResources().getStringArray(R.array.meals);
+					ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
+					for (String meal : getResources().getStringArray(R.array.meals))
+						menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal));
 					ArrayList<Integer> recipesToExclude = new ArrayList<Integer>();
 					for (int i = 0; i < menuByMeal.size(); i++)
 						if (meals[i].equals(meal.getSelectedItem().toString()))
@@ -305,6 +235,84 @@ public class MainActivity extends FragmentActivity {
 				}
 			});
 			return layout;
+		}
+		
+		private void inflateMenuMealsList(final ExpandableListView menuMealsList) {
+			final String[] meals = getResources().getStringArray(R.array.meals);
+			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
+			for (String meal : getResources().getStringArray(R.array.meals))
+				menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal));
+			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
+				@Override
+				public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+					TextView meal = new TextView(MainActivity.this);
+					meal.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+					meal.setText(getGroup(groupPosition).toString());
+					meal.setPadding(60, 20, 20, 20);
+					return meal;
+				}
+				@Override
+				public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+					final String meal = getGroup(groupPosition).toString();
+					final int recipeId = new Integer(getChild(groupPosition, childPosition).toString());
+					LinearLayout recipe = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_list_item, null);
+					TextView recipeName = (TextView) recipe.findViewById(R.id.menuDishName);
+					Cursor cursor = db.getRecipe(recipeId);
+					try {
+						cursor.moveToFirst();
+						recipeName.setText(cursor.getString(cursor.getColumnIndex(DatabaseInterface.RECIPES.name)));
+					} finally {
+						cursor.close();
+					}
+					recipe.findViewById(R.id.menuDishButton).setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(final View view) {
+							// Create dialog menu
+							new AlertDialog.Builder(MainActivity.this)
+								.setItems(new String[] {
+										getString(R.string.menuDishDelete)
+								}, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										final LinearLayout layout = (LinearLayout) view.getParent();
+										final TextView name = (TextView) layout.findViewById(R.id.menuDishName);
+										switch (which) {
+										case 0:
+											// Delete recipe
+											new AlertDialog.Builder(MainActivity.this)
+												.setTitle(R.string.menuDishDelete)
+												.setMessage(R.string.menuDishDeleteQuestion)
+												.setNegativeButton(R.string.buttonCancel, null)
+												.setPositiveButton(R.string.buttonDelete, new AlertDialog.OnClickListener() {
+													@Override
+													public void onClick(DialogInterface dialog, int which) {
+														String dishName = name.getText().toString().trim();
+														db.deleteTodayMenuDish(meal, recipeId);
+														String dishDelete = getString(R.string.menuDishDeleted)
+																.replaceFirst("\\?", dishName);
+														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_LONG).show();
+														// Updating the menu page
+														inflateMenuMealsList(menuMealsList);
+													}
+												}).show();
+											break;
+										}
+									}
+								}).show();
+						}
+					});
+					return recipe;
+				}
+				// Other methods
+				@Override public Object getGroup(int groupPosition) { return meals[groupPosition]; }
+				@Override public long getGroupId(int groupPosition) { return groupPosition; }
+				@Override public int getGroupCount() { return meals.length; }
+				@Override public Object getChild(int groupPosition, int childPosition) { return menuByMeal.get(groupPosition).get(childPosition).toString(); }
+				@Override public long getChildId(int groupPosition, int childPosition) { return childPosition; }
+				@Override public int getChildrenCount(int groupPosition) { return menuByMeal.get(groupPosition).size(); }
+				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
+				@Override public boolean hasStableIds() { return true; }
+			});
 		}
 	}
 	final class InventoryPage extends Page {
