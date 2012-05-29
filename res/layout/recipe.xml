@@ -17,7 +17,7 @@
 			android:layout_height="wrap_content"
 			android:layout_centerVertical="true"
 			android:contentDescription="@null"
-			android:padding="8dp"
+			android:padding="15dp"
 			android:scaleType="fitXY"
 			android:src="@drawable/ic_ab_back_holo_light" />
 

@@ -13,7 +13,7 @@
 	
 	<string name="menuPage">Menu</string>
 	<string name="menuToday">Today</string>
-	<string name="menuMenu">Menu</string>
+	<string name="menuDailyMenu">Daily menu</string>
 	<string name="menuTodaysMenu">Today\'s menu</string>
 	<string name="menuDate">Date</string>
 	<string name="menuDish">Dish</string>

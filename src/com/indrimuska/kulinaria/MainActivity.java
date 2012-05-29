@@ -243,14 +243,14 @@ public class MainActivity extends FragmentActivity {
 		}
 		
 		private void inflateView(LinearLayout layout) {
-			String menuString = day.getDate() == new Date().getDate()
+			String menuDailyMenu = day.getDate() == new Date().getDate()
 					? getString(R.string.menuTodaysMenu)
-					: getString(R.string.menuMenu);
+					: getString(R.string.menuDailyMenu);
 			
 			// Set day informations
 			Locale.setDefault(new Locale(getString(R.string.language)));
 			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(day));
-			((TextView) layout.findViewById(R.id.menuTodaysMenu)).setText(menuString);
+			((TextView) layout.findViewById(R.id.menuTodaysMenu)).setText(menuDailyMenu);
 			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
 					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(day));
 			
@@ -334,6 +334,7 @@ public class MainActivity extends FragmentActivity {
 				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
 				@Override public boolean hasStableIds() { return true; }
 			});
+			for (int i = 0; i < meals.length; i++) menuMealsList.expandGroup(i);
 		}
 	}
 	final class InventoryPage extends Page {
