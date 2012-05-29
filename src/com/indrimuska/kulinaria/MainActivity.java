@@ -44,6 +44,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -130,20 +131,16 @@ public class MainActivity extends FragmentActivity {
 	// Slider's pages implementation
 	final class MenuPage extends Page {
 		public MenuPage() { super(R.string.menuPage); }
+
+		// Date of the menu
+		private Date day = new Date();
 		
 		@Override
 		public View getView() {
-			Locale.setDefault(new Locale(getString(R.string.language)));
-			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_page, null);
-			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(new Date()));
-			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
-					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(new Date()));
-			final ExpandableListView menuMealsList = (ExpandableListView) layout.findViewById(R.id.menuMealsList);
+			final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_page, null);
+			inflateView(layout);
 			
-			// Filling menu
-			inflateMenuMealsList(menuMealsList);
-			
-			// Add dish button
+			// Add dish button listener
 			((Button) layout.findViewById(R.id.menuAdd)).setOnClickListener(new OnClickListener() {
 				private Spinner meal, dish, recipe;
 				
@@ -209,14 +206,14 @@ public class MainActivity extends FragmentActivity {
 								cursor.close();
 							}
 							db.addMenuDish(
-									new SimpleDateFormat("yyyy-MM-dd").format(new Date()),
+									new SimpleDateFormat("yyyy-MM-dd").format(day),
 									meal.getSelectedItem().toString(),
 									recipesId.get(recipe.getSelectedItemPosition()));
 							String menuDishAdded = getString(R.string.menuDishAdded)
 									.replaceFirst("\\?", recipe.getSelectedItem().toString())
 									.replaceFirst("\\?", meal.getSelectedItem().toString());
 							Toast.makeText(MainActivity.this, menuDishAdded, Toast.LENGTH_LONG).show();
-							inflateMenuMealsList(menuMealsList);
+							inflateMenuMealsList((ExpandableListView) layout.findViewById(R.id.menuMealsList));
 						}
 					});
 					builder.show();
@@ -226,7 +223,7 @@ public class MainActivity extends FragmentActivity {
 					String[] meals = getResources().getStringArray(R.array.meals);
 					ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
 					for (String meal : getResources().getStringArray(R.array.meals))
-						menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal));
+						menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(day), meal));
 					ArrayList<Integer> recipesToExclude = new ArrayList<Integer>();
 					for (int i = 0; i < menuByMeal.size(); i++)
 						if (meals[i].equals(meal.getSelectedItem().toString()))
@@ -234,14 +231,38 @@ public class MainActivity extends FragmentActivity {
 					return recipesToExclude;
 				}
 			});
+			
+			// Change data buttons
+			((ImageView) layout.findViewById(R.id.menuDayBefore)).setOnClickListener(new OnClickListener() {
+				@Override public void onClick(View view) { day.setDate(day.getDate()-1); inflateView(layout); }
+			});
+			((ImageView) layout.findViewById(R.id.menuDayAfter)).setOnClickListener(new OnClickListener() {
+				@Override public void onClick(View view) { day.setDate(day.getDate()+1); inflateView(layout); }
+			});
 			return layout;
+		}
+		
+		private void inflateView(LinearLayout layout) {
+			String menuString = day.getDate() == new Date().getDate()
+					? getString(R.string.menuTodaysMenu)
+					: getString(R.string.menuMenu);
+			
+			// Set day informations
+			Locale.setDefault(new Locale(getString(R.string.language)));
+			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(day));
+			((TextView) layout.findViewById(R.id.menuTodaysMenu)).setText(menuString);
+			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
+					new SimpleDateFormat(getString(R.string.extendedDateFormat), Locale.getDefault()).format(day));
+			
+			// Fill menu
+			inflateMenuMealsList((ExpandableListView) layout.findViewById(R.id.menuMealsList));
 		}
 		
 		private void inflateMenuMealsList(final ExpandableListView menuMealsList) {
 			final String[] meals = getResources().getStringArray(R.array.meals);
 			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
 			for (String meal : getResources().getStringArray(R.array.meals))
-				menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal));
+				menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(day), meal));
 			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
 				@Override
 				public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {

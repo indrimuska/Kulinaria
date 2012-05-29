@@ -34,9 +34,10 @@
 				android:orientation="vertical">
 				
 				<TextView
+					android:id="@+id/menuTodaysMenu"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:text="@string/menuTodaysMenu"
+					android:text="@null"
 					android:textStyle="bold"
 					android:textColor="@color/bottom_light_text"
 					android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -105,7 +106,7 @@
 			android:layout_height="wrap_content"
 			android:layout_centerVertical="true"
 			android:layout_alignParentRight="true"
-			android:padding="8dp"
+			android:padding="15dp"
 			android:contentDescription="@null"
 			android:src="@drawable/ic_ab_back_holo_light_flip" />
 		<ImageView
@@ -114,7 +115,7 @@
 			android:layout_height="wrap_content"
 			android:layout_centerVertical="true"
 			android:layout_toLeftOf="@id/menuDayAfter"
-			android:padding="8dp"
+			android:padding="15dp"
 			android:contentDescription="@null"
 			android:src="@drawable/ic_ab_back_holo_light" />
 	</RelativeLayout>
