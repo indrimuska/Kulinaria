@@ -26,7 +26,12 @@
 		<row><name>Strong coffee</name></row>
 		<row><name>Ladyfingers</name></row>
 		<row><name>Unsweetened cocoa</name></row>
-		<row><name>unsweetened cocoa powder</name></row>
+		<row><name>Unsweetened cocoa powder</name></row>
+		<row><name>Limeade</name></row>
+		<row><name>Frozen limeade</name></row>
+		<row><name>Frozen limeade concentrate</name></row>
+		<row><name>Tequila</name></row>
+		<row><name>Triple sec</name></row>
 	</table>
 	<table name="Recipes">
 		<row>
@@ -36,6 +41,14 @@
 			<readyTime>210</readyTime>
 			<servings>6</servings>
 			<description>In a medium bowl beat together the egg yolks and 1/3 cup of sugar. Using a wooden spoon stir in mascarpone cheese, beaten egg whites, cream and kirschwasser; stir until smooth. Set aside. Dissolve remaining 2/3 cup sugar in coffee. Quickly, to avoid complete saturation, dip ends of ladyfingers in coffee mixture. Place ladyfingers in a single layer in a 9 x 13 inch glass baking dish. Spread a layer of cheese mixture over the ladyfingers; repeat layers, ending with cheese mixture. Cover and refrigerate for several hours. Sprinkle with cocoa just before serving.</description>
+		</row>
+		<row>
+			<name>Margarita</name>
+			<dish>Drink</dish>
+			<preparaionTime>5</preparaionTime>
+			<readyTime>5</readyTime>
+			<servings>4</servings>
+			<description>Fill blender with crushed ice. Pour in limeade concentrate, tequila and triple sec. Blend until smooth. Pour into glasses and serve.</description>
 		</row>
 	</table>
 	<table name="RecipesIngredients">
@@ -92,6 +105,24 @@
 			<ingredientId>12</ingredientId>
 			<ingredientNeed>5</ingredientNeed>
 			<unit>g</unit>
+		</row>
+		<row>
+			<recipeId>2</recipeId>
+			<ingredientId>15</ingredientId>
+			<ingredientNeed>218</ingredientNeed>
+			<unit>g</unit>
+		</row>
+		<row>
+			<recipeId>2</recipeId>
+			<ingredientId>16</ingredientId>
+			<ingredientNeed>175</ingredientNeed>
+			<unit>ml</unit>
+		</row>
+		<row>
+			<recipeId>2</recipeId>
+			<ingredientId>17</ingredientId>
+			<ingredientNeed>60</ingredientNeed>
+			<unit>ml</unit>
 		</row>
 	</table>
 </database>
