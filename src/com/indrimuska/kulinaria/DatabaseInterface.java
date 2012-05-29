@@ -1,7 +1,9 @@
 package com.indrimuska.kulinaria;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -286,12 +288,8 @@ public class DatabaseInterface {
 	public void insertInventoryIngredient(String name, double quantity, String unit, long expirationDate) {
 		Log.d(TAG, "insertInventoryIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-		try {
-			ContentValues values = inventoryIngredientContentValues(name, quantity, unit, expirationDate);
-			db.insert(INVENTORY.TABLE, null, values);
-		} finally {
-			db.close();
-		}
+		try { db.insert(INVENTORY.TABLE, null, inventoryIngredientContentValues(name, quantity, unit, expirationDate)); }
+		finally { db.close(); }
 	}
 	
 	// Get max ingredient ID from inventory
@@ -442,6 +440,21 @@ public class DatabaseInterface {
 		return db.query(RECIPES.TABLE, null, RECIPES.dish+"=?", new String[] { dish }, null, null, RECIPES.ORDER_BY);
 	}
 	
+	// Get all the recipes for a dish except a specific subset
+	public Cursor getRecipesExcept(String dish, ArrayList<Integer> recipesId) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		String selectString = RECIPES.dish+"=?";
+		ArrayList<String> selectValuesArray = new ArrayList<String>();
+		selectValuesArray.add(dish);
+		for (int recipeId : recipesId) {
+			selectString += " and "+RECIPES.id+"!=?";
+			selectValuesArray.add(Integer.toString(recipeId));
+		}
+		String[] selectValues = new String[selectValuesArray.size()];
+		selectValuesArray.toArray(selectValues);
+		return db.query(RECIPES.TABLE, null, selectString, selectValues, null, null, RECIPES.ORDER_BY);
+	}
+	
 	// Get recipe informations
 	public Cursor getRecipe(int recipeId) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -485,6 +498,15 @@ public class DatabaseInterface {
 		}
 	}
 	
+	// Convert menu informations to ContentValues
+	private ContentValues menuContentValues(String date, String meal, int recipeId) {
+		ContentValues values = new ContentValues();
+		values.put(MENU.date, date);
+		values.put(MENU.meal, meal);
+		values.put(MENU.recipeId, recipeId);
+		return values;
+	}
+	
 	// Get the menu chosen for a meal
 	public ArrayList<Integer> getMenu(String date, String meal) {
 		Log.d(TAG, "getMenu: " + meal);
@@ -502,5 +524,30 @@ public class DatabaseInterface {
 		} finally {
 			db.close();
 		}
+	}
+	
+	// Delete a dish from today's menu
+	public void deleteTodayMenuDish(String meal, int recipeId) {
+		deleteMenuDish(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal, recipeId);
+	}
+	
+	// Delete a dish from a menu
+	public void deleteMenuDish(String date, String meal, int recipeId) {
+		Log.d(TAG, "deleteMenuDish: " + date + "," + meal + "," + Integer.toString(recipeId));
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try {
+			db.delete(MENU.TABLE, MENU.date+"=? and "+MENU.meal+"=? and "+MENU.recipeId+"=?",
+					new String[] { date, meal, Integer.toString(recipeId) });
+		} finally {
+			db.close();
+		}
+	}
+	
+	// Add a dish in the menu
+	public void addMenuDish(String date, String meal, int recipeId) {
+		Log.d(TAG, "addMenuDish: " + date + "," + meal + "," + Integer.toString(recipeId));
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try { db.insert(MENU.TABLE, null, menuContentValues(date, meal, recipeId)); }
+		finally { db.close(); }
 	}
 }

@@ -77,20 +77,46 @@
 		android:src="@drawable/list_divider_holo_light"
 		android:contentDescription="@null" />
 	
-	<Button
-		android:id="@+id/menuAdd"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="left|center_vertical"
-		android:text="@null"
-		android:textColor="@color/bottom_light_text"
-		android:textSize="18dp"
-		android:paddingTop="9dp"
-		android:paddingLeft="10dp"
-		android:paddingRight="10dp"
-		android:paddingBottom="9dp"
-		android:background="@color/bottom_light"
-		android:drawableLeft="@drawable/create_contact"
-		android:drawablePadding="10dp" />
+	<RelativeLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:background="@color/bottom_light"
+	    android:orientation="horizontal" >
+
+		<Button
+			android:id="@+id/menuAdd"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:gravity="left|center_vertical"
+			android:text="@string/menuDishAdd"
+			android:textColor="@color/bottom_light_text"
+			android:textSize="18dp"
+			android:paddingTop="9dp"
+			android:paddingLeft="10dp"
+			android:paddingRight="10dp"
+			android:paddingBottom="9dp"
+			android:background="@color/bottom_light"
+			android:drawableLeft="@drawable/create_contact"
+			android:drawablePadding="10dp" />
+		
+		<ImageView
+			android:id="@+id/menuDayAfter"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_alignParentRight="true"
+			android:padding="8dp"
+			android:contentDescription="@null"
+			android:src="@drawable/ic_ab_back_holo_light_flip" />
+		<ImageView
+			android:id="@+id/menuDayBefore"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_toLeftOf="@id/menuDayAfter"
+			android:padding="8dp"
+			android:contentDescription="@null"
+			android:src="@drawable/ic_ab_back_holo_light" />
+	</RelativeLayout>
 	
 </LinearLayout>

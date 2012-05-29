@@ -8,7 +8,7 @@
 	android:background="@color/lighter_gray">
 	
 	<TextView
-		android:id="@+id/menuRecipeName"
+		android:id="@+id/menuDishName"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
 		android:layout_weight="1"
@@ -17,7 +17,7 @@
 		android:paddingBottom="10dp" />
 	
 	<ImageButton
-		android:id="@+id/menuRecipeImage"
+		android:id="@+id/menuDishButton"
 		android:layout_width="wrap_content"
 		android:layout_height="fill_parent"
 		android:layout_gravity="right|center_vertical"

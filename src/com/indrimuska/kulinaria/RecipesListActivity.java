@@ -65,7 +65,6 @@ public class RecipesListActivity extends Activity {
 				LinearLayout linearLayout = (LinearLayout) list.getParent();
 				linearLayout.removeViewAt(1);
 				linearLayout.addView(noRecipes, 1);
-				cursor.close();
 				list = null;
 				return;
 			}

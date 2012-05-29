@@ -7,9 +7,24 @@
 	<string name="simpleDateFormat">dd/MM/yyyy</string>
 	<string name="extendedDateFormat">EEEE, dd MMMM yyyy</string>
 	
+	<string name="buttonSave">Save</string>
+	<string name="buttonCancel">Cancel</string>
+	<string name="buttonDelete">Delete</string>
+	
 	<string name="menuPage">Menu</string>
 	<string name="menuToday">Today</string>
 	<string name="menuTodaysMenu">Today\'s menu</string>
+	<string name="menuDate">Date</string>
+	<string name="menuDish">Dish</string>
+	<string name="menuMeal">Meal</string>
+	<string name="menuRecipe">Recipe</string>
+	<string name="menuDishAdd">Add dish</string>
+	<string name="menuDishUpdate">Update dish</string>
+	<string name="menuDishDelete">Delete dish</string>
+	<string name="menuDishAdded">Added ? for ?</string>
+	<string name="menuDishUpdated">Dish ? updated</string>
+	<string name="menuDishDeleted">Dish ? deleted</string>
+	<string name="menuDishDeleteQuestion">Are you sure you want to delete this dish?</string>
 	
 	<string name="inventoryPage">Inventory</string>
 	<string name="inventoryNoIngredients">No ingredients in inventory</string>
@@ -23,9 +38,6 @@
 	<string name="ingredientExpirationDate">Expiration date</string>
 	<string name="ingredientExpirationDateNoExpiry">No expiry</string>
 	<string name="ingredientRemoveExpirationDate">Remove expiration date</string>
-	<string name="ingredientSave">Save</string>
-	<string name="ingredientCancel">Cancel</string>
-	<string name="ingredientDeleteButton">Delete</string>
 	<string name="ingredientAdded">Added ingredient ?</string>
 	<string name="ingredientUpdated">Ingredient ? updated</string>
 	<string name="ingredientDeleted">Ingredient ? deleted</string>

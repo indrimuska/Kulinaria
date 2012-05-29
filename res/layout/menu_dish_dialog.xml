@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:stretchColumns="*"
+	android:paddingTop="10dp"
+	android:paddingLeft="20dp"
+	android:paddingRight="20dp"
+	android:paddingBottom="10dp">
+	<TableRow
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center_vertical">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/menuMeal" />
+		<Spinner
+			android:id="@+id/menuMeal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:prompt="@string/menuMeal"
+			android:background="@drawable/spinner_background_holo_dark" />
+	</TableRow>
+	<TableRow
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center_vertical">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/menuDish" />
+		<Spinner
+			android:id="@+id/menuDish"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:prompt="@string/menuDish"
+			android:background="@drawable/spinner_background_holo_dark" />
+	</TableRow>
+	<TableRow
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center_vertical">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/menuRecipe" />
+		<Spinner
+			android:id="@+id/menuRecipe"
+			android:layout_width="120dp"
+			android:layout_height="wrap_content"
+			android:prompt="@string/menuRecipe"
+			android:background="@drawable/spinner_background_holo_dark" />
+	</TableRow>
+</TableLayout>
