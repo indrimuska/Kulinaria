@@ -28,6 +28,7 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -754,12 +755,17 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public View getView() {
-			TextView text = new TextView(MainActivity.this);
-			text.setGravity(Gravity.CENTER);
-			text.setText(pageName);
-			text.setTextSize(20 * getResources().getDisplayMetrics().density);
-			text.setPadding(20, 20, 20, 20);
-			return text;
+			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.shopping_page, null);
+			//SeparatedListAdapter
+			
+			ArrayList<Map<String, Object>> shoppingList = db.getShoppingList("2012-05-30");
+			for (int i = 0; i < shoppingList.size(); i++) {
+				Log.d(pageName, Integer.toString(i));
+				for (Map.Entry<String, Object> ingredient : shoppingList.get(i).entrySet())
+					Log.d(pageName, "recipeIngredients["+i+"]["+ingredient.getKey()+"]="+ingredient.getValue().toString());
+			}
+			
+			return layout;
 		}
 	}
 }

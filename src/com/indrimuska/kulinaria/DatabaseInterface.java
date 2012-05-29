@@ -332,7 +332,7 @@ public class DatabaseInterface {
 		}
 	}
 	
-	// Get the list of ingredients stored
+	// Get the list of ingredients stored in the inventory
 	public Cursor getInventory() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		return db.query(INVENTORY.TABLE, null, null, null, null, null, INVENTORY.ORDER_BY);
@@ -549,5 +549,67 @@ public class DatabaseInterface {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try { db.insert(MENU.TABLE, null, menuContentValues(date, meal, recipeId)); }
 		finally { db.close(); }
+	}
+	
+	// Get the shopping list for a day
+	public ArrayList<Map<String, Object>> getShoppingList(String date) {
+		Log.d(TAG, "getShoppingList: " + date);
+		ArrayList<Map<String, Object>> recipeIngredients, inventoryIngredients, shoppingList;
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		Cursor cursor;
+		
+		// Get ingredients list for a recipe
+		cursor = db.rawQuery(
+				"select * from " +
+						MENU.TABLE + " as m, " +
+						RECIPES.TABLE + " as r, " +
+						INGREDIENTS.TABLE + " as i, " +
+						RECIPES_INGREDIENTS.TABLE + " as ri " +
+				"where " +
+						"m." + MENU.date + " = '" + date + "' and " +
+						"r." + RECIPES.id + " = m." + MENU.recipeId + " and " +
+						"r." + RECIPES.id + " = ri." + RECIPES_INGREDIENTS.recipeId + " and " +
+						"i." + INGREDIENTS.id + " = ri." + RECIPES_INGREDIENTS.ingredientId, null);
+		try { recipeIngredients = cursorToMapArray(cursor, new String[] {
+				RECIPES.id,
+				INGREDIENTS.id,
+				INGREDIENTS.name,
+				RECIPES_INGREDIENTS.ingredientNeed,
+				RECIPES_INGREDIENTS.unit
+		}); }
+		finally { cursor.close(); }
+		
+		// Get the inventory list
+		cursor = getInventory();
+		try { inventoryIngredients = cursorToMapArray(cursor, new String[] {
+				INVENTORY.id,
+				INVENTORY.name,
+				INVENTORY.quantity,
+				INVENTORY.unit
+		}); }
+		finally { cursor.close(); }
+		
+		// Subtracts inventory list from ingredients list
+		shoppingList = new ArrayList<Map<String, Object>>();
+		for (int i = 0, j; i < recipeIngredients.size(); i++) {
+			Map<String, Object> ingredient = recipeIngredients.get(i);
+			for (j = 0; j < inventoryIngredients.size(); j++) {
+				if (((String) ingredient.get(INGREDIENTS.name)).equals((String) inventoryIngredients.get(j).get(INVENTORY.name)) &&
+					((String) ingredient.get(RECIPES_INGREDIENTS.unit)).equals((String) inventoryIngredients.get(j).get(INVENTORY.unit))) {
+					float difference =
+							Float.parseFloat(ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString()) -
+							Float.parseFloat(inventoryIngredients.get(j).get(INVENTORY.quantity).toString());
+					inventoryIngredients.get(j).put(INVENTORY.quantity, Math.max(0, -difference));
+					if (difference > 0) {
+						Map<String, Object> newIngredient = new HashMap<String, Object>(ingredient);
+						newIngredient.put(RECIPES_INGREDIENTS.ingredientNeed, difference);
+						shoppingList.add(newIngredient);
+					}
+					break;
+				}
+			}
+			if (j == inventoryIngredients.size()) shoppingList.add(ingredient);
+		}
+		return shoppingList;
 	}
 }
