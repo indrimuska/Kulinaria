@@ -263,12 +263,23 @@ public class DatabaseInterface {
 		dbHelper.close();
 	}
 	
-	// Convert cursor to a map-array
+	// Convert cursor to map-array
 	public ArrayList<Map<String, Object>> cursorToMapArray(Cursor cursor, String[] columns) {
 		ArrayList<Map<String, Object>> array = new ArrayList<Map<String, Object>>();
 		while (cursor.moveToNext()) {
 			Map<String, Object> element = new HashMap<String, Object>();
 			for (String column : columns) element.put(column, cursor.getString(cursor.getColumnIndex(column)));
+			array.add(element);
+		}
+		return array;
+	}
+	
+	// Convert cursor to map-array using indexes
+	public ArrayList<Map<String, Object>> cursorToMapArrayIndexed(Cursor cursor, String[] columns) {
+		ArrayList<Map<String, Object>> array = new ArrayList<Map<String, Object>>();
+		while (cursor.moveToNext()) {
+			Map<String, Object> element = new HashMap<String, Object>();
+			for (int i = 0; i < columns.length; i++) element.put(columns[i], cursor.getString(i));
 			array.add(element);
 		}
 		return array;
@@ -552,15 +563,26 @@ public class DatabaseInterface {
 	}
 	
 	// Get the shopping list for a day
-	public ArrayList<Map<String, Object>> getShoppingList(String date) {
+	public ArrayList<Map<String, Object>> getShoppingList(String date, ArrayList<Map<String, Object>> inventoryIngredients) {
 		Log.d(TAG, "getShoppingList: " + date);
-		ArrayList<Map<String, Object>> recipeIngredients, inventoryIngredients, shoppingList;
+		ArrayList<Map<String, Object>> shoppingList, recipeIngredients = new ArrayList<Map<String,Object>>();
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		Cursor cursor;
 		
 		// Get ingredients list for a recipe
+		String[] recipeColumns = new String[] {
+				"m." + MENU.meal,
+				"r." + RECIPES.id,
+				"r." + RECIPES.name,
+				"i." + INGREDIENTS.id,
+				"i." + INGREDIENTS.name,
+				"ri." + RECIPES_INGREDIENTS.ingredientNeed,
+				"ri." + RECIPES_INGREDIENTS.unit
+		};
+		String recipeColumnString = Arrays.asList(recipeColumns).toString().replaceAll("^\\[|\\]$", ", ");
 		cursor = db.rawQuery(
-				"select * from " +
+				"select " + recipeColumnString.substring(2, recipeColumnString.length()-2) + " " +
+				"from " +
 						MENU.TABLE + " as m, " +
 						RECIPES.TABLE + " as r, " +
 						INGREDIENTS.TABLE + " as i, " +
@@ -570,40 +592,40 @@ public class DatabaseInterface {
 						"r." + RECIPES.id + " = m." + MENU.recipeId + " and " +
 						"r." + RECIPES.id + " = ri." + RECIPES_INGREDIENTS.recipeId + " and " +
 						"i." + INGREDIENTS.id + " = ri." + RECIPES_INGREDIENTS.ingredientId, null);
-		try { recipeIngredients = cursorToMapArray(cursor, new String[] {
-				RECIPES.id,
-				INGREDIENTS.id,
-				INGREDIENTS.name,
-				RECIPES_INGREDIENTS.ingredientNeed,
-				RECIPES_INGREDIENTS.unit
-		}); }
-		finally { cursor.close(); }
-		
-		// Get the inventory list
-		cursor = getInventory();
-		try { inventoryIngredients = cursorToMapArray(cursor, new String[] {
-				INVENTORY.id,
-				INVENTORY.name,
-				INVENTORY.quantity,
-				INVENTORY.unit
-		}); }
+		try { recipeIngredients = cursorToMapArrayIndexed(cursor, recipeColumns); }
 		finally { cursor.close(); }
 		
 		// Subtracts inventory list from ingredients list
 		shoppingList = new ArrayList<Map<String, Object>>();
-		for (int i = 0, j; i < recipeIngredients.size(); i++) {
+		for (int i = 0, j, k; i < recipeIngredients.size(); i++) {
 			Map<String, Object> ingredient = recipeIngredients.get(i);
 			for (j = 0; j < inventoryIngredients.size(); j++) {
-				if (((String) ingredient.get(INGREDIENTS.name)).equals((String) inventoryIngredients.get(j).get(INVENTORY.name)) &&
-					((String) ingredient.get(RECIPES_INGREDIENTS.unit)).equals((String) inventoryIngredients.get(j).get(INVENTORY.unit))) {
+				if (((String) ingredient.get("i." + INGREDIENTS.name)).equals((String) inventoryIngredients.get(j).get(INVENTORY.name)) &&
+					((String) ingredient.get("ri." + RECIPES_INGREDIENTS.unit)).equals((String) inventoryIngredients.get(j).get(INVENTORY.unit))) {
 					float difference =
-							Float.parseFloat(ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString()) -
+							Float.parseFloat(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()) -
 							Float.parseFloat(inventoryIngredients.get(j).get(INVENTORY.quantity).toString());
 					inventoryIngredients.get(j).put(INVENTORY.quantity, Math.max(0, -difference));
 					if (difference > 0) {
 						Map<String, Object> newIngredient = new HashMap<String, Object>(ingredient);
-						newIngredient.put(RECIPES_INGREDIENTS.ingredientNeed, difference);
-						shoppingList.add(newIngredient);
+						for (k = 0; k < shoppingList.size(); k++) {
+							Map<String, Object> shoppingIngredient = shoppingList.get(k);
+							if (shoppingIngredient.get("i." + INGREDIENTS.name).equals(ingredient.get("i." + INGREDIENTS.name))) {
+								shoppingIngredient.put("m." + MENU.meal,
+										shoppingIngredient.get("m." + MENU.meal) + "|" + ingredient.get("m." + MENU.meal));
+								shoppingIngredient.put("r." + RECIPES.id,
+										shoppingIngredient.get("r." + RECIPES.id) + "|" + ingredient.get("r." + RECIPES.id));
+								shoppingIngredient.put("r." + RECIPES.name,
+										shoppingIngredient.get("r." + RECIPES.name) + "|" + ingredient.get("r." + RECIPES.name));
+								shoppingIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed, difference +
+										Float.parseFloat(shoppingIngredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()));
+								break;
+							}
+						}
+						if (k == shoppingList.size()) {
+							newIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed, difference);
+							shoppingList.add(newIngredient);
+						}
 					}
 					break;
 				}

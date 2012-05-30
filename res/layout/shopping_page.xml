@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+	
+    <ListView
+        android:id="@+id/shoppingList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="10dp"
+        android:scrollingCache="false" />
+	
+	<ImageView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:scaleType="fitXY"
+		android:src="@drawable/list_divider_holo_light"
+		android:contentDescription="@null" />
+	
+	<Button
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="left|center_vertical"
+		android:text="@string/ingredientAdd"
+		android:textColor="@color/bottom_light_text"
+		android:textSize="18dp"
+		android:paddingTop="1dp"
+		android:paddingLeft="4dp"
+		android:paddingRight="4dp"
+		android:paddingBottom="1dp"
+		android:background="@color/bottom_light"
+		android:drawableLeft="@android:drawable/ic_menu_sort_alphabetically"
+		android:drawablePadding="10dp" />
+	
+</LinearLayout>

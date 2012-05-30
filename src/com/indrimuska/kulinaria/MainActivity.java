@@ -758,12 +758,39 @@ public class MainActivity extends FragmentActivity {
 			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.shopping_page, null);
 			//SeparatedListAdapter
 			
-			ArrayList<Map<String, Object>> shoppingList = db.getShoppingList("2012-05-30");
+			// Get the inventory list
+			Cursor cursor = db.getInventory();
+			ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String,Object>>();
+			try {
+				inventoryList = db.cursorToMapArray(cursor, new String[] {
+						DatabaseInterface.INVENTORY.id,
+						DatabaseInterface.INVENTORY.name,
+						DatabaseInterface.INVENTORY.quantity,
+						DatabaseInterface.INVENTORY.unit});
+			} finally {
+				cursor.close();
+			}
+			
+			// Get shopping list
+			ArrayList<Map<String, Object>> shoppingList = db.getShoppingList("2012-05-30", inventoryList);
 			for (int i = 0; i < shoppingList.size(); i++) {
 				Log.d(pageName, Integer.toString(i));
 				for (Map.Entry<String, Object> ingredient : shoppingList.get(i).entrySet())
 					Log.d(pageName, "recipeIngredients["+i+"]["+ingredient.getKey()+"]="+ingredient.getValue().toString());
 			}
+			
+			// Set the ListView adapter
+			((ListView) layout.findViewById(R.id.shoppingList)).setAdapter(
+					new SimpleAdapter(MainActivity.this, shoppingList, android.R.layout.two_line_list_item,
+							new String[] {
+									"i." + DatabaseInterface.INGREDIENTS.name,
+									"ri." + DatabaseInterface.RECIPES_INGREDIENTS.ingredientNeed
+							},
+							new int[] {
+									android.R.id.text1,
+									android.R.id.text2
+							})
+					);
 			
 			return layout;
 		}
