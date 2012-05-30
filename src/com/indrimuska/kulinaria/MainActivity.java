@@ -213,7 +213,7 @@ public class MainActivity extends FragmentActivity {
 							String menuDishAdded = getString(R.string.menuDishAdded)
 									.replaceFirst("\\?", recipe.getSelectedItem().toString())
 									.replaceFirst("\\?", meal.getSelectedItem().toString());
-							Toast.makeText(MainActivity.this, menuDishAdded, Toast.LENGTH_LONG).show();
+							Toast.makeText(MainActivity.this, menuDishAdded, Toast.LENGTH_SHORT).show();
 							inflateMenuMealsList((ExpandableListView) layout.findViewById(R.id.menuMealsList));
 						}
 					});
@@ -312,7 +312,7 @@ public class MainActivity extends FragmentActivity {
 														db.deleteTodayMenuDish(meal, recipeId);
 														String dishDelete = getString(R.string.menuDishDeleted)
 																.replaceFirst("\\?", dishName);
-														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_LONG).show();
+														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_SHORT).show();
 														// Updating the menu page
 														inflateMenuMealsList(menuMealsList);
 													}
@@ -391,6 +391,7 @@ public class MainActivity extends FragmentActivity {
 			ListView list = new ListView(MainActivity.this);
 			list.setScrollingCacheEnabled(false);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+			list.setPadding(10, 10, 10, 10);
 			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.ingredient_list_item, from,
 					new int[] {
 							R.id.listIngredientName,
@@ -400,11 +401,11 @@ public class MainActivity extends FragmentActivity {
 					});
 			adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
 				@Override
-				public boolean setViewValue(View view, Object data, String textRepresentation) {
+				public boolean setViewValue(final View view, Object data, String textRepresentation) {
 					if (view.getId() != R.id.listIngredientOptions) return false;
 					view.setOnClickListener(new OnClickListener() {
 						@Override
-						public void onClick(final View view) {
+						public void onClick(View v) {
 							// Create dialog menu
 							new AlertDialog.Builder(MainActivity.this)
 								.setItems(new String[] {
@@ -413,7 +414,7 @@ public class MainActivity extends FragmentActivity {
 								}, new DialogInterface.OnClickListener() {
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										final LinearLayout layout = (LinearLayout) view.getParent();
+										final LinearLayout layout = (LinearLayout) view.getParent().getParent().getParent();
 										final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
 										switch (which) {
 										case 0:
@@ -433,7 +434,7 @@ public class MainActivity extends FragmentActivity {
 														db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
 														String ingredientDeleted = getString(R.string.ingredientDeleted)
 																.replaceFirst("\\?", ingredientName);
-														Toast.makeText(MainActivity.this, ingredientDeleted, Toast.LENGTH_LONG).show();
+														Toast.makeText(MainActivity.this, ingredientDeleted, Toast.LENGTH_SHORT).show();
 														// Updating the inventory page
 														LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
 														linearLayout.removeViewAt(0);
@@ -484,14 +485,10 @@ public class MainActivity extends FragmentActivity {
 				Cursor cursor = db.getIngredients();
 				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
 				try {
-					try {
-						while (cursor.moveToNext())
-							textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
-					} finally {
-						cursor.close();
-					}
+					while (cursor.moveToNext())
+						textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
 				} finally {
-					db.close();
+					cursor.close();
 				}
 				name.setAdapter(textAdapter);
 				
@@ -602,7 +599,7 @@ public class MainActivity extends FragmentActivity {
 										else db.updateInventoryIngredient(ingredientID,
 												ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 										String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
-										Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
+										Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
 										// Updating the inventory page
 										layout.removeViewAt(0);
 										layout.addView(getInventoryListViewFromDatabase(), 0);
@@ -613,13 +610,12 @@ public class MainActivity extends FragmentActivity {
 								// Insert new ingredient
 								db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);
-								Toast.makeText(MainActivity.this, ingredientAdded, Toast.LENGTH_LONG).show();
+								Toast.makeText(MainActivity.this, ingredientAdded, Toast.LENGTH_SHORT).show();
 							} else {
 								// Update existing ingredient
 								db.updateInventoryIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
-								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_LONG).show();
-								layout = (LinearLayout) layout.getParent().getParent();
+								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
 							}
 							// Updating the inventory page
 							layout.removeViewAt(0);
@@ -766,7 +762,8 @@ public class MainActivity extends FragmentActivity {
 						DatabaseInterface.INVENTORY.id,
 						DatabaseInterface.INVENTORY.name,
 						DatabaseInterface.INVENTORY.quantity,
-						DatabaseInterface.INVENTORY.unit});
+						DatabaseInterface.INVENTORY.unit
+				});
 			} finally {
 				cursor.close();
 			}
@@ -781,14 +778,16 @@ public class MainActivity extends FragmentActivity {
 			
 			// Set the ListView adapter
 			((ListView) layout.findViewById(R.id.shoppingList)).setAdapter(
-					new SimpleAdapter(MainActivity.this, shoppingList, android.R.layout.two_line_list_item,
+					new SimpleAdapter(MainActivity.this, shoppingList, R.layout.shopping_list_item,
 							new String[] {
 									"i." + DatabaseInterface.INGREDIENTS.name,
-									"ri." + DatabaseInterface.RECIPES_INGREDIENTS.ingredientNeed
+									"ri." + DatabaseInterface.RECIPES_INGREDIENTS.ingredientNeed,
+									"ri." + DatabaseInterface.RECIPES_INGREDIENTS.unit
 							},
 							new int[] {
-									android.R.id.text1,
-									android.R.id.text2
+									R.id.shoppingListIngredient,
+									R.id.shoppingListQuantity,
+									R.id.shoppingListUnit
 							})
 					);
 			
