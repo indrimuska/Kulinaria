@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -28,17 +30,18 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AbsListView;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.BaseAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -243,6 +246,7 @@ public class MainActivity extends FragmentActivity {
 			return layout;
 		}
 		
+		// Set all the day informations including the menu list
 		private void inflateView(LinearLayout layout) {
 			String menuDailyMenu = day.getDate() == new Date().getDate()
 					? getString(R.string.menuTodaysMenu)
@@ -259,6 +263,7 @@ public class MainActivity extends FragmentActivity {
 			inflateMenuMealsList((ExpandableListView) layout.findViewById(R.id.menuMealsList));
 		}
 		
+		// Fill the menu list
 		private void inflateMenuMealsList(final ExpandableListView menuMealsList) {
 			final String[] meals = getResources().getStringArray(R.array.meals);
 			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
@@ -309,7 +314,8 @@ public class MainActivity extends FragmentActivity {
 													@Override
 													public void onClick(DialogInterface dialog, int which) {
 														String dishName = name.getText().toString().trim();
-														db.deleteTodayMenuDish(meal, recipeId);
+														db.deleteMenuDish(
+																new SimpleDateFormat("yyyy-MM-dd").format(day), meal, recipeId);
 														String dishDelete = getString(R.string.menuDishDeleted)
 																.replaceFirst("\\?", dishName);
 														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_SHORT).show();
@@ -335,6 +341,7 @@ public class MainActivity extends FragmentActivity {
 				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
 				@Override public boolean hasStableIds() { return true; }
 			});
+			// Expand all the groups
 			for (int i = 0; i < meals.length; i++) menuMealsList.expandGroup(i);
 		}
 	}
@@ -630,17 +637,14 @@ public class MainActivity extends FragmentActivity {
 	}
 	final class RecipesPage extends Page {
 		public RecipesPage() { super(R.string.recipesPage); }
-		public ListView list = null;
-		public ListView search = null;
-		public EditText searchField = null;
 		
 		@Override
 		public View getView() {
 			// Setting view
 			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.recipes_page, null);
-			list = (ListView) layout.findViewById(R.id.recipesDishesList);
-			search = (ListView) layout.findViewById(R.id.recipesSearchList);
-			searchField = (EditText) layout.findViewById(R.id.recipesSearch);
+			final ListView list = (ListView) layout.findViewById(R.id.recipesDishesList);
+			final ListView search = (ListView) layout.findViewById(R.id.recipesSearchList);
+			final EditText searchField = (EditText) layout.findViewById(R.id.recipesSearch);
 			list.setScrollingCacheEnabled(false);
 			search.setScrollingCacheEnabled(false);
 			
@@ -752,7 +756,6 @@ public class MainActivity extends FragmentActivity {
 		@Override
 		public View getView() {
 			LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.shopping_page, null);
-			//SeparatedListAdapter
 			
 			// Get the inventory list
 			Cursor cursor = db.getInventory();
@@ -768,30 +771,112 @@ public class MainActivity extends FragmentActivity {
 				cursor.close();
 			}
 			
-			// Get shopping list
-			ArrayList<Map<String, Object>> shoppingList = db.getShoppingList("2012-05-30", inventoryList);
-			for (int i = 0; i < shoppingList.size(); i++) {
-				Log.d(pageName, Integer.toString(i));
-				for (Map.Entry<String, Object> ingredient : shoppingList.get(i).entrySet())
-					Log.d(pageName, "recipeIngredients["+i+"]["+ingredient.getKey()+"]="+ingredient.getValue().toString());
-			}
-			
 			// Set the ListView adapter
-			((ListView) layout.findViewById(R.id.shoppingList)).setAdapter(
-					new SimpleAdapter(MainActivity.this, shoppingList, R.layout.shopping_list_item,
-							new String[] {
-									"i." + DatabaseInterface.INGREDIENTS.name,
-									"ri." + DatabaseInterface.RECIPES_INGREDIENTS.ingredientNeed,
-									"ri." + DatabaseInterface.RECIPES_INGREDIENTS.unit
-							},
-							new int[] {
-									R.id.shoppingListIngredient,
-									R.id.shoppingListQuantity,
-									R.id.shoppingListUnit
-							})
-					);
+			String dayString;
+			Date day = new Date();
+			ArrayList<Map<String, Object>> dailyShoppingList;
+			GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
+			while (!(dailyShoppingList = db.getShoppingList(
+						dayString = new SimpleDateFormat("yyyy-MM-dd").format(day), inventoryList)).isEmpty()) {
+				SimpleAdapter dailyList = new SimpleAdapter(MainActivity.this, dailyShoppingList, R.layout.shopping_list_item,
+						new String[] {
+								"i." + DatabaseInterface.INGREDIENTS.name,
+								"ri." + DatabaseInterface.RECIPES_INGREDIENTS.ingredientNeed,
+								"ri." + DatabaseInterface.RECIPES_INGREDIENTS.unit
+						}, new int[] {
+								R.id.shoppingListIngredient,
+								R.id.shoppingListQuantity,
+								R.id.shoppingListUnit
+						});
+				adapter.addSection(dayString, dailyList);
+				day.setDate(day.getDate() + 1);
+			}
+			((ListView) layout.findViewById(R.id.shoppingList)).setAdapter(adapter);
 			
 			return layout;
+		}
+		
+		class GroupedListAdapter extends BaseAdapter {
+			Map<String, Adapter> sections = new LinkedHashMap<String, Adapter>();
+			ArrayAdapter<String> headers;
+			
+			static final int HEADER_VIEW_TYPE = 0;
+			
+			GroupedListAdapter(Context context, int header) {
+				headers = new ArrayAdapter<String>(context, header);
+			}
+			
+			public void addSection(String header, Adapter child) {
+				headers.add(header);
+				sections.put(header, child);
+			}
+			
+			@Override
+			public int getCount() {
+				int elements = 0;
+				for (Adapter section : sections.values()) elements += section.getCount() + 1;
+				return elements;
+			}
+
+			@Override
+			public int getViewTypeCount() {
+				int items = 1;
+				for (Adapter adapter : sections.values()) items += adapter.getViewTypeCount();
+				return items;
+			}
+			
+			@Override
+			public Object getItem(int position) {
+				for (Adapter section : sections.values()) {
+					int size = section.getCount() + 1;
+					// check if position inside this section
+					if (position == 0) return section;
+					if (position < size) return section.getItem(position - 1);
+					// otherwise jump into next section
+					position -= size;
+				}
+				return null;
+			}
+			
+			@Override
+			public long getItemId(int position) {
+				return position;
+			}
+			
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				int section_number = 0;
+				for (Adapter section : sections.values()) {
+					int size = section.getCount() + 1;
+					// check if position inside this section
+					if (position == 0) return headers.getView(section_number, convertView, parent);
+					if (position < size) return section.getView(position - 1, convertView, parent);
+					// otherwise jump into next section
+					position -= size;
+					section_number++;
+				}
+				return null;
+			}
+			
+			@Override
+			public int getItemViewType(int position) {
+				int type = 1;
+				for (Adapter section : sections.values()) {
+					int size = section.getCount() + 1;
+					// check if position inside this section
+					if (position == 0) return HEADER_VIEW_TYPE;
+					if (position < size) return type + section.getItemViewType(position - 1);
+					// otherwise jump into next section
+					position -= size;
+					type += section.getViewTypeCount();
+				}
+				return -1;
+			}
+			
+			@Override
+			public boolean isEnabled(int position) {
+				return getItemViewType(position) != HEADER_VIEW_TYPE;
+			}
 		}
 	}
 }
