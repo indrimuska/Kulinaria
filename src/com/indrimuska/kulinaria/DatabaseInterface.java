@@ -1,9 +1,7 @@
 package com.indrimuska.kulinaria;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -535,11 +533,6 @@ public class DatabaseInterface {
 		} finally {
 			db.close();
 		}
-	}
-	
-	// Delete a dish from today's menu
-	public void deleteTodayMenuDish(String meal, int recipeId) {
-		deleteMenuDish(new SimpleDateFormat("yyyy-MM-dd").format(new Date()), meal, recipeId);
 	}
 	
 	// Delete a dish from a menu
