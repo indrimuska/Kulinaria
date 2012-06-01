@@ -775,6 +775,7 @@ public class MainActivity extends FragmentActivity {
 			String dayString;
 			Date day = new Date();
 			ArrayList<Map<String, Object>> dailyShoppingList;
+			Locale.setDefault(new Locale(getString(R.string.language)));
 			GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
 			while (!(dailyShoppingList = db.getShoppingList(
 						dayString = new SimpleDateFormat("yyyy-MM-dd").format(day), inventoryList)).isEmpty()) {
@@ -788,6 +789,11 @@ public class MainActivity extends FragmentActivity {
 								R.id.shoppingListQuantity,
 								R.id.shoppingListUnit
 						});
+				Date tomorrow = new Date();
+				tomorrow.setDate(tomorrow.getDate() + 1);
+				if (day.getDate() == new Date().getDate()) dayString = getString(R.string.today); else
+				if (day.getDate() == tomorrow.getDate()) dayString = getString(R.string.tomorrow);
+				else dayString = new SimpleDateFormat(getString(R.string.extendedDateFormat)).format(day);
 				adapter.addSection(dayString, dailyList);
 				day.setDate(day.getDate() + 1);
 			}

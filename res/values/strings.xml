@@ -7,12 +7,14 @@
 	<string name="simpleDateFormat">dd/MM/yyyy</string>
 	<string name="extendedDateFormat">EEEE, dd MMMM yyyy</string>
 	
+	<string name="today">Today</string>
+	<string name="tomorrow">Tomorrow</string>
+	
 	<string name="buttonSave">Save</string>
 	<string name="buttonCancel">Cancel</string>
 	<string name="buttonDelete">Delete</string>
 	
 	<string name="menuPage">Menu</string>
-	<string name="menuToday">Today</string>
 	<string name="menuDailyMenu">Daily menu</string>
 	<string name="menuTodaysMenu">Today\'s menu</string>
 	<string name="menuDate">Date</string>
