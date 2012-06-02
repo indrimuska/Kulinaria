@@ -823,8 +823,10 @@ public class MainActivity extends FragmentActivity {
 									String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
 									Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
 									// Updating the inventory page
-									layout.removeViewAt(0);
-									layout.addView(getInventoryListViewFromDatabase(), 0);
+									if (layout != null) {
+										layout.removeViewAt(0);
+										layout.addView(getInventoryListViewFromDatabase(), 0);
+									}
 								}
 							}).show();
 					} else {
@@ -840,8 +842,10 @@ public class MainActivity extends FragmentActivity {
 							Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
 						}
 						// Updating the inventory page
-						layout.removeViewAt(0);
-						layout.addView(getInventoryListViewFromDatabase(), 0);
+						if (layout != null) {
+							layout.removeViewAt(0);
+							layout.addView(getInventoryListViewFromDatabase(), 0);
+						}
 					}
 				}
 			});

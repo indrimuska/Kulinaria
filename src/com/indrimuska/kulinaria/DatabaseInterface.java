@@ -615,7 +615,7 @@ public class DatabaseInterface {
 					} else {
 						// ingredient is not in the shopping list
 						Map<String, Object> newIngredient = new HashMap<String, Object>(ingredient);
-						newIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed, difference);
+						newIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed, -difference);
 						shoppingList.add(newIngredient);
 					}
 				}
