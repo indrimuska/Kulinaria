@@ -13,6 +13,7 @@
 	<string name="buttonSave">Save</string>
 	<string name="buttonCancel">Cancel</string>
 	<string name="buttonDelete">Delete</string>
+	<string name="buttonClose">Close</string>
 	
 	<string name="menuPage">Menu</string>
 	<string name="menuDailyMenu">Daily menu</string>

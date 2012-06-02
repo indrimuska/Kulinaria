@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-
+ 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
@@ -30,6 +30,7 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -65,7 +66,7 @@ public class MainActivity extends FragmentActivity {
 	private SliderAdapter sliderAdapter;
 	private ViewPager pager;
 	private PageIndicator indicator;
-	private DatabaseInterface db;
+	private static DatabaseInterface db;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -365,275 +366,6 @@ public class MainActivity extends FragmentActivity {
 			
 			return layout;
 		}
-		
-		// Return a ListView filled with all ingredients in the inventory
-		public View getInventoryListViewFromDatabase() {
-			// Get the data from the database
-			Cursor cursor = db.getInventory();
-			ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String, Object>>();
-			String[] from = new String[] {
-					DatabaseInterface.INVENTORY.name,
-					DatabaseInterface.INVENTORY.quantity,
-					DatabaseInterface.INVENTORY.unit,
-					DatabaseInterface.INVENTORY.id
-			};
-			
-			try {
-				// Check if there are any ingredients stored
-				if (cursor.getCount() > 0) inventoryList = db.cursorToMapArray(cursor, from);
-				else {
-					TextView text = new TextView(MainActivity.this);
-					text.setGravity(Gravity.CENTER);
-					text.setText(R.string.inventoryNoIngredients);
-					text.setTextSize(20 * getResources().getDisplayMetrics().density);
-					text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-					text.setPadding(20, 20, 20, 20);
-					return text;
-				}
-			} finally {
-				cursor.close();
-			}
-			
-			// Inflate rows using SimpleAdapter
-			ListView list = new ListView(MainActivity.this);
-			list.setScrollingCacheEnabled(false);
-			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-			list.setPadding(10, 10, 10, 10);
-			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.ingredient_list_item, from,
-					new int[] {
-							R.id.listIngredientName,
-							R.id.listIngredientQuantity,
-							R.id.listIngredientUnit,
-							R.id.listIngredientOptions
-					});
-			adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
-				@Override
-				public boolean setViewValue(final View view, Object data, String textRepresentation) {
-					if (view.getId() != R.id.listIngredientOptions) return false;
-					view.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							// Create dialog menu
-							new AlertDialog.Builder(MainActivity.this)
-								.setItems(new String[] {
-										getString(R.string.ingredientUpdate),
-										getString(R.string.ingredientDelete)
-								}, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										final LinearLayout layout = (LinearLayout) view.getParent().getParent().getParent();
-										final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
-										switch (which) {
-										case 0:
-											// Update ingredient
-											new IngredientDialog(layout).show(name);
-											break;
-										case 1:
-											// Delete ingredient
-											new AlertDialog.Builder(MainActivity.this)
-												.setTitle(R.string.ingredientDelete)
-												.setMessage(R.string.ingredientDeleteQuestion)
-												.setNegativeButton(R.string.buttonCancel, null)
-												.setPositiveButton(R.string.buttonDelete, new AlertDialog.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														String ingredientName = name.getText().toString().trim();
-														db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
-														String ingredientDeleted = getString(R.string.ingredientDeleted)
-																.replaceFirst("\\?", ingredientName);
-														Toast.makeText(MainActivity.this, ingredientDeleted, Toast.LENGTH_SHORT).show();
-														// Updating the inventory page
-														LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
-														linearLayout.removeViewAt(0);
-														linearLayout.addView(getInventoryListViewFromDatabase(), 0);
-													}
-												}).show();
-											break;
-										}
-									}
-								}).show();
-						}
-					});
-					return true;
-				}
-			});
-			list.setAdapter(adapter);
-			return list;
-		}
-		
-		// Open the dialog
-		private class IngredientDialog {
-			int ingredientID;
-			AlertDialog dialog;
-			LinearLayout layout;
-			
-			public IngredientDialog(LinearLayout layout) {
-				this.ingredientID = db.getMaxInventoryIngredientID()+1;
-				this.layout = layout;
-			}
-			
-			// Show dialog window
-			@SuppressWarnings("unchecked")
-			public void show(final TextView ingredientView) {
-				// Creating the dialog
-				View dialogView = getLayoutInflater().inflate(R.layout.ingredient_dialog, null);
-				final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-				builder.setTitle(R.string.ingredientAdd);
-				builder.setView(dialogView);
-				
-				// Identifying elements
-				final AutoCompleteTextView name = (AutoCompleteTextView) dialogView.findViewById(R.id.elementIngredientName);
-				final EditText quantity = (EditText) dialogView.findViewById(R.id.elementIngredientQuantity);
-				final Spinner unit = (Spinner) dialogView.findViewById(R.id.elementIngredientUnit);
-				final Button expirationDate = (Button) dialogView.findViewById(R.id.elementIngredientExpirationDate);
-				final ImageButton removeExpirationDate = (ImageButton) dialogView.findViewById(R.id.elementIngredientRemoveExpirationDate);
-				
-				// Inflating auto-complete list
-				Cursor cursor = db.getIngredients();
-				ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line);
-				try {
-					while (cursor.moveToNext())
-						textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
-				} finally {
-					cursor.close();
-				}
-				name.setAdapter(textAdapter);
-				
-				// Inflating spinner
-				ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
-						MainActivity.this, R.array.units, R.layout.spinner_text_white);
-				spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-				unit.setAdapter(spinnerAdapter);
-				
-				// Expiration date button listener
-				expirationDate.setOnClickListener(new OnClickListener() {
-					Calendar calendar = Calendar.getInstance();
-					@Override
-					public void onClick(View v) {
-						Date date = new Date();
-						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
-						try { date = dateFormat.parse(expirationDate.getText().toString()); }
-						catch (ParseException e) { }
-						calendar.setTime(date);
-						new DatePickerDialog(MainActivity.this, new OnDateSetListener() {
-							@Override
-							public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-								calendar.set(year, monthOfYear, dayOfMonth);
-								expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), calendar.getTime().getTime()));
-								if (calendar.getTime().getDate() < new Date().getDate())
-									expirationDate.getBackground().setColorFilter(
-											new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
-								else expirationDate.getBackground().clearColorFilter();
-								removeExpirationDate.setVisibility(View.VISIBLE);
-							}
-						}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-					}
-				});
-
-				// Remove expiration date button listener
-				removeExpirationDate.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						expirationDate.setText(R.string.ingredientExpirationDateNoExpiry);
-						expirationDate.getBackground().clearColorFilter();
-						removeExpirationDate.setVisibility(View.INVISIBLE);
-					}
-				});
-				
-				// Dialog for update
-				if (ingredientView != null) {
-					builder.setTitle(R.string.ingredientUpdate);
-					String ingredienName = ingredientView.getText().toString().trim();
-					cursor = db.getInventoryIngredient(ingredienName);
-					String unitString;
-					double quantityDouble;
-					long expirationDateLong;
-					try {
-						cursor.moveToFirst();
-						ingredientID = cursor.getInt(cursor.getColumnIndex(DatabaseInterface.INVENTORY.id));
-						unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.unit));
-						quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INVENTORY.quantity));
-						expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INVENTORY.expirationDate));
-					} finally {
-						cursor.close();
-					}
-					name.setText(ingredienName);
-					name.setAdapter(null);
-					quantity.setText(Double.toString(quantityDouble));
-					unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
-					if (expirationDateLong > 0) {
-						Date date = new Date(expirationDateLong);
-						expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), date.getTime()));
-						if (new Date(expirationDateLong).getDate() < new Date().getDate())
-							expirationDate.getBackground().setColorFilter(
-									new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
-						removeExpirationDate.setVisibility(View.VISIBLE);
-					}
-				}
-				
-				// Setting buttons and open the dialog
-				builder.setNegativeButton(R.string.buttonCancel, null);
-				builder.setPositiveButton(R.string.buttonSave, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if (name.getText().toString().trim().length() == 0 || quantity.getText().length() == 0) return;
-						Date date = new Date();
-						SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
-						try { date = dateFormat.parse(expirationDate.getText().toString()); }
-						catch (ParseException e) { }
-						final String ingredientName = name.getText().toString().trim();
-						final double ingredientQuantity = new Double(quantity.getText().toString());
-						final String ingredientUnit = unit.getSelectedItem().toString();
-						final long ingredientExpirationDate =
-								expirationDate.getText().toString().equals(getString(R.string.ingredientExpirationDateNoExpiry))
-								? 0 : date.getTime();
-						final int existingIngredientID;
-						// Check if another ingredient is already stored with the same name
-						if (db.inventoryIngredientAlreadyExists(ingredientName) &&
-							(existingIngredientID = db.getInventoryIngredientID(ingredientName)) != ingredientID) {
-							String ingredientAlreadyExists = getString(R.string.ingredientAlreadyExists).replaceFirst("\\?", ingredientName);
-							new AlertDialog.Builder(MainActivity.this)
-								.setMessage(ingredientAlreadyExists)
-								.setNegativeButton(R.string.buttonCancel, null)
-								.setPositiveButton(R.string.buttonSave, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										db.deleteInventoryIngredient(existingIngredientID);
-										// New ingredient replace existing one
-										if (ingredientView == null) db.insertInventoryIngredient(
-												ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
-										// Existing ingredient replace another one
-										else db.updateInventoryIngredient(ingredientID,
-												ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
-										String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
-										Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
-										// Updating the inventory page
-										layout.removeViewAt(0);
-										layout.addView(getInventoryListViewFromDatabase(), 0);
-									}
-								}).show();
-						} else {
-							if (ingredientView == null) {
-								// Insert new ingredient
-								db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
-								String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);
-								Toast.makeText(MainActivity.this, ingredientAdded, Toast.LENGTH_SHORT).show();
-							} else {
-								// Update existing ingredient
-								db.updateInventoryIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
-								String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
-								Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
-							}
-							// Updating the inventory page
-							layout.removeViewAt(0);
-							layout.addView(getInventoryListViewFromDatabase(), 0);
-						}
-					}
-				});
-				dialog = builder.create();
-				dialog.show();
-			}
-		}
 	}
 	final class RecipesPage extends Page {
 		public RecipesPage() { super(R.string.recipesPage); }
@@ -776,19 +508,76 @@ public class MainActivity extends FragmentActivity {
 			Date day = new Date();
 			ArrayList<Map<String, Object>> dailyShoppingList;
 			Locale.setDefault(new Locale(getString(R.string.language)));
-			GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
+			final GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
 			while (!(dailyShoppingList = db.getShoppingList(
 						dayString = new SimpleDateFormat("yyyy-MM-dd").format(day), inventoryList)).isEmpty()) {
-				SimpleAdapter dailyList = new SimpleAdapter(MainActivity.this, dailyShoppingList, R.layout.shopping_list_item,
+				final SimpleAdapter dailyList = new SimpleAdapter(MainActivity.this, dailyShoppingList, R.layout.shopping_list_item,
 						new String[] {
 								"i." + DatabaseInterface.INGREDIENTS.name,
 								"ri." + DatabaseInterface.RECIPES_INGREDIENTS.ingredientNeed,
-								"ri." + DatabaseInterface.RECIPES_INGREDIENTS.unit
+								"ri." + DatabaseInterface.RECIPES_INGREDIENTS.unit,
+								"i." + DatabaseInterface.INGREDIENTS.id
 						}, new int[] {
 								R.id.shoppingListIngredient,
 								R.id.shoppingListQuantity,
-								R.id.shoppingListUnit
+								R.id.shoppingListUnit,
+								R.id.shoppingListInformations
 						});
+				dailyList.setViewBinder(new SimpleAdapter.ViewBinder() {
+					@Override
+					public boolean setViewValue(View view, final Object data, String textRepresentation) {
+						if (view.getId() != R.id.shoppingListInformations) return false;
+						Log.d(pageName, "textRepresentation=" + textRepresentation);
+						((ImageView) view).setOnClickListener(new OnClickListener() {
+							@Override
+							@SuppressWarnings("unchecked")
+							public void onClick(View view) {
+								// Creating the dialog
+								View dialogView = getLayoutInflater().inflate(R.layout.shopping_list_dialog, null);
+								AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+								builder.setView(dialogView);
+								
+								// Get the ingredient informations
+								int i = 0;
+								for (i = 0; i < dailyList.getCount(); i++)
+									if (((Map<String, Object>) dailyList.getItem(i)).get("i." + DatabaseInterface.INGREDIENTS.id)
+											.toString().equals(data.toString()))
+										break;
+								if (i == dailyList.getCount()) return;
+								Map<String, Object> ingredient = (Map<String, Object>) dailyList.getItem(i);
+								String[] meals = ingredient.get("m." + DatabaseInterface.MENU.meal).toString().split("\\|");
+								String[] recipes = ingredient.get("r." + DatabaseInterface.RECIPES.name).toString().split("\\|");
+								
+								// Fill the ListView
+								GroupedListAdapter shoppingListAdapter = new GroupedListAdapter(
+										MainActivity.this, R.layout.shopping_list_dialog_header);
+								for (int m = 0; m < meals.length; m++) {
+									ArrayList<Map<String, Object>> recipesList = new ArrayList<Map<String,Object>>();
+									Map<String, Object> recipeName = new HashMap<String, Object>();
+									recipeName.put(DatabaseInterface.RECIPES.name, recipes[m]);
+									recipesList.add(recipeName);
+									shoppingListAdapter.addSection(meals[m].toUpperCase(),
+											new SimpleAdapter(MainActivity.this, recipesList, R.layout.shopping_list_dialog_item,
+													new String[] { DatabaseInterface.RECIPES.name }, new int[] { R.id.text1 })
+									);
+								}
+								((ListView) dialogView.findViewById(R.id.shoppingListDialogList)).setAdapter(shoppingListAdapter);
+								
+								// Show the dialog
+								builder.setTitle(ingredient.get("i." + DatabaseInterface.INGREDIENTS.name).toString());
+								builder.setNegativeButton(R.string.buttonClose, null);
+								builder.setPositiveButton(R.string.ingredientAdd, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										new IngredientDialog(null).show(null);
+									}
+								});
+								builder.show();
+							}
+						});
+						return true;
+					}
+				});
 				Date tomorrow = new Date();
 				tomorrow.setDate(tomorrow.getDate() + 1);
 				if (day.getDate() == new Date().getDate()) dayString = getString(R.string.today); else
@@ -802,7 +591,7 @@ public class MainActivity extends FragmentActivity {
 			return layout;
 		}
 		
-		class GroupedListAdapter extends BaseAdapter {
+		private class GroupedListAdapter extends BaseAdapter {
 			Map<String, Adapter> sections = new LinkedHashMap<String, Adapter>();
 			ArrayAdapter<String> headers;
 			
@@ -823,7 +612,7 @@ public class MainActivity extends FragmentActivity {
 				for (Adapter section : sections.values()) elements += section.getCount() + 1;
 				return elements;
 			}
-
+			
 			@Override
 			public int getViewTypeCount() {
 				int items = 1;
@@ -884,5 +673,275 @@ public class MainActivity extends FragmentActivity {
 				return getItemViewType(position) != HEADER_VIEW_TYPE;
 			}
 		}
+	}
+	
+	// Open the ingredient dialog
+	class IngredientDialog {
+		int ingredientID;
+		AlertDialog dialog;
+		LinearLayout layout;
+		
+		public IngredientDialog(LinearLayout layout) {
+			this.ingredientID = db.getMaxInventoryIngredientID()+1;
+			this.layout = layout;
+		}
+		
+		// Show dialog window
+		@SuppressWarnings("unchecked")
+		public void show(final TextView ingredientView) {
+			// Creating the dialog
+			View dialogView = getLayoutInflater().inflate(R.layout.ingredient_dialog, null);
+			final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+			builder.setTitle(R.string.ingredientAdd);
+			builder.setView(dialogView);
+			
+			// Identifying elements
+			final AutoCompleteTextView name = (AutoCompleteTextView) dialogView.findViewById(R.id.elementIngredientName);
+			final EditText quantity = (EditText) dialogView.findViewById(R.id.elementIngredientQuantity);
+			final Spinner unit = (Spinner) dialogView.findViewById(R.id.elementIngredientUnit);
+			final Button expirationDate = (Button) dialogView.findViewById(R.id.elementIngredientExpirationDate);
+			final ImageButton removeExpirationDate = (ImageButton) dialogView.findViewById(R.id.elementIngredientRemoveExpirationDate);
+			
+			// Inflating auto-complete list
+			Cursor cursor = db.getIngredients();
+			ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(
+					MainActivity.this, android.R.layout.simple_dropdown_item_1line);
+			try {
+				while (cursor.moveToNext())
+					textAdapter.add(cursor.getString(cursor.getColumnIndex(DatabaseInterface.INGREDIENTS.name)));
+			} finally {
+				cursor.close();
+			}
+			name.setAdapter(textAdapter);
+			
+			// Inflating spinner
+			ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
+					MainActivity.this, R.array.units, R.layout.spinner_text_white);
+			spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			unit.setAdapter(spinnerAdapter);
+			
+			// Expiration date button listener
+			expirationDate.setOnClickListener(new OnClickListener() {
+				Calendar calendar = Calendar.getInstance();
+				@Override
+				public void onClick(View v) {
+					Date date = new Date();
+					SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
+					try { date = dateFormat.parse(expirationDate.getText().toString()); }
+					catch (ParseException e) { }
+					calendar.setTime(date);
+					new DatePickerDialog(MainActivity.this, new OnDateSetListener() {
+						@Override
+						public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+							calendar.set(year, monthOfYear, dayOfMonth);
+							expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), calendar.getTime().getTime()));
+							if (calendar.getTime().getDate() < new Date().getDate())
+								expirationDate.getBackground().setColorFilter(
+										new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
+							else expirationDate.getBackground().clearColorFilter();
+							removeExpirationDate.setVisibility(View.VISIBLE);
+						}
+					}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+				}
+			});
+
+			// Remove expiration date button listener
+			removeExpirationDate.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					expirationDate.setText(R.string.ingredientExpirationDateNoExpiry);
+					expirationDate.getBackground().clearColorFilter();
+					removeExpirationDate.setVisibility(View.INVISIBLE);
+				}
+			});
+			
+			// Dialog for update
+			if (ingredientView != null) {
+				builder.setTitle(R.string.ingredientUpdate);
+				String ingredienName = ingredientView.getText().toString().trim();
+				cursor = db.getInventoryIngredient(ingredienName);
+				String unitString;
+				double quantityDouble;
+				long expirationDateLong;
+				try {
+					cursor.moveToFirst();
+					ingredientID = cursor.getInt(cursor.getColumnIndex(DatabaseInterface.INVENTORY.id));
+					unitString = cursor.getString(cursor.getColumnIndex(DatabaseInterface.INVENTORY.unit));
+					quantityDouble = cursor.getDouble(cursor.getColumnIndex(DatabaseInterface.INVENTORY.quantity));
+					expirationDateLong = cursor.getLong(cursor.getColumnIndex(DatabaseInterface.INVENTORY.expirationDate));
+				} finally {
+					cursor.close();
+				}
+				name.setText(ingredienName);
+				name.setAdapter(null);
+				quantity.setText(Double.toString(quantityDouble));
+				unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
+				if (expirationDateLong > 0) {
+					Date date = new Date(expirationDateLong);
+					expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), date.getTime()));
+					if (new Date(expirationDateLong).getDate() < new Date().getDate())
+						expirationDate.getBackground().setColorFilter(
+								new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
+					removeExpirationDate.setVisibility(View.VISIBLE);
+				}
+			}
+			
+			// Setting buttons and open the dialog
+			builder.setNegativeButton(R.string.buttonCancel, null);
+			builder.setPositiveButton(R.string.buttonSave, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (name.getText().toString().trim().length() == 0 || quantity.getText().length() == 0) return;
+					Date date = new Date();
+					SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
+					try { date = dateFormat.parse(expirationDate.getText().toString()); }
+					catch (ParseException e) { }
+					final String ingredientName = name.getText().toString().trim();
+					final double ingredientQuantity = new Double(quantity.getText().toString());
+					final String ingredientUnit = unit.getSelectedItem().toString();
+					final long ingredientExpirationDate =
+							expirationDate.getText().toString().equals(getString(R.string.ingredientExpirationDateNoExpiry))
+							? 0 : date.getTime();
+					final int existingIngredientID;
+					// Check if another ingredient is already stored with the same name
+					if (db.inventoryIngredientAlreadyExists(ingredientName) &&
+						(existingIngredientID = db.getInventoryIngredientID(ingredientName)) != ingredientID) {
+						String ingredientAlreadyExists = getString(R.string.ingredientAlreadyExists).replaceFirst("\\?", ingredientName);
+						new AlertDialog.Builder(MainActivity.this)
+							.setMessage(ingredientAlreadyExists)
+							.setNegativeButton(R.string.buttonCancel, null)
+							.setPositiveButton(R.string.buttonSave, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									db.deleteInventoryIngredient(existingIngredientID);
+									// New ingredient replace existing one
+									if (ingredientView == null) db.insertInventoryIngredient(
+											ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+									// Existing ingredient replace another one
+									else db.updateInventoryIngredient(ingredientID,
+											ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+									String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
+									Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
+									// Updating the inventory page
+									layout.removeViewAt(0);
+									layout.addView(getInventoryListViewFromDatabase(), 0);
+								}
+							}).show();
+					} else {
+						if (ingredientView == null) {
+							// Insert new ingredient
+							db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+							String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);
+							Toast.makeText(MainActivity.this, ingredientAdded, Toast.LENGTH_SHORT).show();
+						} else {
+							// Update existing ingredient
+							db.updateInventoryIngredient(ingredientID, ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
+							String ingredientUpdate = getString(R.string.ingredientUpdated).replaceFirst("\\?", ingredientName);
+							Toast.makeText(MainActivity.this, ingredientUpdate, Toast.LENGTH_SHORT).show();
+						}
+						// Updating the inventory page
+						layout.removeViewAt(0);
+						layout.addView(getInventoryListViewFromDatabase(), 0);
+					}
+				}
+			});
+			dialog = builder.create();
+			dialog.show();
+		}
+	}
+	
+	// Return a ListView filled with all ingredients in the inventory
+	public View getInventoryListViewFromDatabase() {
+		// Get the data from the database
+		Cursor cursor = db.getInventory();
+		ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String, Object>>();
+		String[] from = new String[] {
+				DatabaseInterface.INVENTORY.name,
+				DatabaseInterface.INVENTORY.quantity,
+				DatabaseInterface.INVENTORY.unit,
+				DatabaseInterface.INVENTORY.id
+		};
+		
+		try {
+			// Check if there are any ingredients stored
+			if (cursor.getCount() > 0) inventoryList = db.cursorToMapArray(cursor, from);
+			else {
+				TextView text = new TextView(this);
+				text.setGravity(Gravity.CENTER);
+				text.setText(R.string.inventoryNoIngredients);
+				text.setTextSize(20 * getResources().getDisplayMetrics().density);
+				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+				text.setPadding(20, 20, 20, 20);
+				return text;
+			}
+		} finally {
+			cursor.close();
+		}
+		
+		// Inflate rows using SimpleAdapter
+		ListView list = new ListView(this);
+		list.setScrollingCacheEnabled(false);
+		list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+		list.setPadding(10, 10, 10, 10);
+		SimpleAdapter adapter = new SimpleAdapter(this, inventoryList, R.layout.ingredient_list_item, from,
+				new int[] {
+						R.id.listIngredientName,
+						R.id.listIngredientQuantity,
+						R.id.listIngredientUnit,
+						R.id.listIngredientOptions
+				});
+		adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
+			@Override
+			public boolean setViewValue(View view, Object data, String textRepresentation) {
+				if (view.getId() != R.id.listIngredientOptions) return false;
+				view.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(final View view) {
+						// Create dialog menu
+						new AlertDialog.Builder(MainActivity.this)
+							.setItems(new String[] {
+									getString(R.string.ingredientUpdate),
+									getString(R.string.ingredientDelete)
+							}, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									final LinearLayout layout = (LinearLayout) view.getParent();
+									final TextView name = (TextView) layout.findViewById(R.id.listIngredientName);
+									switch (which) {
+									case 0:
+										// Update ingredient
+										new IngredientDialog((LinearLayout) layout.getParent().getParent()).show(name);
+										break;
+									case 1:
+										// Delete ingredient
+										new AlertDialog.Builder(MainActivity.this)
+											.setTitle(R.string.ingredientDelete)
+											.setMessage(R.string.ingredientDeleteQuestion)
+											.setNegativeButton(R.string.buttonCancel, null)
+											.setPositiveButton(R.string.buttonDelete, new AlertDialog.OnClickListener() {
+												@Override
+												public void onClick(DialogInterface dialog, int which) {
+													String ingredientName = name.getText().toString().trim();
+													db.deleteInventoryIngredient(db.getInventoryIngredientID(ingredientName));
+													String ingredientDeleted = getString(R.string.ingredientDeleted)
+															.replaceFirst("\\?", ingredientName);
+													Toast.makeText(MainActivity.this, ingredientDeleted, Toast.LENGTH_SHORT).show();
+													// Updating the inventory page
+													LinearLayout linearLayout = (LinearLayout) layout.getParent().getParent();
+													linearLayout.removeViewAt(0);
+													linearLayout.addView(getInventoryListViewFromDatabase(), 0);
+												}
+											}).show();
+										break;
+									}
+								}
+							}).show();
+					}
+				});
+				return true;
+			}
+		});
+		list.setAdapter(adapter);
+		return list;
 	}
 }
