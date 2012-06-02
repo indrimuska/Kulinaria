@@ -680,16 +680,19 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public void refresh() {
-			ViewGroup parent = (ViewGroup) layout.getParent();
-			int index = parent.indexOfChild(layout);
-			parent.removeView(layout);
-			parent.addView(getView(), index);
+			if (layout != null) {
+				ViewGroup parent = (ViewGroup) layout.getParent();
+				int index = parent.indexOfChild(layout);
+				parent.removeView(layout);
+				parent.addView(getView(), index);
+			}
 		}
 	}
 	
 	// Open the ingredient dialog
 	@SuppressWarnings("unchecked")
-	public void showIngredientDialog(final String updateIngredientName) {
+	public void showIngredientDialog(String updateIngredientName) {
+		int maxID = db.getMaxInventoryIngredientID() + 1;
 		final int ingredientID;
 		
 		// Creating the dialog
@@ -759,35 +762,40 @@ public class MainActivity extends FragmentActivity {
 		});
 		
 		// Dialog for update
+		final StringBuffer ingredient = new StringBuffer();
 		if (updateIngredientName != null) {
-			builder.setTitle(R.string.ingredientUpdate);
-			Log.d("PORCO DIO", updateIngredientName);
-			cursor = db.getInventoryIngredient(updateIngredientName);
-			String unitString;
-			double quantityDouble;
-			long expirationDateLong;
-			try {
-				cursor.moveToFirst();
-				ingredientID = cursor.getInt(cursor.getColumnIndex(INVENTORY.id));
-				unitString = cursor.getString(cursor.getColumnIndex(INVENTORY.unit));
-				quantityDouble = cursor.getDouble(cursor.getColumnIndex(INVENTORY.quantity));
-				expirationDateLong = cursor.getLong(cursor.getColumnIndex(INVENTORY.expirationDate));
-			} finally {
-				cursor.close();
-			}
 			name.setText(updateIngredientName);
 			name.setAdapter(null);
-			quantity.setText(Double.toString(quantityDouble));
-			unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
-			if (expirationDateLong > 0) {
-				Date date = new Date(expirationDateLong);
-				expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), date.getTime()));
-				if (new Date(expirationDateLong).getDate() < new Date().getDate())
-					expirationDate.getBackground().setColorFilter(
-							new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
-				removeExpirationDate.setVisibility(View.VISIBLE);
+			cursor = db.getInventoryIngredient(updateIngredientName);
+			if (cursor.getCount() > 0) {
+				builder.setTitle(R.string.ingredientUpdate);
+				ingredient.append(updateIngredientName);
+				String unitString;
+				double quantityDouble;
+				long expirationDateLong;
+				try {
+					cursor.moveToFirst();
+					ingredientID = cursor.getInt(cursor.getColumnIndex(INVENTORY.id));
+					unitString = cursor.getString(cursor.getColumnIndex(INVENTORY.unit));
+					quantityDouble = cursor.getDouble(cursor.getColumnIndex(INVENTORY.quantity));
+					expirationDateLong = cursor.getLong(cursor.getColumnIndex(INVENTORY.expirationDate));
+				} finally {
+					cursor.close();
+				}
+				quantity.setText(Double.toString(quantityDouble));
+				unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
+				if (expirationDateLong > 0) {
+					Date date = new Date(expirationDateLong);
+					expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), date.getTime()));
+					if (new Date(expirationDateLong).getDate() < new Date().getDate())
+						expirationDate.getBackground().setColorFilter(
+								new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
+					removeExpirationDate.setVisibility(View.VISIBLE);
+				}
+			} else {
+				ingredientID = maxID;
 			}
-		} else ingredientID = db.getMaxInventoryIngredientID()+1;
+		} else ingredientID = maxID;
 		
 		// Setting buttons and open the dialog
 		builder.setNegativeButton(R.string.buttonCancel, null);
@@ -818,7 +826,7 @@ public class MainActivity extends FragmentActivity {
 							public void onClick(DialogInterface dialog, int which) {
 								db.deleteInventoryIngredient(existingIngredientID);
 								// New ingredient replace existing one
-								if (updateIngredientName == null) db.insertInventoryIngredient(
+								if (ingredient.length() == 0) db.insertInventoryIngredient(
 										ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 								// Existing ingredient replace another one
 								else db.updateInventoryIngredient(ingredientID,
@@ -832,7 +840,7 @@ public class MainActivity extends FragmentActivity {
 							}
 						}).show();
 				} else {
-					if (updateIngredientName == null) {
+					if (ingredient.length() == 0) {
 						// Insert new ingredient
 						db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 						String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);
