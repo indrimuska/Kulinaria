@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/text1"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:gravity="left|center_vertical"
+	android:paddingLeft="10dp"
+	android:paddingRight="10dp"
+	android:text="@string/shoppingListGroupBy"
+	android:textSize="18dp"
+	android:textColor="@color/bottom_light_text" />

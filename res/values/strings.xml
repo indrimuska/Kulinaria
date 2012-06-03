@@ -65,6 +65,7 @@
 	<string name="recipeReadyIn">Ready in ?</string>
 	
 	<string name="shoppingListPage">Shopping List</string>
+	<string name="shoppingListGroupBy">Group by:</string>
 	<string name="shoppingListNoIngredients">No ingredients in shopping list</string>
 	
 </resources>

@@ -213,7 +213,7 @@ public class MainActivity extends FragmentActivity {
 								cursor.close();
 							}
 							db.addMenuDish(
-									new SimpleDateFormat("yyyy-MM-dd").format(day),
+									new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day),
 									meal.getSelectedItem().toString(),
 									recipesId.get(recipe.getSelectedItemPosition()));
 							String menuDishAdded = getString(R.string.menuDishAdded)
@@ -230,7 +230,7 @@ public class MainActivity extends FragmentActivity {
 					String[] meals = getResources().getStringArray(R.array.meals);
 					ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
 					for (String meal : getResources().getStringArray(R.array.meals))
-						menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(day), meal));
+						menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal));
 					ArrayList<Integer> recipesToExclude = new ArrayList<Integer>();
 					for (int i = 0; i < menuByMeal.size(); i++)
 						if (meals[i].equals(meal.getSelectedItem().toString()))
@@ -271,7 +271,7 @@ public class MainActivity extends FragmentActivity {
 			final String[] meals = getResources().getStringArray(R.array.meals);
 			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
 			for (String meal : getResources().getStringArray(R.array.meals))
-				menuByMeal.add(db.getMenu(new SimpleDateFormat("yyyy-MM-dd").format(day), meal));
+				menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal));
 			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
 				@Override
 				public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
@@ -342,7 +342,7 @@ public class MainActivity extends FragmentActivity {
 													public void onClick(DialogInterface dialog, int which) {
 														String dishName = name.getText().toString().trim();
 														db.deleteMenuDish(
-																new SimpleDateFormat("yyyy-MM-dd").format(day), meal, recipeId);
+																new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal, recipeId);
 														String dishDelete = getString(R.string.menuDishDeleted)
 																.replaceFirst("\\?", dishName);
 														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_SHORT).show();
@@ -404,24 +404,17 @@ public class MainActivity extends FragmentActivity {
 		// Return a ListView filled with all ingredients in the inventory
 		public View getInventoryListViewFromDatabase() {
 			// Get the data from the database
-			Cursor cursor = db.getInventory();
-			ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String, Object>>();
-			String[] from = new String[] { INVENTORY.name, INVENTORY.quantity, INVENTORY.unit, INVENTORY.id };
+			ArrayList<Map<String, Object>> inventoryList = db.getInventory();
 			
-			try {
-				// Check if there are any ingredients stored
-				if (cursor.getCount() > 0) inventoryList = db.cursorToMapArray(cursor, from);
-				else {
-					TextView text = new TextView(MainActivity.this);
-					text.setGravity(Gravity.CENTER);
-					text.setText(R.string.inventoryNoIngredients);
-					text.setTextSize(20 * getResources().getDisplayMetrics().density);
-					text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
-					text.setPadding(20, 20, 20, 20);
-					return text;
-				}
-			} finally {
-				cursor.close();
+			// Check if there are any ingredients stored
+			if (inventoryList.isEmpty()) {
+				TextView text = new TextView(MainActivity.this);
+				text.setGravity(Gravity.CENTER);
+				text.setText(R.string.inventoryNoIngredients);
+				text.setTextSize(20 * getResources().getDisplayMetrics().density);
+				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+				text.setPadding(20, 20, 20, 20);
+				return text;
 			}
 			
 			// Inflate rows using SimpleAdapter
@@ -429,7 +422,8 @@ public class MainActivity extends FragmentActivity {
 			list.setScrollingCacheEnabled(false);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 			list.setPadding(10, 10, 10, 10);
-			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.ingredient_list_item, from,
+			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.ingredient_list_item,
+					new String[] { INVENTORY.name, INVENTORY.quantity, INVENTORY.unit, INVENTORY.id },
 					new int[] { R.id.listIngredientName, R.id.listIngredientQuantity, R.id.listIngredientUnit, R.id.listIngredientOptions });
 			adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
 				@Override
@@ -596,31 +590,52 @@ public class MainActivity extends FragmentActivity {
 	final class ShoppingListPage extends Page {
 		public ShoppingListPage() { super(R.string.shoppingListPage); }
 		
-		// Shopping list layout
+		// Shopping list variables
 		LinearLayout layout;
+		int groupByPosition = 0;
 		
 		@Override
 		public View getView() {
 			layout = (LinearLayout) getLayoutInflater().inflate(R.layout.shopping_page, null);
+			Spinner groupBySpinner = (Spinner) layout.findViewById(R.id.shoppingListGroupBy);
+			String[] groupByStrings = getResources().getStringArray(R.array.groupBy);
+			
+			// Set the group-by spinner
+			ArrayAdapter<CharSequence> groupByAdapter = ArrayAdapter.createFromResource(
+					MainActivity.this, R.array.groupBy, R.layout.shopping_page_spinner_item);
+			groupByAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			groupBySpinner.setAdapter(groupByAdapter);
+			groupBySpinner.setSelection(groupByPosition);
+			groupBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+				@Override
+				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+					groupByPosition = position;
+				}
+				@Override public void onNothingSelected(AdapterView<?> parent) { }
+			});
 			
 			// Get the inventory list
-			Cursor cursor = db.getInventory();
-			ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String,Object>>();
-			try {
-				inventoryList = db.cursorToMapArray(cursor,
-						new String[] { INVENTORY.id, INVENTORY.name, INVENTORY.quantity, INVENTORY.unit });
-			} finally {
-				cursor.close();
-			}
+			ArrayList<Map<String, Object>> inventoryList = db.getInventory();
+			
+			// Get the last shopping day (+1)
+			Date lastShoppingDay = db.getLastShoppingDay();
+			lastShoppingDay.setDate(lastShoppingDay.getDate() + 1);
 			
 			// Set the ListView adapter
 			String dayString;
-			Date day = new Date();
 			ArrayList<Map<String, Object>> dailyShoppingList;
 			Locale.setDefault(new Locale(getString(R.string.language)));
 			final GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
-			while (!(dailyShoppingList = db.getShoppingList(
-						dayString = new SimpleDateFormat("yyyy-MM-dd").format(day), inventoryList)).isEmpty()) {
+			for (Date day = new Date();
+					!new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day).equals(
+							new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(lastShoppingDay));
+					day.setDate(day.getDate() + 1)) {
+				// Get the shopping list for this day
+				dailyShoppingList = db.getShoppingList(
+						dayString = new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), inventoryList);
+				if (dailyShoppingList.isEmpty()) continue;
+				
+				// Create the day-adapter
 				final SimpleAdapter dailyList = new SimpleAdapter(MainActivity.this, dailyShoppingList, R.layout.shopping_list_item,
 						new String[] {
 								"i." + INGREDIENTS.name,
@@ -641,7 +656,7 @@ public class MainActivity extends FragmentActivity {
 							@Override
 							@SuppressWarnings("unchecked")
 							public void onClick(View view) {
-								// Creating the dialog
+								// Creating the dialog to show where the ingredient is need
 								View dialogView = getLayoutInflater().inflate(R.layout.shopping_list_dialog, null);
 								AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 								builder.setView(dialogView);
@@ -687,13 +702,14 @@ public class MainActivity extends FragmentActivity {
 						return true;
 					}
 				});
+				
+				// Set the header for this section
 				Date tomorrow = new Date();
 				tomorrow.setDate(tomorrow.getDate() + 1);
 				if (day.getDate() == new Date().getDate()) dayString = getString(R.string.today); else
 				if (day.getDate() == tomorrow.getDate()) dayString = getString(R.string.tomorrow);
 				else dayString = new SimpleDateFormat(getString(R.string.extendedDateFormat)).format(day);
 				adapter.addSection(dayString, dailyList);
-				day.setDate(day.getDate() + 1);
 			}
 			ListView listView = (ListView) layout.findViewById(R.id.shoppingList);
 			if (adapter.getCount() > 0) listView.setAdapter(adapter);
@@ -895,8 +911,5 @@ public class MainActivity extends FragmentActivity {
 			}
 		});
 		builder.show();
-		// TODO: check if this code is needed
-		/*dialog = builder.create();
-		dialog.show();*/
 	}
 }

@@ -1,7 +1,10 @@
 package com.indrimuska.kulinaria;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,8 @@ public class DatabaseInterface {
 	
 	static final int VERSION = 1;
 	static final String DATABASE = "kulinaria.db";
+	
+	public static final String DATAFORMAT = "yyyy-MM-dd";
 	
 	// Tables definition
 	public static final class INVENTORY {
@@ -342,9 +347,12 @@ public class DatabaseInterface {
 	}
 	
 	// Get the list of ingredients stored in the inventory
-	public Cursor getInventory() {
+	public ArrayList<Map<String, Object>> getInventory() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(INVENTORY.TABLE, null, null, null, null, null, INVENTORY.ORDER_BY);
+		String[] columns = { INVENTORY.id, INVENTORY.name, INVENTORY.quantity, INVENTORY.unit };
+		Cursor cursor = db.query(INVENTORY.TABLE, null, null, null, null, null, INVENTORY.ORDER_BY);
+		try { return cursorToMapArray(cursor, columns); }
+		finally { cursor.close(); }
 	}
 	
 	// Check if an ingredient is already stored
@@ -558,14 +566,7 @@ public class DatabaseInterface {
 	public boolean canEatDrinkRecipe(int recipeId) {
 		// Get the lists
 		ArrayList<Map<String, Object>> recipeIngredients = getRecipeIngredients(recipeId);
-		ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String, Object>>();
-		Cursor cursor = getInventory();
-		try {
-			inventoryList = cursorToMapArray(cursor,
-					new String[] { INVENTORY.id, INVENTORY.name, INVENTORY.quantity, INVENTORY.unit });
-		} finally {
-			cursor.close();
-		}
+		ArrayList<Map<String, Object>> inventoryList     = getInventory();
 		
 		// Iterate the lists
 		for (Map<String, Object> ingredient : recipeIngredients) {
@@ -580,6 +581,28 @@ public class DatabaseInterface {
 				return false;
 		}
 		return true;
+	}
+	
+	// Get the last day of shopping
+	public Date getLastShoppingDay() {
+		Date last = new Date();
+		ArrayList<Map<String, Object>> inventoryList = getInventory();
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DATAFORMAT);
+		
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		Cursor cursor = db.query(MENU.TABLE, null, MENU.date + " >= date('now')", null, null, null, MENU.date + " asc");
+		try {
+			while (cursor.moveToNext()) {
+				Date date = new Date();
+				try { date = dateFormat.parse(cursor.getString(cursor.getColumnIndex(MENU.date))); }
+				catch (ParseException e) { }
+				if (!getShoppingList(dateFormat.format(date), inventoryList).isEmpty())
+					last = date;
+			}
+		} finally {
+			cursor.close();
+		}
+		return last;
 	}
 	
 	// Get the shopping list for a day
