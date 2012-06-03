@@ -518,7 +518,6 @@ public class DatabaseInterface {
 	
 	// Get the menu chosen for a meal
 	public ArrayList<Integer> getMenu(String date, String meal) {
-		Log.d(TAG, "getMenu: " + meal);
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		try {
 			Cursor cursor = db.query(MENU.TABLE, new String[] { MENU.recipeId },
@@ -555,14 +554,41 @@ public class DatabaseInterface {
 		finally { db.close(); }
 	}
 	
+	// Check if there are enough ingredients to eat a recipe
+	public boolean canEatDrinkRecipe(int recipeId) {
+		// Get the lists
+		ArrayList<Map<String, Object>> recipeIngredients = getRecipeIngredients(recipeId);
+		ArrayList<Map<String, Object>> inventoryList = new ArrayList<Map<String, Object>>();
+		Cursor cursor = getInventory();
+		try {
+			inventoryList = cursorToMapArray(cursor,
+					new String[] { INVENTORY.id, INVENTORY.name, INVENTORY.quantity, INVENTORY.unit });
+		} finally {
+			cursor.close();
+		}
+		
+		// Iterate the lists
+		for (Map<String, Object> ingredient : recipeIngredients) {
+			Map<String, Object> inventoryIngredient;
+			if ((inventoryIngredient = isIngredientInList(
+					getIngredientName(Integer.parseInt(ingredient.get(RECIPES_INGREDIENTS.ingredientId).toString())),
+					inventoryList, INVENTORY.name)) == null ||
+					!inventoryIngredient.get(INVENTORY.unit).toString().equals(
+							ingredient.get(RECIPES_INGREDIENTS.unit).toString()) ||
+					Float.parseFloat(ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString()) >
+					Float.parseFloat(inventoryIngredient.get(INVENTORY.quantity).toString()))
+				return false;
+		}
+		return true;
+	}
+	
 	// Get the shopping list for a day
 	public ArrayList<Map<String, Object>> getShoppingList(String date, ArrayList<Map<String, Object>> inventoryIngredients) {
-		Log.d(TAG, "getShoppingList: " + date);
-		ArrayList<Map<String, Object>> shoppingList, recipeIngredients = new ArrayList<Map<String,Object>>();
+		ArrayList<Map<String, Object>> shoppingList, recipeIngredients = new ArrayList<Map<String, Object>>();
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		Cursor cursor;
 		
-		// Get ingredients list for a recipe
+		// Get ingredients list for each recipe
 		String[] recipeColumns = new String[] {
 				"m." + MENU.meal,
 				"r." + RECIPES.id,
@@ -593,12 +619,16 @@ public class DatabaseInterface {
 		for (Map<String, Object> ingredient : recipeIngredients) {
 			Map<String, Object> inventoryIngredient = isIngredientInList(
 					ingredient.get("i." + INGREDIENTS.name).toString(), inventoryIngredients, INVENTORY.name);
-			if (inventoryIngredient != null) {
+			if (inventoryIngredient != null &&
+					inventoryIngredient.get(INVENTORY.unit).toString().equals(
+							ingredient.get("ri." + RECIPES_INGREDIENTS.unit).toString())) {
 				// ingredient is already in the inventory list -> check the shopping list
 				float difference =
 						Float.parseFloat(inventoryIngredient.get(INVENTORY.quantity).toString()) -
 						Float.parseFloat(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString());
 				inventoryIngredient.put(INVENTORY.quantity, Math.max(0, difference));
+				Log.d(TAG, "inventoryIngredient[unit]="+inventoryIngredient.get(INVENTORY.unit).toString());
+				Log.d(TAG, "ingredient[unit]="+ingredient.get("ri." + RECIPES_INGREDIENTS.unit).toString());
 				if (difference < 0) {
 					Map<String, Object> shoppingListIngredient = isIngredientInList(
 							ingredient.get("i." + INGREDIENTS.name).toString(), shoppingList, "i." + INGREDIENTS.name);

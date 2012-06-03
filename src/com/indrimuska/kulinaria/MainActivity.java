@@ -28,7 +28,6 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -301,6 +300,7 @@ public class MainActivity extends FragmentActivity {
 							// Create dialog menu
 							new AlertDialog.Builder(MainActivity.this)
 								.setItems(new String[] {
+										getString(R.string.menuDishEatDrink),
 										getString(R.string.menuDishDelete)
 								}, new DialogInterface.OnClickListener() {
 									@Override
@@ -309,6 +309,29 @@ public class MainActivity extends FragmentActivity {
 										final TextView name = (TextView) layout.findViewById(R.id.menuDishName);
 										switch (which) {
 										case 0:
+											// Eat/drink dish
+											if (db.canEatDrinkRecipe(recipeId))
+												new AlertDialog.Builder(MainActivity.this)
+													.setTitle(R.string.menuDishEatDrink)
+													.setMessage(R.string.dialogAreYouSure)
+													.setNegativeButton(R.string.buttonNo, null)
+													.setPositiveButton(R.string.buttonYes, new AlertDialog.OnClickListener() {
+														@Override
+														public void onClick(DialogInterface dialog, int which) {
+														}
+													}).show();
+											else
+												new AlertDialog.Builder(MainActivity.this)
+													.setMessage(R.string.menuDishCantEatDrink)
+													.setNegativeButton(R.string.buttonCancel, null)
+													.setPositiveButton(R.string.menuDishEatDrinkAnyway,
+															new AlertDialog.OnClickListener() {
+																@Override
+																public void onClick(DialogInterface dialog, int which) {
+																}
+													}).show();
+											break;
+										case 1:
 											// Delete recipe
 											new AlertDialog.Builder(MainActivity.this)
 												.setTitle(R.string.menuDishDelete)
@@ -614,7 +637,6 @@ public class MainActivity extends FragmentActivity {
 					@Override
 					public boolean setViewValue(View view, final Object data, String textRepresentation) {
 						if (view.getId() != R.id.shoppingListInformations) return false;
-						Log.d(pageName, "textRepresentation=" + textRepresentation);
 						((ImageView) view).setOnClickListener(new OnClickListener() {
 							@Override
 							@SuppressWarnings("unchecked")
@@ -673,7 +695,19 @@ public class MainActivity extends FragmentActivity {
 				adapter.addSection(dayString, dailyList);
 				day.setDate(day.getDate() + 1);
 			}
-			((ListView) layout.findViewById(R.id.shoppingList)).setAdapter(adapter);
+			ListView listView = (ListView) layout.findViewById(R.id.shoppingList);
+			if (adapter.getCount() > 0) listView.setAdapter(adapter);
+			else {
+				TextView text = new TextView(MainActivity.this);
+				text.setGravity(Gravity.CENTER);
+				text.setText(R.string.shoppingListNoIngredients);
+				text.setTextSize(20 * getResources().getDisplayMetrics().density);
+				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
+				text.setPadding(20, 20, 20, 20);
+				int index = layout.indexOfChild(listView);
+				layout.removeView(listView);
+				layout.addView(text, index);
+			}
 			
 			return layout;
 		}
@@ -741,7 +775,7 @@ public class MainActivity extends FragmentActivity {
 					public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 						calendar.set(year, monthOfYear, dayOfMonth);
 						expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), calendar.getTime().getTime()));
-						if (calendar.getTime().getDate() < new Date().getDate())
+						if (calendar.before(Calendar.getInstance()))
 							expirationDate.getBackground().setColorFilter(
 									new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
 						else expirationDate.getBackground().clearColorFilter();
@@ -787,7 +821,9 @@ public class MainActivity extends FragmentActivity {
 				if (expirationDateLong > 0) {
 					Date date = new Date(expirationDateLong);
 					expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), date.getTime()));
-					if (new Date(expirationDateLong).getDate() < new Date().getDate())
+					Calendar expirationDateCalendar = Calendar.getInstance();
+					expirationDateCalendar.setTime(new Date(expirationDateLong));
+					if (expirationDateCalendar.before(Calendar.getInstance()))
 						expirationDate.getBackground().setColorFilter(
 								new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
 					removeExpirationDate.setVisibility(View.VISIBLE);
