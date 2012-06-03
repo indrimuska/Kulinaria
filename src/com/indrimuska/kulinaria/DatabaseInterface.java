@@ -650,8 +650,6 @@ public class DatabaseInterface {
 						Float.parseFloat(inventoryIngredient.get(INVENTORY.quantity).toString()) -
 						Float.parseFloat(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString());
 				inventoryIngredient.put(INVENTORY.quantity, Math.max(0, difference));
-				Log.d(TAG, "inventoryIngredient[unit]="+inventoryIngredient.get(INVENTORY.unit).toString());
-				Log.d(TAG, "ingredient[unit]="+ingredient.get("ri." + RECIPES_INGREDIENTS.unit).toString());
 				if (difference < 0) {
 					Map<String, Object> shoppingListIngredient = isIngredientInList(
 							ingredient.get("i." + INGREDIENTS.name).toString(), shoppingList, "i." + INGREDIENTS.name);

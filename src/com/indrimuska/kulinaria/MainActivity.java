@@ -28,6 +28,7 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -598,14 +599,12 @@ public class MainActivity extends FragmentActivity {
 		public View getView() {
 			layout = (LinearLayout) getLayoutInflater().inflate(R.layout.shopping_page, null);
 			Spinner groupBySpinner = (Spinner) layout.findViewById(R.id.shoppingListGroupBy);
-			String[] groupByStrings = getResources().getStringArray(R.array.groupBy);
 			
 			// Set the group-by spinner
 			ArrayAdapter<CharSequence> groupByAdapter = ArrayAdapter.createFromResource(
 					MainActivity.this, R.array.groupBy, R.layout.shopping_page_spinner_item);
 			groupByAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			groupBySpinner.setAdapter(groupByAdapter);
-			groupBySpinner.setSelection(groupByPosition);
 			groupBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -618,99 +617,112 @@ public class MainActivity extends FragmentActivity {
 			ArrayList<Map<String, Object>> inventoryList = db.getInventory();
 			
 			// Get the last shopping day (+1)
-			Date lastShoppingDay = db.getLastShoppingDay();
-			lastShoppingDay.setDate(lastShoppingDay.getDate() + 1);
+			Date lastShoppingDayPlusOne = db.getLastShoppingDay();
+			lastShoppingDayPlusOne.setDate(lastShoppingDayPlusOne.getDate() + 1);
+			Date lastShoppingDayPlusTwo = new Date();
+			lastShoppingDayPlusTwo.setDate(lastShoppingDayPlusOne.getDate() + 1);
 			
 			// Set the ListView adapter
-			String dayString;
-			ArrayList<Map<String, Object>> dailyShoppingList;
+			Date tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
 			Locale.setDefault(new Locale(getString(R.string.language)));
+			ArrayList<Map<String, Object>> sectionShoppingList = new ArrayList<Map<String, Object>>();
 			final GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
-			for (Date day = new Date();
-					!new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day).equals(
-							new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(lastShoppingDay));
+			for (Date day = new Date(), today = new Date(), lastDayGroupBy = new Date();
+					day.getDate() != lastShoppingDayPlusTwo.getDate();
 					day.setDate(day.getDate() + 1)) {
-				// Get the shopping list for this day
-				dailyShoppingList = db.getShoppingList(
-						dayString = new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), inventoryList);
-				if (dailyShoppingList.isEmpty()) continue;
+				// Day string
+				String header = new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day);
 				
-				// Create the day-adapter
-				final SimpleAdapter dailyList = new SimpleAdapter(MainActivity.this, dailyShoppingList, R.layout.shopping_list_item,
-						new String[] {
-								"i." + INGREDIENTS.name,
-								"ri." + RECIPES_INGREDIENTS.ingredientNeed,
-								"ri." + RECIPES_INGREDIENTS.unit,
-								"i." + INGREDIENTS.id
-						}, new int[] {
-								R.id.shoppingListIngredient,
-								R.id.shoppingListQuantity,
-								R.id.shoppingListUnit,
-								R.id.shoppingListInformations
-						});
-				dailyList.setViewBinder(new SimpleAdapter.ViewBinder() {
-					@Override
-					public boolean setViewValue(View view, final Object data, String textRepresentation) {
-						if (view.getId() != R.id.shoppingListInformations) return false;
-						((ImageView) view).setOnClickListener(new OnClickListener() {
+				if (day.getDate() == lastDayGroupBy.getDate() ||
+					day.getDate() == lastShoppingDayPlusOne.getDate()) {
+					// if the shopping list is not empty inflate the adapter 
+					if (!sectionShoppingList.isEmpty()) {
+						// Create the adapter
+						final SimpleAdapter sectionList = new SimpleAdapter(MainActivity.this, sectionShoppingList,
+								R.layout.shopping_list_item,
+								new String[] {
+										"i." + INGREDIENTS.name,
+										"ri." + RECIPES_INGREDIENTS.ingredientNeed,
+										"ri." + RECIPES_INGREDIENTS.unit,
+										"i." + INGREDIENTS.id
+								}, new int[] {
+										R.id.shoppingListIngredient,
+										R.id.shoppingListQuantity,
+										R.id.shoppingListUnit,
+										R.id.shoppingListInformations
+								});
+						sectionList.setViewBinder(new SimpleAdapter.ViewBinder() {
 							@Override
-							@SuppressWarnings("unchecked")
-							public void onClick(View view) {
-								// Creating the dialog to show where the ingredient is need
-								View dialogView = getLayoutInflater().inflate(R.layout.shopping_list_dialog, null);
-								AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-								builder.setView(dialogView);
-								
-								// Get the ingredient informations
-								int i = 0;
-								for (i = 0; i < dailyList.getCount(); i++)
-									if (((Map<String, Object>) dailyList.getItem(i)).get("i." + INGREDIENTS.id)
-											.toString().equals(data.toString()))
-										break;
-								if (i == dailyList.getCount()) return;
-								final Map<String, Object> ingredient = (Map<String, Object>) dailyList.getItem(i);
-								String[] meals = ingredient.get("m." + MENU.meal).toString().split("\\|");
-								String[] recipes = ingredient.get("r." + RECIPES.name).toString().split("\\|");
-								
-								// Fill the ListView
-								GroupedListAdapter shoppingListAdapter = new GroupedListAdapter(
-										MainActivity.this, R.layout.shopping_list_dialog_header);
-								for (int m = 0; m < meals.length; m++) {
-									ArrayList<Map<String, Object>> recipesList = new ArrayList<Map<String,Object>>();
-									Map<String, Object> recipeName = new HashMap<String, Object>();
-									recipeName.put(RECIPES.name, recipes[m]);
-									recipesList.add(recipeName);
-									shoppingListAdapter.addSection(meals[m].toUpperCase(),
-											new SimpleAdapter(MainActivity.this, recipesList, R.layout.shopping_list_dialog_item,
-													new String[] { RECIPES.name }, new int[] { R.id.text1 })
-									);
-								}
-								((ListView) dialogView.findViewById(R.id.shoppingListDialogList)).setAdapter(shoppingListAdapter);
-								
-								// Show the dialog
-								builder.setTitle(ingredient.get("i." + INGREDIENTS.name).toString());
-								builder.setNegativeButton(R.string.buttonClose, null);
-								builder.setPositiveButton(R.string.ingredientAdd, new DialogInterface.OnClickListener() {
+							public boolean setViewValue(View view, final Object data, String textRepresentation) {
+								if (view.getId() != R.id.shoppingListInformations) return false;
+								((ImageView) view).setOnClickListener(new OnClickListener() {
 									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										showIngredientDialog(ingredient.get("i." + INGREDIENTS.name).toString().trim());
+									@SuppressWarnings("unchecked")
+									public void onClick(View view) {
+										// Creating the dialog to show where the ingredient is need
+										View dialogView = getLayoutInflater().inflate(R.layout.shopping_list_dialog, null);
+										AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+										builder.setView(dialogView);
+										
+										// Get the ingredient informations
+										int i = 0;
+										for (i = 0; i < sectionList.getCount(); i++)
+											if (((Map<String, Object>) sectionList.getItem(i)).get("i." + INGREDIENTS.id)
+													.toString().equals(data.toString()))
+												break;
+										if (i == sectionList.getCount()) return;
+										final Map<String, Object> ingredient = (Map<String, Object>) sectionList.getItem(i);
+										String[] meals = ingredient.get("m." + MENU.meal).toString().split("\\|");
+										String[] recipes = ingredient.get("r." + RECIPES.name).toString().split("\\|");
+										
+										// Fill the ListView
+										GroupedListAdapter shoppingListAdapter = new GroupedListAdapter(
+												MainActivity.this, R.layout.shopping_list_dialog_header);
+										for (int m = 0; m < meals.length; m++) {
+											ArrayList<Map<String, Object>> recipesList = new ArrayList<Map<String,Object>>();
+											Map<String, Object> recipeName = new HashMap<String, Object>();
+											recipeName.put(RECIPES.name, recipes[m]);
+											recipesList.add(recipeName);
+											shoppingListAdapter.addSection(meals[m].toUpperCase(),
+													new SimpleAdapter(MainActivity.this, recipesList, R.layout.shopping_list_dialog_item,
+															new String[] { RECIPES.name }, new int[] { R.id.text1 })
+											);
+										}
+										((ListView) dialogView.findViewById(R.id.shoppingListDialogList)).setAdapter(shoppingListAdapter);
+										
+										// Show the dialog
+										builder.setTitle(ingredient.get("i." + INGREDIENTS.name).toString());
+										builder.setNegativeButton(R.string.buttonClose, null);
+										builder.setPositiveButton(R.string.ingredientAdd, new DialogInterface.OnClickListener() {
+											@Override
+											public void onClick(DialogInterface dialog, int which) {
+												showIngredientDialog(ingredient.get("i." + INGREDIENTS.name).toString().trim());
+											}
+										});
+										builder.show();
 									}
 								});
-								builder.show();
+								return true;
 							}
 						});
-						return true;
+						
+						// Set the header for this section
+						Date headerDate = removeDays(lastDayGroupBy);
+						if (headerDate.getDate() == today.getDate()) header = getString(R.string.today); else
+						if (headerDate.getDate() == tomorrow.getDate()) header = getString(R.string.tomorrow);
+						else header = new SimpleDateFormat(getString(R.string.extendedDateFormat)).format(headerDate);
+						adapter.addSection(header, sectionList);
 					}
-				});
-				
-				// Set the header for this section
-				Date tomorrow = new Date();
-				tomorrow.setDate(tomorrow.getDate() + 1);
-				if (day.getDate() == new Date().getDate()) dayString = getString(R.string.today); else
-				if (day.getDate() == tomorrow.getDate()) dayString = getString(R.string.tomorrow);
-				else dayString = new SimpleDateFormat(getString(R.string.extendedDateFormat)).format(day);
-				adapter.addSection(dayString, dailyList);
+					// New section list
+					lastDayGroupBy = addDays(lastDayGroupBy);
+					sectionShoppingList = new ArrayList<Map<String, Object>>();
+				}
+				// Get the shopping list for this day
+				sectionShoppingList.addAll(db.getShoppingList(header, inventoryList));
 			}
+			
+			// Inflate the spinner or notify the shopping list is empty
 			ListView listView = (ListView) layout.findViewById(R.id.shoppingList);
 			if (adapter.getCount() > 0) listView.setAdapter(adapter);
 			else {
@@ -736,6 +748,22 @@ public class MainActivity extends FragmentActivity {
 				parent.removeView(layout);
 				parent.addView(getView(), index);
 			}
+		}
+
+		private Date addDays(Date date) {
+			Date newDate = new Date();
+			if (groupByPosition == 0) newDate.setDate(date.getDate() + 1);   // Day
+			if (groupByPosition == 1) newDate.setDate(date.getDate() + 7);   // Week
+			if (groupByPosition == 2) newDate.setMonth(date.getMonth() + 1); // Month
+			return newDate;
+		}
+		
+		private Date removeDays(Date date) {
+			Date newDate = new Date();
+			if (groupByPosition == 0) newDate.setDate(date.getDate() - 1);   // Day
+			if (groupByPosition == 1) newDate.setDate(date.getDate() - 7);   // Week
+			if (groupByPosition == 2) newDate.setMonth(date.getMonth() - 1); // Month
+			return newDate;
 		}
 	}
 	
