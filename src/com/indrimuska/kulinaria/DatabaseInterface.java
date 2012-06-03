@@ -655,12 +655,7 @@ public class DatabaseInterface {
 							ingredient.get("i." + INGREDIENTS.name).toString(), shoppingList, "i." + INGREDIENTS.name);
 					if (shoppingListIngredient != null) {
 						// ingredient is already in the shopping list -> update quantities
-						shoppingListIngredient.put("m." + MENU.meal,
-								shoppingListIngredient.get("m." + MENU.meal) + "|" + ingredient.get("m." + MENU.meal));
-						shoppingListIngredient.put("r." + RECIPES.id,
-								shoppingListIngredient.get("r." + RECIPES.id) + "|" + ingredient.get("r." + RECIPES.id));
-						shoppingListIngredient.put("r." + RECIPES.name,
-								shoppingListIngredient.get("r." + RECIPES.name) + "|" + ingredient.get("r." + RECIPES.name));
+						addShoppingListIngredient(shoppingListIngredient, ingredient);
 						shoppingListIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed, -difference +
 								Float.parseFloat(shoppingListIngredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()));
 					} else {
@@ -674,18 +669,10 @@ public class DatabaseInterface {
 				// ingredient is not in the inventory list
 				Map<String, Object> shoppingListIngredient = isIngredientInList(
 						ingredient.get("i." + INGREDIENTS.name).toString(), shoppingList, "i." + INGREDIENTS.name);
-				if (shoppingListIngredient != null) {
+				if (shoppingListIngredient != null)
 					// ingredient is already in the shopping list -> update quantities
-					shoppingListIngredient.put("m." + MENU.meal,
-							shoppingListIngredient.get("m." + MENU.meal) + "|" + ingredient.get("m." + MENU.meal));
-					shoppingListIngredient.put("r." + RECIPES.id,
-							shoppingListIngredient.get("r." + RECIPES.id) + "|" + ingredient.get("r." + RECIPES.id));
-					shoppingListIngredient.put("r." + RECIPES.name,
-							shoppingListIngredient.get("r." + RECIPES.name) + "|" + ingredient.get("r." + RECIPES.name));
-					shoppingListIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed,
-							Float.parseFloat(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()) +
-							Float.parseFloat(shoppingListIngredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()));
-				} else
+					addShoppingListIngredient(shoppingListIngredient, ingredient);
+				else
 					// ingredient is not in the shopping list
 					shoppingList.add(ingredient);
 			}
@@ -694,10 +681,23 @@ public class DatabaseInterface {
 	}
 	
 	// Search an ingredient inside a list
-	private Map<String, Object> isIngredientInList(String ingredient, ArrayList<Map<String, Object>> list, String field) {
+	public Map<String, Object> isIngredientInList(String ingredient, ArrayList<Map<String, Object>> list, String field) {
 		for (Map<String, Object> listIngredient : list)
 			if (listIngredient.get(field).toString().equals(ingredient))
 				return listIngredient;
 		return null;
+	}
+	
+	// Add an ingredient into the shopping list
+	public void addShoppingListIngredient(Map<String, Object> shoppingListIngredient, Map<String, Object> ingredient) {
+		shoppingListIngredient.put("m." + MENU.meal,
+				shoppingListIngredient.get("m." + MENU.meal) + "|" + ingredient.get("m." + MENU.meal));
+		shoppingListIngredient.put("r." + RECIPES.id,
+				shoppingListIngredient.get("r." + RECIPES.id) + "|" + ingredient.get("r." + RECIPES.id));
+		shoppingListIngredient.put("r." + RECIPES.name,
+				shoppingListIngredient.get("r." + RECIPES.name) + "|" + ingredient.get("r." + RECIPES.name));
+		shoppingListIngredient.put("ri." + RECIPES_INGREDIENTS.ingredientNeed,
+				Float.parseFloat(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()) +
+				Float.parseFloat(shoppingListIngredient.get("ri." + RECIPES_INGREDIENTS.ingredientNeed).toString()));
 	}
 }
