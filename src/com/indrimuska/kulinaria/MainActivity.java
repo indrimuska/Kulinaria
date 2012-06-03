@@ -28,7 +28,6 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -594,21 +593,27 @@ public class MainActivity extends FragmentActivity {
 		// Shopping list variables
 		LinearLayout layout;
 		int groupByPosition = 0;
+		boolean refreshed = true;
 		
 		@Override
 		public View getView() {
 			layout = (LinearLayout) getLayoutInflater().inflate(R.layout.shopping_page, null);
-			Spinner groupBySpinner = (Spinner) layout.findViewById(R.id.shoppingListGroupBy);
+			final Spinner groupBySpinner = (Spinner) layout.findViewById(R.id.shoppingListGroupBy);
 			
 			// Set the group-by spinner
 			ArrayAdapter<CharSequence> groupByAdapter = ArrayAdapter.createFromResource(
 					MainActivity.this, R.array.groupBy, R.layout.shopping_page_spinner_item);
 			groupByAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			groupBySpinner.setAdapter(groupByAdapter);
+			groupBySpinner.setSelection(groupByPosition);
 			groupBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 					groupByPosition = position;
+					// The next control is needed due to the call of the this listener method
+					// every time when the view is created
+					if (!refreshed) refresh();
+					else refreshed = false;
 				}
 				@Override public void onNothingSelected(AdapterView<?> parent) { }
 			});
@@ -719,7 +724,7 @@ public class MainActivity extends FragmentActivity {
 					sectionShoppingList = new ArrayList<Map<String, Object>>();
 				}
 				// Get the shopping list for this day
-				sectionShoppingList.addAll(db.getShoppingList(header, inventoryList));
+				mergeShoppingLists(sectionShoppingList, db.getShoppingList(header, inventoryList));
 			}
 			
 			// Inflate the spinner or notify the shopping list is empty
@@ -742,6 +747,7 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public void refresh() {
+			refreshed = true;
 			if (layout != null) {
 				ViewGroup parent = (ViewGroup) layout.getParent();
 				int index = parent.indexOfChild(layout);
@@ -749,7 +755,8 @@ public class MainActivity extends FragmentActivity {
 				parent.addView(getView(), index);
 			}
 		}
-
+		
+		// Remove days to a give date
 		private Date addDays(Date date) {
 			Date newDate = new Date();
 			if (groupByPosition == 0) newDate.setDate(date.getDate() + 1);   // Day
@@ -758,12 +765,23 @@ public class MainActivity extends FragmentActivity {
 			return newDate;
 		}
 		
+		// Remove days to a give date
 		private Date removeDays(Date date) {
 			Date newDate = new Date();
 			if (groupByPosition == 0) newDate.setDate(date.getDate() - 1);   // Day
 			if (groupByPosition == 1) newDate.setDate(date.getDate() - 7);   // Week
 			if (groupByPosition == 2) newDate.setMonth(date.getMonth() - 1); // Month
 			return newDate;
+		}
+		
+		// Merge two shopping lists
+		private void mergeShoppingLists(ArrayList<Map<String, Object>> oldList, ArrayList<Map<String, Object>> newList) {
+			for (Map<String, Object> newItem : newList) {
+				Map<String, Object> listItem = db.isIngredientInList(
+						newItem.get("i." + INGREDIENTS.id).toString(), oldList, "i." + INGREDIENTS.id);
+				if (listItem != null) db.addShoppingListIngredient(listItem, newItem);
+				else oldList.add(newItem);
+			}
 		}
 	}
 	
