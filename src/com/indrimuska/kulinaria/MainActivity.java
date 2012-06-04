@@ -1,11 +1,14 @@
 package com.indrimuska.kulinaria;
 
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -28,6 +31,7 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -636,9 +640,7 @@ public class MainActivity extends FragmentActivity {
 			for (Date day = new Date(), today = new Date(), lastDayGroupBy = new Date();
 					day.getDate() != lastShoppingDayPlusTwo.getDate();
 					day.setDate(day.getDate() + 1)) {
-				// Day string
-				String header = new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day);
-				
+				// Check if it's the last day of the group
 				if (day.getDate() == lastDayGroupBy.getDate() ||
 					day.getDate() == lastShoppingDayPlusOne.getDate()) {
 					// if the shopping list is not empty inflate the adapter 
@@ -678,6 +680,7 @@ public class MainActivity extends FragmentActivity {
 												break;
 										if (i == sectionList.getCount()) return;
 										final Map<String, Object> ingredient = (Map<String, Object>) sectionList.getItem(i);
+										String[] dates = ingredient.get("m." + MENU.date).toString().split("\\|");
 										String[] meals = ingredient.get("m." + MENU.meal).toString().split("\\|");
 										String[] recipes = ingredient.get("r." + RECIPES.name).toString().split("\\|");
 										
@@ -689,7 +692,12 @@ public class MainActivity extends FragmentActivity {
 											Map<String, Object> recipeName = new HashMap<String, Object>();
 											recipeName.put(RECIPES.name, recipes[m]);
 											recipesList.add(recipeName);
-											shoppingListAdapter.addSection(meals[m].toUpperCase(),
+											Date date = null;
+											SimpleDateFormat format = new SimpleDateFormat(DatabaseInterface.DATAFORMAT);
+											try { date = format.parse(dates[m]); }
+											catch (ParseException e) { }
+											shoppingListAdapter.addSection(meals[m].toUpperCase() + " (" +
+													new SimpleDateFormat(getString(R.string.extendedDateFormat)).format(date) + ")",
 													new SimpleAdapter(MainActivity.this, recipesList, R.layout.shopping_list_dialog_item,
 															new String[] { RECIPES.name }, new int[] { R.id.text1 })
 											);
@@ -713,6 +721,7 @@ public class MainActivity extends FragmentActivity {
 						});
 						
 						// Set the header for this section
+						String header;
 						Date headerDate = removeDays(lastDayGroupBy);
 						if (headerDate.getDate() == today.getDate()) header = getString(R.string.today); else
 						if (headerDate.getDate() == tomorrow.getDate()) header = getString(R.string.tomorrow);
@@ -724,6 +733,7 @@ public class MainActivity extends FragmentActivity {
 					sectionShoppingList = new ArrayList<Map<String, Object>>();
 				}
 				// Get the shopping list for this day
+				String header = new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day);
 				mergeShoppingLists(sectionShoppingList, db.getShoppingList(header, inventoryList));
 			}
 			

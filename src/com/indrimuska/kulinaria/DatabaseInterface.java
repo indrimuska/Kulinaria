@@ -613,6 +613,7 @@ public class DatabaseInterface {
 		
 		// Get ingredients list for each recipe
 		String[] recipeColumns = new String[] {
+				"m." + MENU.date,
 				"m." + MENU.meal,
 				"r." + RECIPES.id,
 				"r." + RECIPES.name,
@@ -690,6 +691,8 @@ public class DatabaseInterface {
 	
 	// Add an ingredient into the shopping list
 	public void addShoppingListIngredient(Map<String, Object> shoppingListIngredient, Map<String, Object> ingredient) {
+		shoppingListIngredient.put("m." + MENU.date,
+				shoppingListIngredient.get("m." + MENU.date) + "|" + ingredient.get("m." + MENU.date));
 		shoppingListIngredient.put("m." + MENU.meal,
 				shoppingListIngredient.get("m." + MENU.meal) + "|" + ingredient.get("m." + MENU.meal));
 		shoppingListIngredient.put("r." + RECIPES.id,
