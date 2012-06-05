@@ -29,6 +29,7 @@
 	<string name="menuDishEatDrink">Eat/drink !</string>
 	<string name="menuDishDelete">Delete dish</string>
 	<string name="menuDishAdded">Added ? for ?</string>
+	<string name="menuDishEatenDrunk">You have eaten/drunk a ?</string>
 	<string name="menuDishDeleted">Dish ? deleted</string>
 	<string name="menuDishDeleteQuestion">Are you sure you want to delete this dish?</string>
 	<string name="menuDishCantEatDrink">You don\'t have enough ingredient to eat/drink this dish</string>

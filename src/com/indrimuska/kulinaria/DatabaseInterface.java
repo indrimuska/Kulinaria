@@ -102,12 +102,14 @@ public class DatabaseInterface {
 		static final String date		= "date";
 		static final String meal		= "meal";
 		static final String recipeId	= "recipeId";
+		static final String eatenDrunk	= "eatenDrunk";
 		static final String ORDER_BY	= date + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " (" +
 						date +" date, " +
 						meal + " text, " +
 						recipeId + " int, " +
+						eatenDrunk + " tinyint, " +
 						"primary key( " +
 							date + ", " +
 							meal + ", " +
@@ -172,8 +174,6 @@ public class DatabaseInterface {
 		
 		// General onUpgrade (valid for each table)
 		private void onUpgradeTable(SQLiteDatabase db, String tableName, String createTable) {
-			// table might not exists yet, it will fail alter and drop
-			//onCreate(db);
 			// put in a list the existing columns
 			List<String> columns = getColumns(db, tableName);
 			// backup table
@@ -257,9 +257,6 @@ public class DatabaseInterface {
 	public DatabaseInterface(Context context) {
 		dbHelper = new DbHelper(context);
 		Log.i(TAG, "Initialized data");
-
-		//SQLiteDatabase db = dbHelper.getReadableDatabase();
-		//db.execSQL("insert into Menu values ('2012-05-28', 'Breakfast', 1)");
 	}
 	
 	public void close() {
@@ -289,7 +286,7 @@ public class DatabaseInterface {
 	}
 	
 	// Convert inventory ingredient informations to ContentValues
-	private ContentValues inventoryIngredientContentValues(String name, double quantity, String unit, long expirationDate) {
+	private ContentValues inventoryIngredientContentValues(String name, float quantity, String unit, long expirationDate) {
 		ContentValues values = new ContentValues();
 		values.put(INVENTORY.name, name);
 		values.put(INVENTORY.quantity, quantity);
@@ -299,7 +296,7 @@ public class DatabaseInterface {
 	}
 	
 	// Insert an ingredient in database
-	public void insertInventoryIngredient(String name, double quantity, String unit, long expirationDate) {
+	public void insertInventoryIngredient(String name, float quantity, String unit, long expirationDate) {
 		Log.d(TAG, "insertInventoryIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try { db.insert(INVENTORY.TABLE, null, inventoryIngredientContentValues(name, quantity, unit, expirationDate)); }
@@ -372,11 +369,24 @@ public class DatabaseInterface {
 	}
 	
 	// Update a stored ingredient
-	public void updateInventoryIngredient(int id, String name, double quantity, String unit, long expirationDate) {
+	public void updateInventoryIngredient(int id, String name, float quantity, String unit, long expirationDate) {
 		Log.d(TAG, "updateInventoryIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
 			ContentValues values = inventoryIngredientContentValues(name, quantity, unit, expirationDate);
+			db.update(INVENTORY.TABLE, values, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
+		} finally {
+			db.close();
+		}
+	}
+	
+	// Update the amount of an ingredient stored in the inventory
+	public void updateInventoryIngredientQuantity(int id, float quantity) {
+		Log.d(TAG, "updateInventoryIngredientQuantity: " + Integer.toString(id) + "," + Float.toString(quantity));
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try {
+			ContentValues values = new ContentValues();
+			values.put(INVENTORY.quantity, quantity);
 			db.update(INVENTORY.TABLE, values, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
 		} finally {
 			db.close();
@@ -458,14 +468,14 @@ public class DatabaseInterface {
 	}
 	
 	// Get all the recipes for a dish except a specific subset
-	public Cursor getRecipesExcept(String dish, ArrayList<Integer> recipesId) {
+	public Cursor getRecipesExcept(String dish, ArrayList<Map<String, Object>> recipes) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		String selectString = RECIPES.dish+"=?";
 		ArrayList<String> selectValuesArray = new ArrayList<String>();
 		selectValuesArray.add(dish);
-		for (int recipeId : recipesId) {
+		for (Map<String, Object> recipe : recipes) {
 			selectString += " and "+RECIPES.id+"!=?";
-			selectValuesArray.add(Integer.toString(recipeId));
+			selectValuesArray.add(recipe.get(MENU.recipeId).toString());
 		}
 		String[] selectValues = new String[selectValuesArray.size()];
 		selectValuesArray.toArray(selectValues);
@@ -516,24 +526,30 @@ public class DatabaseInterface {
 	}
 	
 	// Convert menu informations to ContentValues
-	private ContentValues menuContentValues(String date, String meal, int recipeId) {
+	private ContentValues menuContentValues(String date, String meal, int recipeId, boolean eatenDrunk) {
 		ContentValues values = new ContentValues();
 		values.put(MENU.date, date);
 		values.put(MENU.meal, meal);
 		values.put(MENU.recipeId, recipeId);
+		values.put(MENU.eatenDrunk, eatenDrunk ? "1" : "0");
 		return values;
 	}
 	
 	// Get the menu chosen for a meal
-	public ArrayList<Integer> getMenu(String date, String meal) {
+	public ArrayList<Map<String, Object>> getMenu(String date, String meal) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		try {
-			Cursor cursor = db.query(MENU.TABLE, new String[] { MENU.recipeId },
+			Cursor cursor = db.query(MENU.TABLE, new String[] { MENU.recipeId, MENU.eatenDrunk },
 					MENU.date+"=? and "+MENU.meal+"=?", new String[] { date, meal }, null, null, null);
 			try {
-				ArrayList<Integer> recipesId = new ArrayList<Integer>();
-				while (cursor.moveToNext()) recipesId.add(cursor.getInt(cursor.getColumnIndex(MENU.recipeId)));
-				return recipesId;
+				ArrayList<Map<String, Object>> recipes = new ArrayList<Map<String, Object>>();
+				while (cursor.moveToNext()) {
+					Map<String, Object> recipe = new HashMap<String, Object>();
+					recipe.put(MENU.recipeId, cursor.getInt(cursor.getColumnIndex(MENU.recipeId)));
+					recipe.put(MENU.eatenDrunk, cursor.getInt(cursor.getColumnIndex(MENU.eatenDrunk)));
+					recipes.add(recipe);
+				}
+				return recipes;
 			} finally {
 				cursor.close();
 			}
@@ -558,8 +574,21 @@ public class DatabaseInterface {
 	public void addMenuDish(String date, String meal, int recipeId) {
 		Log.d(TAG, "addMenuDish: " + date + "," + meal + "," + Integer.toString(recipeId));
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-		try { db.insert(MENU.TABLE, null, menuContentValues(date, meal, recipeId)); }
+		try { db.insert(MENU.TABLE, null, menuContentValues(date, meal, recipeId, false)); }
 		finally { db.close(); }
+	}
+	
+	// Set a dish as eaten/drunk
+	public void eatDrinkMenuDish(String date, String meal, int recipeId) {
+		Log.d(TAG, "eatDrinkMenuDish: " + date + "," + meal + "," + Integer.toString(recipeId));
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try {
+			db.update(MENU.TABLE, menuContentValues(date, meal, recipeId, true),
+					MENU.date+"=? and "+MENU.meal+"=? and "+MENU.recipeId+"=?",
+					new String[] { date, meal, Integer.toString(recipeId) });
+		} finally {
+			db.close();
+		}
 	}
 	
 	// Check if there are enough ingredients to eat a recipe
@@ -583,6 +612,31 @@ public class DatabaseInterface {
 		return true;
 	}
 	
+	// Delete ingredients from inventory after a menu dish has eaten/drunk
+	public void eatDrinkRecipe(int recipeId) {
+		// Get the lists
+		ArrayList<Map<String, Object>> recipeIngredients = getRecipeIngredients(recipeId);
+		ArrayList<Map<String, Object>> inventoryList     = getInventory();
+		
+		// Iterate the lists
+		for (Map<String, Object> ingredient : recipeIngredients) {
+			Map<String, Object> inventoryIngredient;
+			if ((inventoryIngredient = isIngredientInList(
+					getIngredientName(Integer.parseInt(ingredient.get(RECIPES_INGREDIENTS.ingredientId).toString())),
+					inventoryList, INVENTORY.name)) != null &&
+					inventoryIngredient.get(INVENTORY.unit).toString().equals(
+						ingredient.get(RECIPES_INGREDIENTS.unit).toString())) {
+				Float difference =
+						Float.parseFloat(inventoryIngredient.get(INVENTORY.quantity).toString()) -
+						Float.parseFloat(ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString());
+				if (difference <= 0)
+					deleteInventoryIngredient(Integer.parseInt(inventoryIngredient.get(INVENTORY.id).toString()));
+				else updateInventoryIngredientQuantity(
+						Integer.parseInt(inventoryIngredient.get(INVENTORY.id).toString()), difference);
+			}
+		}
+	}
+	
 	// Get the last day of shopping
 	public Date getLastShoppingDay() {
 		Date last = new Date();
@@ -590,14 +644,14 @@ public class DatabaseInterface {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(DATAFORMAT);
 		
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		Cursor cursor = db.query(MENU.TABLE, null, MENU.date + " >= date('now')", null, null, null, MENU.date + " asc");
+		Cursor cursor = db.query(MENU.TABLE, null, MENU.date + " >= date('now') and " + MENU.eatenDrunk + " = 0",
+				null, null, null, MENU.date + " asc");
 		try {
 			while (cursor.moveToNext()) {
-				Date date = new Date();
-				try { date = dateFormat.parse(cursor.getString(cursor.getColumnIndex(MENU.date))); }
-				catch (ParseException e) { }
-				if (!getShoppingList(dateFormat.format(date), inventoryList).isEmpty())
-					last = date;
+				String dateString = cursor.getString(cursor.getColumnIndex(MENU.date));
+				if (!getShoppingList(dateString, inventoryList).isEmpty())
+					try { last = dateFormat.parse(dateString); }
+					catch (ParseException e) { }
 			}
 		} finally {
 			cursor.close();
@@ -632,6 +686,7 @@ public class DatabaseInterface {
 						RECIPES_INGREDIENTS.TABLE + " as ri " +
 				"where " +
 						"m." + MENU.date + " = '" + date + "' and " +
+						"m." + MENU.eatenDrunk + " = 0 and " +
 						"r." + RECIPES.id + " = m." + MENU.recipeId + " and " +
 						"r." + RECIPES.id + " = ri." + RECIPES_INGREDIENTS.recipeId + " and " +
 						"i." + INGREDIENTS.id + " = ri." + RECIPES_INGREDIENTS.ingredientId, null);

@@ -12,7 +12,7 @@ public final class SliderFragment extends Fragment {
 	private static final String KEY_CONTENT = "SliderFragment:page";
 	
 	private Page page;
-
+	
 	public static SliderFragment newInstance(Page page) {
 		SliderFragment fragment = new SliderFragment();
 		fragment.page = page;

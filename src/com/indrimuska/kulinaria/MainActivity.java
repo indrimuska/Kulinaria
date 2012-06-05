@@ -1,14 +1,11 @@
 package com.indrimuska.kulinaria;
 
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -19,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -142,7 +140,7 @@ public class MainActivity extends FragmentActivity {
 	// Slider's pages implementation
 	final class MenuPage extends Page {
 		public MenuPage() { super(R.string.menuPage); }
-
+		
 		// Date of the menu
 		private Date day = new Date();
 		
@@ -230,12 +228,12 @@ public class MainActivity extends FragmentActivity {
 					builder.show();
 				}
 				
-				private ArrayList<Integer> recipesToExclude() {
+				private ArrayList<Map<String, Object>> recipesToExclude() {
 					String[] meals = getResources().getStringArray(R.array.meals);
-					ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
+					ArrayList<ArrayList<Map<String, Object>>> menuByMeal = new ArrayList<ArrayList<Map<String, Object>>>();
 					for (String meal : getResources().getStringArray(R.array.meals))
 						menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal));
-					ArrayList<Integer> recipesToExclude = new ArrayList<Integer>();
+					ArrayList<Map<String, Object>> recipesToExclude = new ArrayList<Map<String, Object>>();
 					for (int i = 0; i < menuByMeal.size(); i++)
 						if (meals[i].equals(meal.getSelectedItem().toString()))
 							recipesToExclude.addAll(menuByMeal.get(i));
@@ -273,7 +271,7 @@ public class MainActivity extends FragmentActivity {
 		// Fill the menu list
 		private void inflateMenuMealsList(final ExpandableListView menuMealsList) {
 			final String[] meals = getResources().getStringArray(R.array.meals);
-			final ArrayList<ArrayList<Integer>> menuByMeal = new ArrayList<ArrayList<Integer>>();
+			final ArrayList<ArrayList<Map<String, Object>>> menuByMeal = new ArrayList<ArrayList<Map<String, Object>>>();
 			for (String meal : getResources().getStringArray(R.array.meals))
 				menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal));
 			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
@@ -285,12 +283,15 @@ public class MainActivity extends FragmentActivity {
 					meal.setPadding(60, 20, 20, 20);
 					return meal;
 				}
-				@Override
+ 				@Override
+ 				@SuppressWarnings("unchecked")
 				public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+ 					Map<String, Object> recipe = (Map<String, Object>) getChild(groupPosition, childPosition);
 					final String meal = getGroup(groupPosition).toString();
-					final int recipeId = new Integer(getChild(groupPosition, childPosition).toString());
-					LinearLayout recipe = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_list_item, null);
-					TextView recipeName = (TextView) recipe.findViewById(R.id.menuDishName);
+					final int recipeId = Integer.parseInt(recipe.get(MENU.recipeId).toString());
+					final boolean eatenDrunk = Integer.parseInt(recipe.get(MENU.eatenDrunk).toString()) > 0;
+					LinearLayout recipeLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.menu_list_item, null);
+					TextView recipeName = (TextView) recipeLayout.findViewById(R.id.menuDishName);
 					Cursor cursor = db.getRecipe(recipeId);
 					try {
 						cursor.moveToFirst();
@@ -298,7 +299,8 @@ public class MainActivity extends FragmentActivity {
 					} finally {
 						cursor.close();
 					}
-					recipe.findViewById(R.id.menuDishButton).setOnClickListener(new OnClickListener() {
+					if (eatenDrunk) recipeName.setPaintFlags(recipeName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+					recipeLayout.findViewById(R.id.menuDishButton).setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(final View view) {
 							// Create dialog menu
@@ -314,26 +316,40 @@ public class MainActivity extends FragmentActivity {
 										switch (which) {
 										case 0:
 											// Eat/drink dish
-											if (db.canEatDrinkRecipe(recipeId))
-												new AlertDialog.Builder(MainActivity.this)
-													.setTitle(R.string.menuDishEatDrink)
-													.setMessage(R.string.dialogAreYouSure)
-													.setNegativeButton(R.string.buttonNo, null)
-													.setPositiveButton(R.string.buttonYes, new AlertDialog.OnClickListener() {
-														@Override
-														public void onClick(DialogInterface dialog, int which) {
-														}
-													}).show();
-											else
-												new AlertDialog.Builder(MainActivity.this)
-													.setMessage(R.string.menuDishCantEatDrink)
-													.setNegativeButton(R.string.buttonCancel, null)
-													.setPositiveButton(R.string.menuDishEatDrinkAnyway,
-															new AlertDialog.OnClickListener() {
-																@Override
-																public void onClick(DialogInterface dialog, int which) {
-																}
-													}).show();
+											if (eatenDrunk) break;
+											int message, buttonPositive, buttonNegative;
+											AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+											if (db.canEatDrinkRecipe(recipeId)) {
+												builder.setTitle(R.string.menuDishEatDrink);
+												message = R.string.dialogAreYouSure;
+												buttonPositive = R.string.buttonYes;
+												buttonNegative = R.string.buttonNo;
+											} else {
+												message = R.string.menuDishCantEatDrink;
+												buttonPositive = R.string.menuDishEatDrinkAnyway;
+												buttonNegative = R.string.buttonCancel;
+											}
+											builder.setMessage(message);
+											builder.setNegativeButton(buttonNegative, null);
+											builder.setPositiveButton(buttonPositive, new AlertDialog.OnClickListener() {
+												@Override
+												public void onClick(DialogInterface dialog, int which) {
+													String dishName = name.getText().toString().trim();
+													db.eatDrinkMenuDish(
+															new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal, recipeId);
+													db.eatDrinkRecipe(recipeId);
+													String dishEatenDrunk = getString(R.string.menuDishEatenDrunk)
+															.replaceFirst("\\?", dishName);
+													Toast.makeText(MainActivity.this, dishEatenDrunk, Toast.LENGTH_SHORT).show();
+													// Updating the menu page
+													inflateMenuMealsList(menuMealsList);
+													// Updating the inventory page
+													inventoryPage.refresh();
+													// Updating the shopping list page
+													shoppingListPage.refresh();
+												}
+											});
+											builder.show();
 											break;
 										case 1:
 											// Delete recipe
@@ -360,13 +376,13 @@ public class MainActivity extends FragmentActivity {
 								}).show();
 						}
 					});
-					return recipe;
+					return recipeLayout;
 				}
 				// Other methods
 				@Override public Object getGroup(int groupPosition) { return meals[groupPosition]; }
 				@Override public long getGroupId(int groupPosition) { return groupPosition; }
 				@Override public int getGroupCount() { return meals.length; }
-				@Override public Object getChild(int groupPosition, int childPosition) { return menuByMeal.get(groupPosition).get(childPosition).toString(); }
+				@Override public Object getChild(int groupPosition, int childPosition) { return menuByMeal.get(groupPosition).get(childPosition); }
 				@Override public long getChildId(int groupPosition, int childPosition) { return childPosition; }
 				@Override public int getChildrenCount(int groupPosition) { return menuByMeal.get(groupPosition).size(); }
 				@Override public boolean isChildSelectable(int groupPosition, int childPosition) { return true; }
@@ -609,7 +625,6 @@ public class MainActivity extends FragmentActivity {
 					MainActivity.this, R.array.groupBy, R.layout.shopping_page_spinner_item);
 			groupByAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			groupBySpinner.setAdapter(groupByAdapter);
-			groupBySpinner.setSelection(groupByPosition);
 			groupBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -630,6 +645,9 @@ public class MainActivity extends FragmentActivity {
 			lastShoppingDayPlusOne.setDate(lastShoppingDayPlusOne.getDate() + 1);
 			Date lastShoppingDayPlusTwo = new Date();
 			lastShoppingDayPlusTwo.setDate(lastShoppingDayPlusOne.getDate() + 1);
+
+			Log.d(pageName, "lastShoppingDayPlusOne="+lastShoppingDayPlusOne.toLocaleString());
+			Log.d(pageName, "lastShoppingDayPlusTwo="+lastShoppingDayPlusTwo.toLocaleString());
 			
 			// Set the ListView adapter
 			Date tomorrow = new Date();
@@ -640,6 +658,7 @@ public class MainActivity extends FragmentActivity {
 			for (Date day = new Date(), today = new Date(), lastDayGroupBy = new Date();
 					day.getDate() != lastShoppingDayPlusTwo.getDate();
 					day.setDate(day.getDate() + 1)) {
+				Log.d(pageName, "day="+day.toLocaleString());
 				// Check if it's the last day of the group
 				if (day.getDate() == lastDayGroupBy.getDate() ||
 					day.getDate() == lastShoppingDayPlusOne.getDate()) {
@@ -688,18 +707,14 @@ public class MainActivity extends FragmentActivity {
 										GroupedListAdapter shoppingListAdapter = new GroupedListAdapter(
 												MainActivity.this, R.layout.shopping_list_dialog_header);
 										for (int m = 0; m < meals.length; m++) {
-											ArrayList<Map<String, Object>> recipesList = new ArrayList<Map<String,Object>>();
-											Map<String, Object> recipeName = new HashMap<String, Object>();
-											recipeName.put(RECIPES.name, recipes[m]);
-											recipesList.add(recipeName);
 											Date date = null;
 											SimpleDateFormat format = new SimpleDateFormat(DatabaseInterface.DATAFORMAT);
 											try { date = format.parse(dates[m]); }
 											catch (ParseException e) { }
 											shoppingListAdapter.addSection(meals[m].toUpperCase() + " (" +
 													new SimpleDateFormat(getString(R.string.extendedDateFormat)).format(date) + ")",
-													new SimpleAdapter(MainActivity.this, recipesList, R.layout.shopping_list_dialog_item,
-															new String[] { RECIPES.name }, new int[] { R.id.text1 })
+													new ArrayAdapter<String>(MainActivity.this,
+															R.layout.shopping_list_dialog_item, new String[] { recipes[m] })
 											);
 										}
 										((ListView) dialogView.findViewById(R.id.shoppingListDialogList)).setAdapter(shoppingListAdapter);
@@ -763,6 +778,7 @@ public class MainActivity extends FragmentActivity {
 				int index = parent.indexOfChild(layout);
 				parent.removeView(layout);
 				parent.addView(getView(), index);
+				((Spinner) layout.findViewById(R.id.shoppingListGroupBy)).setSelection(groupByPosition);
 			}
 		}
 		
@@ -846,7 +862,7 @@ public class MainActivity extends FragmentActivity {
 					@Override
 					public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 						calendar.set(year, monthOfYear, dayOfMonth);
-						expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), calendar.getTime().getTime()));
+						expirationDate.setText(DateFormat.format(getString(R.string.simpleDateFormat), calendar));
 						if (calendar.before(Calendar.getInstance()))
 							expirationDate.getBackground().setColorFilter(
 									new PorterDuffColorFilter(Color.rgb(255, 102, 0), PorterDuff.Mode.SRC_ATOP));
@@ -877,18 +893,18 @@ public class MainActivity extends FragmentActivity {
 				builder.setTitle(R.string.ingredientUpdate);
 				ingredient.append(updateIngredientName);
 				String unitString;
-				double quantityDouble;
+				float quantityFloat;
 				long expirationDateLong;
 				try {
 					cursor.moveToFirst();
 					ingredientID = cursor.getInt(cursor.getColumnIndex(INVENTORY.id));
 					unitString = cursor.getString(cursor.getColumnIndex(INVENTORY.unit));
-					quantityDouble = cursor.getDouble(cursor.getColumnIndex(INVENTORY.quantity));
+					quantityFloat = cursor.getFloat(cursor.getColumnIndex(INVENTORY.quantity));
 					expirationDateLong = cursor.getLong(cursor.getColumnIndex(INVENTORY.expirationDate));
 				} finally {
 					cursor.close();
 				}
-				quantity.setText(Double.toString(quantityDouble));
+				quantity.setText(Float.toString(quantityFloat));
 				unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
 				if (expirationDateLong > 0) {
 					Date date = new Date(expirationDateLong);
@@ -916,7 +932,7 @@ public class MainActivity extends FragmentActivity {
 				try { date = dateFormat.parse(expirationDate.getText().toString()); }
 				catch (ParseException e) { }
 				final String ingredientName = name.getText().toString().trim();
-				final double ingredientQuantity = new Double(quantity.getText().toString());
+				final float ingredientQuantity = Float.parseFloat(quantity.getText().toString());
 				final String ingredientUnit = unit.getSelectedItem().toString();
 				final long ingredientExpirationDate =
 						expirationDate.getText().toString().equals(getString(R.string.ingredientExpirationDateNoExpiry))
