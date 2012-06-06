@@ -29,7 +29,6 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -55,7 +54,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.indrimuska.kulinaria.DatabaseInterface.INGREDIENTS;
 import com.indrimuska.kulinaria.DatabaseInterface.INVENTORY;
 import com.indrimuska.kulinaria.DatabaseInterface.MENU;
 import com.indrimuska.kulinaria.DatabaseInterface.RECIPES;
@@ -645,9 +643,6 @@ public class MainActivity extends FragmentActivity {
 			lastShoppingDayPlusOne.setDate(lastShoppingDayPlusOne.getDate() + 1);
 			Date lastShoppingDayPlusTwo = new Date();
 			lastShoppingDayPlusTwo.setDate(lastShoppingDayPlusOne.getDate() + 1);
-
-			Log.d(pageName, "lastShoppingDayPlusOne="+lastShoppingDayPlusOne.toLocaleString());
-			Log.d(pageName, "lastShoppingDayPlusTwo="+lastShoppingDayPlusTwo.toLocaleString());
 			
 			// Set the ListView adapter
 			Date tomorrow = new Date();
@@ -658,7 +653,6 @@ public class MainActivity extends FragmentActivity {
 			for (Date day = new Date(), today = new Date(), lastDayGroupBy = new Date();
 					day.getDate() != lastShoppingDayPlusTwo.getDate();
 					day.setDate(day.getDate() + 1)) {
-				Log.d(pageName, "day="+day.toLocaleString());
 				// Check if it's the last day of the group
 				if (day.getDate() == lastDayGroupBy.getDate() ||
 					day.getDate() == lastShoppingDayPlusOne.getDate()) {
@@ -668,10 +662,10 @@ public class MainActivity extends FragmentActivity {
 						final SimpleAdapter sectionList = new SimpleAdapter(MainActivity.this, sectionShoppingList,
 								R.layout.shopping_list_item,
 								new String[] {
-										"i." + INGREDIENTS.name,
+										"ri." + RECIPES_INGREDIENTS.ingredient,
 										"ri." + RECIPES_INGREDIENTS.ingredientNeed,
 										"ri." + RECIPES_INGREDIENTS.unit,
-										"i." + INGREDIENTS.id
+										"ri." + RECIPES_INGREDIENTS.ingredient
 								}, new int[] {
 										R.id.shoppingListIngredient,
 										R.id.shoppingListQuantity,
@@ -694,7 +688,7 @@ public class MainActivity extends FragmentActivity {
 										// Get the ingredient informations
 										int i = 0;
 										for (i = 0; i < sectionList.getCount(); i++)
-											if (((Map<String, Object>) sectionList.getItem(i)).get("i." + INGREDIENTS.id)
+											if (((Map<String, Object>) sectionList.getItem(i)).get("ri." + RECIPES_INGREDIENTS.ingredient)
 													.toString().equals(data.toString()))
 												break;
 										if (i == sectionList.getCount()) return;
@@ -720,12 +714,12 @@ public class MainActivity extends FragmentActivity {
 										((ListView) dialogView.findViewById(R.id.shoppingListDialogList)).setAdapter(shoppingListAdapter);
 										
 										// Show the dialog
-										builder.setTitle(ingredient.get("i." + INGREDIENTS.name).toString());
+										builder.setTitle(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredient).toString());
 										builder.setNegativeButton(R.string.buttonClose, null);
 										builder.setPositiveButton(R.string.ingredientAdd, new DialogInterface.OnClickListener() {
 											@Override
 											public void onClick(DialogInterface dialog, int which) {
-												showIngredientDialog(ingredient.get("i." + INGREDIENTS.name).toString().trim());
+												showIngredientDialog(ingredient.get("ri." + RECIPES_INGREDIENTS.ingredient).toString().trim());
 											}
 										});
 										builder.show();
@@ -804,7 +798,8 @@ public class MainActivity extends FragmentActivity {
 		private void mergeShoppingLists(ArrayList<Map<String, Object>> oldList, ArrayList<Map<String, Object>> newList) {
 			for (Map<String, Object> newItem : newList) {
 				Map<String, Object> listItem = db.isIngredientInList(
-						newItem.get("i." + INGREDIENTS.id).toString(), oldList, "i." + INGREDIENTS.id);
+						newItem.get("ri." + RECIPES_INGREDIENTS.ingredient).toString(), oldList,
+							"ri." + RECIPES_INGREDIENTS.ingredient);
 				if (listItem != null) db.addShoppingListIngredient(listItem, newItem);
 				else oldList.add(newItem);
 			}
@@ -831,15 +826,8 @@ public class MainActivity extends FragmentActivity {
 		final ImageButton removeExpirationDate = (ImageButton) dialogView.findViewById(R.id.elementIngredientRemoveExpirationDate);
 		
 		// Inflating auto-complete list
-		Cursor cursor = db.getIngredients();
 		ArrayAdapter<String> textAdapter = new ArrayAdapter<String>(
-				MainActivity.this, android.R.layout.simple_dropdown_item_1line);
-		try {
-			while (cursor.moveToNext())
-				textAdapter.add(cursor.getString(cursor.getColumnIndex(INGREDIENTS.name)));
-		} finally {
-			cursor.close();
-		}
+				MainActivity.this, android.R.layout.simple_dropdown_item_1line, db.getIngredients());
 		name.setAdapter(textAdapter);
 		
 		// Inflating spinner
@@ -888,7 +876,7 @@ public class MainActivity extends FragmentActivity {
 		if (updateIngredientName != null) {
 			name.setText(updateIngredientName);
 			name.setAdapter(null);
-			cursor = db.getInventoryIngredient(updateIngredientName);
+			Cursor cursor = db.getInventoryIngredient(updateIngredientName);
 			if (cursor.getCount() > 0) {
 				builder.setTitle(R.string.ingredientUpdate);
 				ingredient.append(updateIngredientName);

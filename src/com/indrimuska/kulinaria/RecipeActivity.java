@@ -51,7 +51,7 @@ public class RecipeActivity extends Activity {
 		for (Map<String, Object> ingredient : recipeIngredients)
 			ingredients += "\n" + ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString() + " " +
 					ingredient.get(RECIPES_INGREDIENTS.unit) + " " +
-					db.getIngredientName(new Integer(ingredient.get(RECIPES_INGREDIENTS.ingredientId).toString()));
+					ingredient.get(RECIPES_INGREDIENTS.ingredient).toString();
 		((TextView) findViewById(R.id.recipeIngredients)).setText(ingredients.substring(1));
 	}
 	
@@ -64,6 +64,7 @@ public class RecipeActivity extends Activity {
 	}
 	
 	static public String secondsToTime(int seconds) {
+		if (seconds == 0) return "-";
 		int minutes = seconds / 60;
 		int hours = minutes / 60;
 		seconds = seconds - minutes * 60;

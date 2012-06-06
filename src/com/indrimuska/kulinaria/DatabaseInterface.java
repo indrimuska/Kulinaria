@@ -49,16 +49,6 @@ public class DatabaseInterface {
 						unit + " text, " +
 						expirationDate + " int )";
 	}
-	public static final class INGREDIENTS {
-		static final String TABLE			= "Ingredients";
-		static final String id				= "_id";
-		static final String name			= "name";
-		static final String ORDER_BY		= name + " ASC";
-		static final String CREATE =
-				"create table if not exists " + TABLE + " ( " +
-						id + " integer primary key autoincrement, " +
-						name + " text )";
-	}
 	public static final class RECIPES {
 		static final String TABLE			= "Recipes";
 		static final String id				= "_id";
@@ -82,19 +72,19 @@ public class DatabaseInterface {
 	public static final class RECIPES_INGREDIENTS {
 		static final String TABLE			= "RecipesIngredients";
 		static final String recipeId		= "recipeId";
-		static final String ingredientId	= "ingredientId";
+		static final String ingredient		= "ingredient";
 		static final String ingredientNeed	= "ingredientNeed";
 		static final String unit			= "unit";
 		static final String ORDER_BY		= recipeId + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
 						recipeId + " int, " +
-						ingredientId + " int, " +
+						ingredient + " text, " +
 						ingredientNeed + " float, " +
 						unit + " text, " +
 						"primary key( " +
 							recipeId + ", " +
-							ingredientId + " ) " +
+							ingredient + " ) " +
 						")";
 	}
 	public static final class MENU {
@@ -135,29 +125,26 @@ public class DatabaseInterface {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(INVENTORY.CREATE);
-			db.execSQL(INGREDIENTS.CREATE);
 			db.execSQL(RECIPES.CREATE);
 			db.execSQL(RECIPES_INGREDIENTS.CREATE);
 			db.execSQL(MENU.CREATE);
 			Log.d(TAG, "tables created");
 			
 			// Populate database (from XML)
-			Map<String, ArrayList<ArrayList<String>>> tables = getTablesFromXML(context, R.raw.populate_db);
+			Map<String, ArrayList<ArrayList<String>>> tables = getTablesFromXML(context, R.raw.populate_db_new);
 			for (Map.Entry<String, ArrayList<ArrayList<String>>> table : tables.entrySet()) {
 				ArrayList<ArrayList<String>> rows = table.getValue();
 				for (ArrayList<String> value : rows) {
 					if (table.getKey().equals(INVENTORY.TABLE))
 						db.insert(INVENTORY.TABLE, null, inventoryIngredientContentValues(
-								value.get(0), new Float(value.get(1)), value.get(2), new Long(value.get(3))));
-					if (table.getKey().equals(INGREDIENTS.TABLE))
-						db.insert(INGREDIENTS.TABLE, null, ingredientContentValues(value.get(0)));
+								value.get(0), Float.parseFloat(value.get(1)), value.get(2), Long.parseLong(value.get(3))));
 					if (table.getKey().equals(RECIPES.TABLE))
 						db.insert(RECIPES.TABLE, null, recipeContentValues(
-								value.get(0), value.get(1), new Integer(value.get(2)), new Integer(value.get(3)),
-								new Integer(value.get(4)), value.get(5)));
+								value.get(0), value.get(1), Integer.parseInt(value.get(2)), Integer.parseInt(value.get(3)),
+								Integer.parseInt(value.get(4)), value.get(5)));
 					if (table.getKey().equals(RECIPES_INGREDIENTS.TABLE))
 						db.insert(RECIPES_INGREDIENTS.TABLE, null, recipeIngredientContentValues(
-								new Integer(value.get(0)), new Integer(value.get(1)), new Integer(value.get(2)), value.get(3)));
+								Integer.parseInt(value.get(0)), value.get(1), Float.parseFloat(value.get(2)), value.get(3)));
 				}
 			}
 		}
@@ -166,7 +153,6 @@ public class DatabaseInterface {
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 			onUpgradeTable(db, INVENTORY.TABLE, INVENTORY.CREATE);
-			onUpgradeTable(db, INGREDIENTS.TABLE, INGREDIENTS.CREATE);
 			onUpgradeTable(db, RECIPES.TABLE, RECIPES.CREATE);
 			onUpgradeTable(db, RECIPES_INGREDIENTS.TABLE, RECIPES_INGREDIENTS.CREATE);
 			onUpgradeTable(db, MENU.TABLE, MENU.CREATE);
@@ -404,33 +390,19 @@ public class DatabaseInterface {
 		}
 	}
 	
-	// Convert ingredient informations to ContentValues
-	private ContentValues ingredientContentValues(String name) {
-		ContentValues values = new ContentValues();
-		values.put(INGREDIENTS.name, name);
-		return values;
-	}
-	
 	// Get the list of ingredients stored
-	public Cursor getIngredients() {
+	public ArrayList<String> getIngredients() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(INGREDIENTS.TABLE, null, null, null, null, null, INGREDIENTS.ORDER_BY);
-	}
-	
-	// Get the name of an ingredient
-	public String getIngredientName(int ingredientId) {
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		ArrayList<String> ingredients = new ArrayList<String>();
+		Cursor cursor = db.query(RECIPES_INGREDIENTS.TABLE, new String[] { RECIPES_INGREDIENTS.ingredient },
+				null, null, null, null, RECIPES_INGREDIENTS.ORDER_BY);
 		try {
-			Cursor cursor = db.query(INGREDIENTS.TABLE, new String[] { INGREDIENTS.name },
-					INGREDIENTS.id+"=?", new String[] { Integer.toString(ingredientId) }, null, null, null);
-			try {
-				return cursor.moveToFirst() ? cursor.getString(0) : null;
-			} finally {
-				cursor.close();
-			}
+			while (cursor.moveToNext())
+				ingredients.add(cursor.getString(cursor.getColumnIndex(RECIPES_INGREDIENTS.ingredient)));
 		} finally {
-			db.close();
+			cursor.close();
 		}
+		return ingredients;
 	}
 	
 	// Convert recipe informations to ContentValues
@@ -496,10 +468,10 @@ public class DatabaseInterface {
 	}
 	
 	// Convert recipe-ingredient informations to ContentValues
-	private ContentValues recipeIngredientContentValues(int recipeId, int ingredientId, int ingredientNeed, String unit) {
+	private ContentValues recipeIngredientContentValues(int recipeId, String ingredient, float ingredientNeed, String unit) {
 		ContentValues values = new ContentValues();
 		values.put(RECIPES_INGREDIENTS.recipeId, recipeId);
-		values.put(RECIPES_INGREDIENTS.ingredientId, ingredientId);
+		values.put(RECIPES_INGREDIENTS.ingredient, ingredient);
 		values.put(RECIPES_INGREDIENTS.ingredientNeed, ingredientNeed);
 		values.put(RECIPES_INGREDIENTS.unit, unit);
 		return values;
@@ -513,7 +485,7 @@ public class DatabaseInterface {
 					new String[] { Integer.toString(recipeId) }, null, null, null);
 			try {
 				return cursorToMapArray(cursor, new String[] {
-						RECIPES_INGREDIENTS.ingredientId,
+						RECIPES_INGREDIENTS.ingredient,
 						RECIPES_INGREDIENTS.ingredientNeed,
 						RECIPES_INGREDIENTS.unit
 				});
@@ -601,7 +573,7 @@ public class DatabaseInterface {
 		for (Map<String, Object> ingredient : recipeIngredients) {
 			Map<String, Object> inventoryIngredient;
 			if ((inventoryIngredient = isIngredientInList(
-					getIngredientName(Integer.parseInt(ingredient.get(RECIPES_INGREDIENTS.ingredientId).toString())),
+					ingredient.get(RECIPES_INGREDIENTS.ingredient).toString(),
 					inventoryList, INVENTORY.name)) == null ||
 					!inventoryIngredient.get(INVENTORY.unit).toString().equals(
 							ingredient.get(RECIPES_INGREDIENTS.unit).toString()) ||
@@ -622,7 +594,7 @@ public class DatabaseInterface {
 		for (Map<String, Object> ingredient : recipeIngredients) {
 			Map<String, Object> inventoryIngredient;
 			if ((inventoryIngredient = isIngredientInList(
-					getIngredientName(Integer.parseInt(ingredient.get(RECIPES_INGREDIENTS.ingredientId).toString())),
+					ingredient.get(RECIPES_INGREDIENTS.ingredient).toString(),
 					inventoryList, INVENTORY.name)) != null &&
 					inventoryIngredient.get(INVENTORY.unit).toString().equals(
 						ingredient.get(RECIPES_INGREDIENTS.unit).toString())) {
@@ -671,8 +643,7 @@ public class DatabaseInterface {
 				"m." + MENU.meal,
 				"r." + RECIPES.id,
 				"r." + RECIPES.name,
-				"i." + INGREDIENTS.id,
-				"i." + INGREDIENTS.name,
+				"ri." + RECIPES_INGREDIENTS.ingredient,
 				"ri." + RECIPES_INGREDIENTS.ingredientNeed,
 				"ri." + RECIPES_INGREDIENTS.unit
 		};
@@ -682,14 +653,12 @@ public class DatabaseInterface {
 				"from " +
 						MENU.TABLE + " as m, " +
 						RECIPES.TABLE + " as r, " +
-						INGREDIENTS.TABLE + " as i, " +
 						RECIPES_INGREDIENTS.TABLE + " as ri " +
 				"where " +
 						"m." + MENU.date + " = '" + date + "' and " +
 						"m." + MENU.eatenDrunk + " = 0 and " +
 						"r." + RECIPES.id + " = m." + MENU.recipeId + " and " +
-						"r." + RECIPES.id + " = ri." + RECIPES_INGREDIENTS.recipeId + " and " +
-						"i." + INGREDIENTS.id + " = ri." + RECIPES_INGREDIENTS.ingredientId, null);
+						"r." + RECIPES.id + " = ri." + RECIPES_INGREDIENTS.recipeId, null);
 		try { recipeIngredients = cursorToMapArrayIndexed(cursor, recipeColumns); }
 		finally { cursor.close(); }
 		
@@ -697,7 +666,7 @@ public class DatabaseInterface {
 		shoppingList = new ArrayList<Map<String, Object>>();
 		for (Map<String, Object> ingredient : recipeIngredients) {
 			Map<String, Object> inventoryIngredient = isIngredientInList(
-					ingredient.get("i." + INGREDIENTS.name).toString(), inventoryIngredients, INVENTORY.name);
+					ingredient.get("ri." + RECIPES_INGREDIENTS.ingredient).toString(), inventoryIngredients, INVENTORY.name);
 			if (inventoryIngredient != null &&
 					inventoryIngredient.get(INVENTORY.unit).toString().equals(
 							ingredient.get("ri." + RECIPES_INGREDIENTS.unit).toString())) {
@@ -708,7 +677,8 @@ public class DatabaseInterface {
 				inventoryIngredient.put(INVENTORY.quantity, Math.max(0, difference));
 				if (difference < 0) {
 					Map<String, Object> shoppingListIngredient = isIngredientInList(
-							ingredient.get("i." + INGREDIENTS.name).toString(), shoppingList, "i." + INGREDIENTS.name);
+							ingredient.get("ri." + RECIPES_INGREDIENTS.ingredient).toString(),
+								shoppingList, "ri." + RECIPES_INGREDIENTS.ingredient);
 					if (shoppingListIngredient != null) {
 						// ingredient is already in the shopping list -> update quantities
 						addShoppingListIngredient(shoppingListIngredient, ingredient);
@@ -724,7 +694,8 @@ public class DatabaseInterface {
 			} else {
 				// ingredient is not in the inventory list
 				Map<String, Object> shoppingListIngredient = isIngredientInList(
-						ingredient.get("i." + INGREDIENTS.name).toString(), shoppingList, "i." + INGREDIENTS.name);
+						ingredient.get("ri." + RECIPES_INGREDIENTS.ingredient).toString(),
+							shoppingList, "ri." + RECIPES_INGREDIENTS.ingredient);
 				if (shoppingListIngredient != null)
 					// ingredient is already in the shopping list -> update quantities
 					addShoppingListIngredient(shoppingListIngredient, ingredient);
