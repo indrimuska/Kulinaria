@@ -15,8 +15,8 @@
 			android:id="@+id/listIngredientName"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:textColor="@android:color/tertiary_text_dark"
-			android:textAppearance="?android:attr/textAppearanceMedium" />
+			android:textSize="16dp"
+			android:textColor="@android:color/tertiary_text_dark" />
 		<LinearLayout
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -24,11 +24,13 @@
 			<TextView
 				android:id="@+id/listIngredientQuantity"
 				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" />
+				android:layout_height="wrap_content"
+				android:textAppearance="?android:attr/textAppearanceSmall" />
 			<TextView
 				android:id="@+id/listIngredientUnit"
 				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" />
+				android:layout_height="wrap_content"
+				android:textAppearance="?android:attr/textAppearanceSmall" />
 		</LinearLayout>
 	</LinearLayout>
 	

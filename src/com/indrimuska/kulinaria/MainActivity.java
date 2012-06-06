@@ -440,7 +440,7 @@ public class MainActivity extends FragmentActivity {
 			list.setScrollingCacheEnabled(false);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 			list.setPadding(10, 10, 10, 10);
-			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.ingredient_list_item,
+			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.inventory_list_item,
 					new String[] { INVENTORY.name, INVENTORY.quantity, INVENTORY.unit, INVENTORY.id },
 					new int[] { R.id.listIngredientName, R.id.listIngredientQuantity, R.id.listIngredientUnit, R.id.listIngredientOptions });
 			adapter.setViewBinder(new SimpleAdapter.ViewBinder() {
