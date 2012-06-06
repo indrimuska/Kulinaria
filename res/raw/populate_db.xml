@@ -343,7 +343,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 			<description>Pour the vodka, schnapps, lemonade, and soda into a cocktail shaker over ice. Cover, and shake until the outside of the shaker has frosted. Strain into a chilled martini glass, and garnish with a lime wedge and maraschino cherry to serve.</description>
 		</row>
 		<row>
-			<name>Sangria! Sangria!</name>
+			<name>Sangria</name>
 			<dish>Drink</dish>
 			<preparationTime>10</preparationTime>
 			<readyTime>30</readyTime>
@@ -359,7 +359,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 			<description>Combine light rum, lime juice, and simple syrup in a cocktail shaker. Add ice, cover and shake until chilled. Strain into a chilled cocktail glass.</description>
 		</row>
 		<row>
-			<name>Classic Cuba Libre</name>
+			<name>Cuba Libre</name>
 			<dish>Drink</dish>
 			<preparationTime>5</preparationTime>
 			<readyTime>5</readyTime>
@@ -1350,9 +1350,9 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>19</recipeId>
-			<ingredient>Onion, thinly sliced</ingredient>
+			<ingredient>Red onion, thinly sliced</ingredient>
 			<quantity>1</quantity>
-			<unit>red</unit>
+			<unit>u</unit>
 		</row>
 		<row>
 			<recipeId>19</recipeId>
@@ -2460,9 +2460,9 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>40</recipeId>
-			<ingredient>Cubes</ingredient>
+			<ingredient>Ice cubes</ingredient>
 			<quantity>4</quantity>
-			<unit>ice</unit>
+			<unit>u</unit>
 		</row>
 		<row>
 			<recipeId>40</recipeId>
