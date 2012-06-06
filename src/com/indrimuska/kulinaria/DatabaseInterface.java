@@ -131,7 +131,7 @@ public class DatabaseInterface {
 			Log.d(TAG, "tables created");
 			
 			// Populate database (from XML)
-			Map<String, ArrayList<ArrayList<String>>> tables = getTablesFromXML(context, R.raw.populate_db_new);
+			Map<String, ArrayList<ArrayList<String>>> tables = getTablesFromXML(context, R.raw.populate_db);
 			for (Map.Entry<String, ArrayList<ArrayList<String>>> table : tables.entrySet()) {
 				ArrayList<ArrayList<String>> rows = table.getValue();
 				for (ArrayList<String> value : rows) {
