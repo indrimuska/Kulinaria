@@ -394,8 +394,10 @@ public class DatabaseInterface {
 	public ArrayList<String> getIngredients() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		ArrayList<String> ingredients = new ArrayList<String>();
-		Cursor cursor = db.query(RECIPES_INGREDIENTS.TABLE, new String[] { RECIPES_INGREDIENTS.ingredient },
-				null, null, null, null, RECIPES_INGREDIENTS.ORDER_BY);
+		Cursor cursor = db.rawQuery(
+				"select distinct " + RECIPES_INGREDIENTS.ingredient + " " +
+				"from " + RECIPES_INGREDIENTS.TABLE + " " +
+				"order by " + RECIPES_INGREDIENTS.ingredient + " asc", null);
 		try {
 			while (cursor.moveToNext())
 				ingredients.add(cursor.getString(cursor.getColumnIndex(RECIPES_INGREDIENTS.ingredient)));
