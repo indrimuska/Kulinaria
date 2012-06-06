@@ -4,9 +4,9 @@
 		<row>
 			<name>Pepper Jelly</name>
 			<dish>Appetizer</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>2</servings>
+			<preparationTime>2</preparationTime>
+			<readyTime>2</readyTime>
+			<servings>6</servings>
 			<description>Spread jelly over the block of cream cheese.</description>
 		</row>
 		<row>
@@ -22,9 +22,9 @@ Bake in the preheated oven for 7 to 10 minutes, or until the cheese is bubbly.</
 		<row>
 			<name>Cucumber and Olive</name>
 			<dish>Appetizer</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>10</servings>
 			<description>Using the tines of a fork, score the unpeeled cucumber lengthwise on all sides. Slice the cucumber into 1/4-inch thick rounds.
 In a small bowl, combine the cream cheese and blue cheese dressing. Spread the cheese mixture on the rye bread slices.  Top with a slice of cucumber and a slice of olive.</description>
 		</row>
@@ -40,7 +40,7 @@ In a large bowl, combine cream cheese, crab, mayonnaise, Parmesan cheese, Chedda
 Bake at 375 degrees F (190 degrees C) for 15 to 20 minutes, or until light brown. These freeze wonderfully. Just reheat before serving.</description>
 		</row>
 		<row>
-			<name>Spicy Deviled Eggs  </name>
+			<name>Spicy Deviled Eggs</name>
 			<dish>Appetizer</dish>
 			<preparationTime>10</preparationTime>
 			<readyTime>35</readyTime>
@@ -53,7 +53,7 @@ Fill each egg half with the deviled yolk mixture, using a spoon, piping bag, or 
 			<name>Emerald Green Risotto</name>
 			<dish>Main dish</dish>
 			<preparationTime>35</preparationTime>
-			<readyTime>1</readyTime>
+			<readyTime>60</readyTime>
 			<servings>4</servings>
 			<description>Heat olive oil in a large, heavy-bottomed saucepan over medium-high heat. Add the onion and garlic; cook and stir until the onion begins to turn golden brown at the edges, about 2 minutes. Pour in the rice, and stir until the rice is coated in oil and has started to toast, 3 to 4 minutes. Reduce the heat to medium and stir in the celery and white wine.
 Cook and stir until the wine has mostly evaporated, then stir in one third of the boiling chicken stock; continue stirring until incorporated. Repeat this process twice more, stirring constantly. Stirring in the broth should take 15 to 20 minutes in all. Add the broccoli, peas, zucchini, and green beans during the last 7 minutes of cooking, and cook until tender. Stir in the feta cheese and parsley before serving.</description>
@@ -62,7 +62,7 @@ Cook and stir until the wine has mostly evaporated, then stir in one third of th
 			<name>Pepperoni Pizza Quiche</name>
 			<dish>Main dish</dish>
 			<preparationTime>35</preparationTime>
-			<readyTime>1</readyTime>
+			<readyTime>80</readyTime>
 			<servings>6</servings>
 			<description>Bake unpricked pastry shell at 375 degrees F for 11 minutes. Sprinkle with 2/3 cup Swiss cheese. in a bowl, whisk the eggs, cream, salt, oregano, cayenne and pepper; pour over cheese. Bake for 25-30 minutes or until a knife inserted near the center comes out clean.
 Meanwhile, in a skillet, saute onion in oil until tender. Stir in the tomatoes, thyme, sugar and basil. Bring to a boil. Reduce heat; simmer, uncovered, for 15 minutes or until liquid has evaporated.
@@ -72,7 +72,7 @@ Sprinkle remaining Swiss cheese over quiche. Top with the tomato mixture. Sprink
 			<name>Calzone</name>
 			<dish>Main dish</dish>
 			<preparationTime>20</preparationTime>
-			<readyTime>3</readyTime>
+			<readyTime>185</readyTime>
 			<servings>10</servings>
 			<description>Place water, salt, bread flour, dry milk, sugar, and yeast in the pan of the bread machine in the order suggested by the manufacturer.  Select Dough cycle.
 After cycle ends, roll out dough on a lightly floured surface; shape into a 16 x 10 inch rectangle.  Transfer to a lightly greased cookie sheet. In a small bowl, mix together chopped pepperoni and mozzarella. Spoon pizza sauce in a stripe down the center of dough lengthwise; add sausage and cheese filling.  Make diagonal cuts 1 1/2  inches apart down each side, cutting within a 1/2 inch of the filling. Criss cross strips over filling, sealing with water.  Brush top with melted butter.
@@ -82,7 +82,7 @@ Bake at 350 degrees F (175 degrees C) for 35 to 45 minutes.</description>
 			<name>Grilled Turkey</name>
 			<dish>Main dish</dish>
 			<preparationTime>30</preparationTime>
-			<readyTime>4</readyTime>
+			<readyTime>24</readyTime>
 			<servings>24</servings>
 			<description>In a pot style grill, fill the bottom with a 5 pound bag of charcoals. Light the charcoal, and when ready, spread to cover the bottom of grill.
 Wash the turkey down and stuff with onion. Rub the exterior down with salt and pepper.
@@ -93,7 +93,7 @@ Cover the grill with the lid and open the vents. Grill the turkey for 60 to 90 m
 			<name>Barbecued Sticky Ribs</name>
 			<dish>Main dish</dish>
 			<preparationTime>10</preparationTime>
-			<readyTime>1</readyTime>
+			<readyTime>90</readyTime>
 			<servings>6</servings>
 			<description>Combine garlic powder, salt and pepper; rub onto both sides of ribs. Place in a single layer in a 15-in. x 10-in. x 1-in. baking pan. Bake at 325 degrees F for 30-35 minutes; drain off fat. Combine sauce ingredients; pour over ribs. Bake 50-60 minutes longer, basting occasionally. Cut into serving-size pieces.</description>
 		</row>
@@ -111,7 +111,7 @@ Drain pasta and vegetables.  Transfer to a serving bowl; combine with dressing. 
 			<name>Ragu Bolognese</name>
 			<dish>Side dish</dish>
 			<preparationTime>10</preparationTime>
-			<readyTime>3</readyTime>
+			<readyTime>190</readyTime>
 			<servings>6</servings>
 			<description>Heat olive oil and butter in a large saucepan over medium heat. Saute onion, celery and carrots until soft. Add veal, pork, beef and pancetta, and cook until evenly brown, 15 to 20 minutes. Pour in milk, and cook until liquid has evaporated, about 15 minutes. Stir in tomato sauce and beef broth. Cover, and simmer 2 1/2 hours.</description>
 		</row>
@@ -164,34 +164,34 @@ Bake fries in preheated oven for 20 minutes.  Turn and continue to bake until br
 		<row>
 			<name>Guacamole</name>
 			<dish>Side dish</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>10</servings>
+			<preparationTime>10</preparationTime>
+			<readyTime>10</readyTime>
+			<servings>4</servings>
 			<description>In a medium bowl, mash together the avocados, lime juice, and salt. Mix in onion, cilantro, tomatoes, and garlic. Stir in cayenne pepper. Refrigerate 1 hour for best flavor, or serve immediately.</description>
 		</row>
 		<row>
 			<name>Greek Salad</name>
 			<dish>Salad</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>20</servings>
+			<preparationTime>20</preparationTime>
+			<readyTime>20</readyTime>
+			<servings>6</servings>
 			<description>In a large salad bowl, combine the Romaine, onion, olives, bell peppers, tomatoes, cucumber and cheese.
 Whisk together the olive oil, oregano, lemon juice and black pepper. Pour dressing over salad, toss and serve.</description>
 		</row>
 		<row>
 			<name>Crunchy Chicken Salad</name>
 			<dish>Salad</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>10</servings>
+			<preparationTime>10</preparationTime>
+			<readyTime>10</readyTime>
+			<servings>2</servings>
 			<description>In a bowl, combine the first nine ingredients. Serve on lettuce-lined plates. Garnish with egg slices.</description>
 		</row>
 		<row>
 			<name>Spicy Strawberry Salad</name>
 			<dish>Salad</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>20</servings>
+			<preparationTime>20</preparationTime>
+			<readyTime>20</readyTime>
+			<servings>10</servings>
 			<description>Whisk together the oil, sugar, poppy seeds, garlic powder, dry mustard and vinegar. Refrigerate until chilled.
 In a salad bowl, combine the mushrooms and mixed greens; add dressing and toss. Sprinkle with strawberries and pecans.</description>
 		</row>
@@ -208,9 +208,9 @@ To prepare the dressing, mix the mayonnaise, sugar and vinegar together until sm
 		<row>
 			<name>Mexican Bean Salad</name>
 			<dish>Salad</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>15</servings>
+			<preparationTime>15</preparationTime>
+			<readyTime>75</readyTime>
+			<servings>8</servings>
 			<description>In a large bowl, combine beans, bell peppers, frozen corn, and red onion.
 In a small bowl, whisk together olive oil, red wine vinegar, lime juice, lemon juice, sugar, salt, garlic, cilantro, cumin, and black pepper.  Season to taste with hot sauce and chili powder.
 Pour olive oil dressing over vegetables; mix well.  Chill thoroughly, and serve cold.</description>
@@ -249,7 +249,7 @@ To make the salad, toss the cucumber, bell pepper, onion, tomatoes, carrot, spin
 			<name>Macaroni and Cheese Salad</name>
 			<dish>Salad</dish>
 			<preparationTime>20</preparationTime>
-			<readyTime>1</readyTime>
+			<readyTime>85</readyTime>
 			<servings>6</servings>
 			<description>In a large pot of salted boiling water, cook pasta until al dente, rinse under cold water and drain.
 In a large bowl, combine pasta and vinegar. Mix well and allow to sit 15-20 minutes.
@@ -269,7 +269,7 @@ Whip egg whites until stiff peaks form; fold into mascarpone cheese mixture. Spr
 			<name>Dark Chocolate Cake</name>
 			<dish>Dessert</dish>
 			<preparationTime>30</preparationTime>
-			<readyTime>1</readyTime>
+			<readyTime>80</readyTime>
 			<servings>12</servings>
 			<description>Preheat oven to 350 degrees F (175 degrees C). Grease 3 - 9 inch round cake pans. In medium bowl, pour boiling water over cocoa, and whisk until smooth. Let mixture cool. Sift together flour, baking soda, baking powder and salt; set aside.
 In a large bowl, cream butter and sugar together until light and fluffy. Beat in eggs one at time, then stir in vanilla. Add the flour mixture alternately with the cocoa mixture. Spread batter evenly between the 3 prepared pans.
@@ -279,7 +279,7 @@ Bake in preheated oven for 25 to 30 minutes. Allow to cool.</description>
 			<name>Cheesecake</name>
 			<dish>Dessert</dish>
 			<preparationTime>30</preparationTime>
-			<readyTime>1</readyTime>
+			<readyTime>100</readyTime>
 			<servings>12</servings>
 			<description>Preheat oven to 400 degrees F (200 degrees C).
 Mix the graham cracker crumbs, 1/2 cup of the white sugar, and the melted butter together. Press mixture into the bottom of one 9 or 10 inch springform pan.
@@ -297,49 +297,49 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<name>Banana Split</name>
 			<dish>Dessert</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>2</servings>
 			<description>In a bowl, combine the marshmallows, pineapple and whipped topping. Place banana halves in dessert dishes with two scoops of marshmallow mixture between. Drizzle with chocolate syrup; top with a cherry. Serve immediately.</description>
 		</row>
 		<row>
 			<name>Margaritas</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>4</servings>
 			<description>Fill blender with crushed ice. Pour in limeade concentrate, tequila and triple sec. Blend until smooth. Pour into glasses and serve.</description>
 		</row>
 		<row>
 			<name>Peach Cosmo</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>1</servings>
 			<description>Pour the cranberry juice, vodka, schnapps, and lime juice into a cocktail shaker over ice. Cover, and shake until the outside of the shaker has frosted. Strain into a chilled martini glass to serve.</description>
 		</row>
 		<row>
 			<name>Sex on the Beach</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
+			<preparationTime>1</preparationTime>
+			<readyTime>1</readyTime>
 			<servings>1</servings>
 			<description>In a cocktail mixer full of ice, combine vodka, melon liqueur, raspberry liqueur, pineapple juice and cranberry juice. Shake vigorously and strain into glass.</description>
 		</row>
 		<row>
 			<name>Cosmopolitan</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>3</servings>
+			<preparationTime>3</preparationTime>
+			<readyTime>3</readyTime>
+			<servings>1</servings>
 			<description>Pour all the ingredients into a shaker with lots of ice. Shake vigorously for several seconds and strain into a cocktail glass. Garnish with a lime twist.</description>
 		</row>
 		<row>
 			<name>Apple Martini</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>1</servings>
 			<description>Pour the vodka, schnapps, lemonade, and soda into a cocktail shaker over ice. Cover, and shake until the outside of the shaker has frosted. Strain into a chilled martini glass, and garnish with a lime wedge and maraschino cherry to serve.</description>
 		</row>
 		<row>
@@ -361,40 +361,40 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<name>Classic Cuba Libre</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>1</servings>
 			<description>Fill a 12-ounce glass with ice cubes. Pour the rum and cola beverage into the glass. Stir in the lime juice, and serve.</description>
 		</row>
 		<row>
 			<name>Negroni</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>2</servings>
+			<preparationTime>2</preparationTime>
+			<readyTime>2</readyTime>
+			<servings>1</servings>
 			<description>In a rocks glass over ice, combine campari, gin, sweet vermouth. Fill with carbonated water and garnish with a wedge of lemon.</description>
 		</row>
 		<row>
 			<name>Mojito</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>2</servings>
+			<preparationTime>2</preparationTime>
+			<readyTime>2</readyTime>
+			<servings>1</servings>
 			<description>In a highball glass, stir together the confectioners' sugar and lime juice. Bruise the mint leaves and drop into glass. Fill glass with crushed ice and pour in rum. Pour in carbonated water to fill the glass. Garnish with a sprig of mint.</description>
 		</row>
 		<row>
 			<name>Caipirinha</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
-			<servings>5</servings>
+			<preparationTime>5</preparationTime>
+			<readyTime>5</readyTime>
+			<servings>1</servings>
 			<description>In a large rocks glass squeeze and drop in 2 eighths of lime. Add sugar, crush and mix with a spoon. Pour in the cachaca and plenty of ice. Stir well.</description>
 		</row>
 		<row>
 			<name>B-52</name>
 			<dish>Drink</dish>
-			<preparationTime>0</preparationTime>
-			<readyTime>0</readyTime>
+			<preparationTime>1</preparationTime>
+			<readyTime>1</readyTime>
 			<servings>1</servings>
 			<description>Carefully pour coffee liqueur, Grand Marnier, and Irish cream liqueur into a cordial glass so that they do not mix.</description>
 		</row>
@@ -450,7 +450,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>2</recipeId>
-			<ingredient>Roma (plum) tomatoes, thinly sliced</ingredient>
+			<ingredient>Rroma (plum) tomatoes, thinly sliced</ingredient>
 			<quantity>2</quantity>
 			<unit>u</unit>
 		</row>
@@ -499,7 +499,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>4</recipeId>
 			<ingredient>Can crab meat, drained</ingredient>
-			<quantity>48</quantity>
+			<quantity>170</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -553,7 +553,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>5</recipeId>
 			<ingredient>Can black olives, drained and cut in half horizontally</ingredient>
-			<quantity>48</quantity>
+			<quantity>170</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -624,7 +624,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>6</recipeId>
-			<ingredient>clove garlic, crushed</ingredient>
+			<ingredient>Clove garlic, crushed</ingredient>
 			<quantity>1</quantity>
 			<unit>u</unit>
 		</row>
@@ -660,7 +660,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>6</recipeId>
-			<ingredient>stalk celery, diced</ingredient>
+			<ingredient>Stalk celery, diced</ingredient>
 			<quantity>1</quantity>
 			<unit>u</unit>
 		</row>
@@ -840,15 +840,15 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>9</recipeId>
-			<ingredient>Large onion, diced</ingredient>
-			<quantity>1</quantity>
-			<unit>u</unit>
+			<ingredient>Bottle red wine salt and pepper to taste</ingredient>
+			<quantity>750</quantity>
+			<unit>ml</unit>
 		</row>
 		<row>
 			<recipeId>9</recipeId>
-			<ingredient>Red wine salt and pepper to taste</ingredient>
-			<quantity>750</quantity>
-			<unit>ml</unit>
+			<ingredient>Large onion, diced</ingredient>
+			<quantity>1</quantity>
+			<unit>u</unit>
 		</row>
 		<row>
 			<recipeId>9</recipeId>
@@ -859,7 +859,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>10</recipeId>
 			<ingredient>Can  condensed tomato soup, undiluted</ingredient>
-			<quantity>300</quantity>
+			<quantity>304</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -1104,7 +1104,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>14</recipeId>
-			<ingredient>Green beans, trimmed and cut into</ingredient>
+			<ingredient>Green beans, trimmed and cut into 5 cm pieces</ingredient>
 			<quantity>680</quantity>
 			<unit>g</unit>
 		</row>
@@ -1113,12 +1113,6 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 			<ingredient>Pepper</ingredient>
 			<quantity>0.5</quantity>
 			<unit>g</unit>
-		</row>
-		<row>
-			<recipeId>14</recipeId>
-			<ingredient>Pieces</ingredient>
-			<quantity>5</quantity>
-			<unit>cm</unit>
 		</row>
 		<row>
 			<recipeId>14</recipeId>
@@ -1332,7 +1326,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>19</recipeId>
-			<ingredient>Head romaine lettuce- rinsed, dried and chopped</ingredient>
+			<ingredient>Head Romaine lettuce- rinsed, dried and chopped</ingredient>
 			<quantity>1</quantity>
 			<unit>u</unit>
 		</row>
@@ -1356,13 +1350,13 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>19</recipeId>
-			<ingredient>Red bell pepper, chopped</ingredient>
+			<ingredient>Onion, thinly sliced</ingredient>
 			<quantity>1</quantity>
-			<unit>u</unit>
+			<unit>red</unit>
 		</row>
 		<row>
 			<recipeId>19</recipeId>
-			<ingredient>Red onion, thinly sliced</ingredient>
+			<ingredient>Red bell pepper, chopped</ingredient>
 			<quantity>1</quantity>
 			<unit>u</unit>
 		</row>
@@ -1723,7 +1717,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>24</recipeId>
 			<ingredient>White sugar</ingredient>
-			<quantity>50</quantity>
+			<quantity>6</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -1795,7 +1789,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>26</recipeId>
 			<ingredient>Can mandarin orange segments, drained</ingredient>
-			<quantity>11</quantity>
+			<quantity>311</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -1861,7 +1855,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>26</recipeId>
 			<ingredient>Package dry onion soup mix</ingredient>
-			<quantity>28</quantity>
+			<quantity>30</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -2107,7 +2101,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>30</recipeId>
 			<ingredient>White sugar</ingredient>
-			<quantity>100</quantity>
+			<quantity>350</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -2197,7 +2191,7 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		<row>
 			<recipeId>32</recipeId>
 			<ingredient>Can crushed pineapple, drained</ingredient>
-			<quantity>230</quantity>
+			<quantity>226</quantity>
 			<unit>g</unit>
 		</row>
 		<row>
@@ -2328,13 +2322,13 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>37</recipeId>
-			<ingredient> best-quality vodka</ingredient>
+			<ingredient>Apple schnapps</ingredient>
 			<quantity>45</quantity>
 			<unit>ml</unit>
 		</row>
 		<row>
 			<recipeId>37</recipeId>
-			<ingredient>Apple schnapps</ingredient>
+			<ingredient>best-quality vodka</ingredient>
 			<quantity>45</quantity>
 			<unit>ml</unit>
 		</row>
@@ -2466,15 +2460,15 @@ Bake at 400 degrees F (200 degrees C) for 10 minutes, then turn oven temperature
 		</row>
 		<row>
 			<recipeId>40</recipeId>
-			<ingredient>Fresh lime juice, or to taste</ingredient>
-			<quantity>30</quantity>
-			<unit>ml</unit>
+			<ingredient>Cubes</ingredient>
+			<quantity>4</quantity>
+			<unit>ice</unit>
 		</row>
 		<row>
 			<recipeId>40</recipeId>
-			<ingredient>Ice cubes</ingredient>
-			<quantity>4</quantity>
-			<unit>u</unit>
+			<ingredient>Fresh lime juice, or to taste</ingredient>
+			<quantity>30</quantity>
+			<unit>ml</unit>
 		</row>
 		<row>
 			<recipeId>40</recipeId>
