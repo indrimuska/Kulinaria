@@ -66,6 +66,7 @@
 			android:id="@+id/menuMealsList"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
+			android:scrollingCache="false"
 			android:cacheColorHint="@android:color/transparent"
 			android:groupIndicator="@drawable/expander_group_holo_light" />
 		

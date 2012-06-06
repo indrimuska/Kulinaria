@@ -10,14 +10,16 @@
 		android:layout_height="0dp"
 		android:layout_weight="1"
 		android:layout_margin="20dp"
-		android:orientation="vertical" />
+		android:orientation="vertical"
+		android:cacheColorHint="@android:color/transparent" />
 	
 	<ListView
 		android:id="@+id/recipesSearchList"
 		android:layout_width="fill_parent"
 		android:layout_height="0dp"
 		android:orientation="vertical"
-		android:visibility="invisible" />
+		android:visibility="invisible"
+		android:cacheColorHint="@android:color/transparent" />
 	
 	<ImageView
 		android:layout_width="fill_parent"

@@ -65,7 +65,7 @@ public class MainActivity extends FragmentActivity {
 	private static DatabaseInterface db;
 	private ViewPager pager;
 	
-	// this pages are refreshed through other pages
+	// This pages are refreshed through other pages
 	InventoryPage inventoryPage;
 	ShoppingListPage shoppingListPage;
 	
@@ -278,7 +278,8 @@ public class MainActivity extends FragmentActivity {
 					TextView meal = new TextView(MainActivity.this);
 					meal.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 					meal.setText(getGroup(groupPosition).toString());
-					meal.setPadding(60, 20, 20, 20);
+					int dp10 = (int) (10 * getResources().getDisplayMetrics().density);
+					meal.setPadding(dp10 * 4, dp10, dp10, dp10);
 					return meal;
 				}
  				@Override
@@ -429,9 +430,9 @@ public class MainActivity extends FragmentActivity {
 				TextView text = new TextView(MainActivity.this);
 				text.setGravity(Gravity.CENTER);
 				text.setText(R.string.inventoryNoIngredients);
-				text.setTextSize(20 * getResources().getDisplayMetrics().density);
 				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 				text.setPadding(20, 20, 20, 20);
+				text.setTextSize(30);
 				return text;
 			}
 			
@@ -753,9 +754,9 @@ public class MainActivity extends FragmentActivity {
 				TextView text = new TextView(MainActivity.this);
 				text.setGravity(Gravity.CENTER);
 				text.setText(R.string.shoppingListNoIngredients);
-				text.setTextSize(20 * getResources().getDisplayMetrics().density);
 				text.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 				text.setPadding(20, 20, 20, 20);
+				text.setTextSize(30);
 				int index = layout.indexOfChild(listView);
 				layout.removeView(listView);
 				layout.addView(text, index);

@@ -60,8 +60,8 @@ public class RecipesListActivity extends Activity {
 				noRecipes.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1));
 				noRecipes.setGravity(Gravity.CENTER);
 				noRecipes.setText(R.string.recipesNoRecipes);
-				noRecipes.setTextSize(20 * getResources().getDisplayMetrics().density);
-				noRecipes.setPadding(20, 20, 20, 20);			
+				noRecipes.setPadding(20, 20, 20, 20);		
+				noRecipes.setTextSize(30);	
 				LinearLayout linearLayout = (LinearLayout) list.getParent();
 				linearLayout.removeViewAt(1);
 				linearLayout.addView(noRecipes, 1);
