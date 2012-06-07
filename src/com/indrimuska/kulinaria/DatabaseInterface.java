@@ -35,7 +35,6 @@ public class DatabaseInterface {
 	// Tables definition
 	public static final class INVENTORY {
 		static final String TABLE			= "Inventory";
-		static final String id				= "_id";
 		static final String name			= "name";
 		static final String quantity		= "quantity";
 		static final String unit			= "unit";
@@ -43,8 +42,7 @@ public class DatabaseInterface {
 		static final String ORDER_BY		= name + " ASC";
 		static final String CREATE =
 				"create table if not exists " + TABLE + " ( " +
-						id + " integer primary key autoincrement, " +
-						name + " text, " +
+						name + " text primary key, " +
 						quantity + " float, " +
 						unit + " text, " +
 						expirationDate + " int )";
@@ -289,50 +287,16 @@ public class DatabaseInterface {
 		finally { db.close(); }
 	}
 	
-	// Get max ingredient ID from inventory
-	public int getMaxInventoryIngredientID() {
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		try {
-			Cursor cursor = db.query(INVENTORY.TABLE,new String[] { "max(" + INVENTORY.id + ")" },
-					null, null, null, null, null);
-			try {
-				cursor.moveToFirst();
-				return cursor.getInt(0);
-			} finally {
-				cursor.close();
-			}
-		} finally {
-			db.close();
-		}
-	}
-	
 	// Get ingredient from inventory
 	public Cursor getInventoryIngredient(String ingredientName) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		return db.query(INVENTORY.TABLE, null, INVENTORY.name+"=?", new String[] { ingredientName }, null, null, null);
 	}
 	
-	// Get ingredient ID
-	public int getInventoryIngredientID(String ingredientName) {
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		try {
-			Cursor cursor = db.query(INVENTORY.TABLE, new String[] { INVENTORY.id },
-					INVENTORY.name+"=?", new String[] { ingredientName }, null, null, null);
-			try {
-				cursor.moveToFirst();
-				return cursor.getInt(0);
-			} finally {
-				cursor.close();
-			}
-		} finally {
-			db.close();
-		}
-	}
-	
 	// Get the list of ingredients stored in the inventory
 	public ArrayList<Map<String, Object>> getInventory() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		String[] columns = { INVENTORY.id, INVENTORY.name, INVENTORY.quantity, INVENTORY.unit };
+		String[] columns = { INVENTORY.name, INVENTORY.quantity, INVENTORY.unit };
 		Cursor cursor = db.query(INVENTORY.TABLE, null, null, null, null, null, INVENTORY.ORDER_BY);
 		try { return cursorToMapArray(cursor, columns); }
 		finally { cursor.close(); }
@@ -355,36 +319,36 @@ public class DatabaseInterface {
 	}
 	
 	// Update a stored ingredient
-	public void updateInventoryIngredient(int id, String name, float quantity, String unit, long expirationDate) {
-		Log.d(TAG, "updateInventoryIngredient: " + name + "," + quantity + "," + unit + "," + expirationDate);
+	public void updateInventoryIngredient(String oldName, String newName, float quantity, String unit, long expirationDate) {
+		Log.d(TAG, "updateInventoryIngredient: " + newName + "," + quantity + "," + unit + "," + expirationDate);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			ContentValues values = inventoryIngredientContentValues(name, quantity, unit, expirationDate);
-			db.update(INVENTORY.TABLE, values, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
+			ContentValues values = inventoryIngredientContentValues(newName, quantity, unit, expirationDate);
+			db.update(INVENTORY.TABLE, values, INVENTORY.name+"=?", new String[] { oldName });
 		} finally {
 			db.close();
 		}
 	}
 	
 	// Update the amount of an ingredient stored in the inventory
-	public void updateInventoryIngredientQuantity(int id, float quantity) {
-		Log.d(TAG, "updateInventoryIngredientQuantity: " + Integer.toString(id) + "," + Float.toString(quantity));
+	public void updateInventoryIngredientQuantity(String name, float quantity) {
+		Log.d(TAG, "updateInventoryIngredientQuantity: " + name + "," + Float.toString(quantity));
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
 			ContentValues values = new ContentValues();
 			values.put(INVENTORY.quantity, quantity);
-			db.update(INVENTORY.TABLE, values, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
+			db.update(INVENTORY.TABLE, values, INVENTORY.name+"=?", new String[] { name });
 		} finally {
 			db.close();
 		}
 	}
 	
 	// Delete a stored ingredient
-	public void deleteInventoryIngredient(int id) {
-		Log.d(TAG, "deleteInventoryIngredient: " + id);
+	public void deleteInventoryIngredient(String name) {
+		Log.d(TAG, "deleteInventoryIngredient: " + name);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			db.delete(INVENTORY.TABLE, INVENTORY.id+"=?", new String[] { Integer.toString(id) });
+			db.delete(INVENTORY.TABLE, INVENTORY.name+"=?", new String[] { name });
 		} finally {
 			db.close();
 		}
@@ -603,10 +567,8 @@ public class DatabaseInterface {
 				Float difference =
 						Float.parseFloat(inventoryIngredient.get(INVENTORY.quantity).toString()) -
 						Float.parseFloat(ingredient.get(RECIPES_INGREDIENTS.ingredientNeed).toString());
-				if (difference <= 0)
-					deleteInventoryIngredient(Integer.parseInt(inventoryIngredient.get(INVENTORY.id).toString()));
-				else updateInventoryIngredientQuantity(
-						Integer.parseInt(inventoryIngredient.get(INVENTORY.id).toString()), difference);
+				if (difference <= 0) deleteInventoryIngredient(inventoryIngredient.get(INVENTORY.name).toString());
+				else updateInventoryIngredientQuantity(inventoryIngredient.get(INVENTORY.name).toString(), difference);
 			}
 		}
 	}
