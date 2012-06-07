@@ -6,18 +6,19 @@
 	android:background="@color/default_background">
 	
 	<TextView
+		android:id="@+id/title"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:background="@drawable/top_gradient"
 		android:gravity="center"
-		android:padding="5dp"
+		android:padding="8dp"
 		android:text="@string/app_name"
 		android:textSize="30dp"
 		android:textColor="@android:color/white"
-		android:shadowDx="3"
+		android:shadowDx="1"
 		android:shadowDy="3"
-		android:shadowRadius="1"
-		android:shadowColor="@color/bottom_light_text" />
+		android:shadowRadius="0.1"
+		android:shadowColor="@android:color/black" />
 	
 	<com.viewpagerindicator.TabPageIndicator
 		android:id="@+id/indicator"

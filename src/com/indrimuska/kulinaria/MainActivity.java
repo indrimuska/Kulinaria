@@ -19,6 +19,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -73,6 +74,11 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		// Set the title font
+		Typeface font = Typeface.createFromAsset(getAssets(), "fonts/HappyMonkey.ttf");
+		TextView tv = (TextView) findViewById(R.id.title);
+		tv.setTypeface(font);
 		
 		// Initializing slider
 		pager = (ViewPager) findViewById(R.id.pager);
