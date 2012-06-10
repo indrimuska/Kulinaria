@@ -104,10 +104,6 @@ public class DatabaseInterface {
 							recipeId + " ) " +
 						")";
 	}
-	public static final class SHOPPING_LIST {
-		static final String TABLE	= "ShoppingList";
-		static final String CREATE = "";
-	}
 	
 	// DbHelper implementation
 	class DbHelper extends SQLiteOpenHelper {
@@ -430,7 +426,7 @@ public class DatabaseInterface {
 	public Cursor searchRecipe(String name) {
 		Log.d(TAG, "searchRecipe: " + name);
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		return db.query(RECIPES.TABLE, null, RECIPES.name+" like ?", new String[] { '%'+name+'%' }, null, null, null);
+		return db.query(RECIPES.TABLE, null, RECIPES.name+" like ?", new String[] { name+'%' }, null, null, null);
 	}
 	
 	// Convert recipe-ingredient informations to ContentValues

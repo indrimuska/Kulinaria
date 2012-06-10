@@ -14,6 +14,7 @@ import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -30,7 +31,6 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -119,6 +119,12 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public Fragment getItem(int position) {
+			// Set locale language
+			Configuration configuration = getResources().getConfiguration();
+			Locale locale = new Locale(getString(R.string.language));
+			Locale.setDefault(locale);
+			configuration.locale = locale;
+			getResources().updateConfiguration(configuration, null);
 			return SliderFragment.newInstance(pages.get(position % pages.size()));
 		}
 		
@@ -136,7 +142,7 @@ public class MainActivity extends FragmentActivity {
 	// Generic page to implement
 	abstract class Page {
 		protected String pageName;
-		public Page(int name) { this.pageName = getString(name); }
+		public Page(int name) { pageName = getString(name); }
 		public String getTitle() { return pageName; }
 		public abstract View getView();
 		public abstract void refresh();
@@ -172,7 +178,6 @@ public class MainActivity extends FragmentActivity {
 					recipe = (Spinner) dialogView.findViewById(R.id.menuRecipe);
 					
 					// Filling all fields
-					Locale.setDefault(new Locale(getString(R.string.language)));
 					ArrayAdapter<CharSequence> mealAdapter = ArrayAdapter.createFromResource(
 							MainActivity.this, R.array.meals, R.layout.spinner_text_white);
 					mealAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -263,7 +268,6 @@ public class MainActivity extends FragmentActivity {
 					: getString(R.string.menuDailyMenu);
 			
 			// Set day informations
-			Locale.setDefault(new Locale(getString(R.string.language)));
 			((TextView) layout.findViewById(R.id.menuTodayNumber)).setText(new SimpleDateFormat("dd").format(day));
 			((TextView) layout.findViewById(R.id.menuTodaysMenu)).setText(menuDailyMenu);
 			((TextView) layout.findViewById(R.id.menuTodayDate)).setText(
@@ -446,6 +450,7 @@ public class MainActivity extends FragmentActivity {
 			// Inflate rows using SimpleAdapter
 			ListView list = new ListView(MainActivity.this);
 			list.setScrollingCacheEnabled(false);
+			list.setCacheColorHint(Color.TRANSPARENT);
 			list.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1));
 			list.setPadding(10, 10, 10, 10);
 			SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, inventoryList, R.layout.inventory_list_item,
@@ -520,12 +525,13 @@ public class MainActivity extends FragmentActivity {
 			// Filling contents using SimpleAdapter
 			ArrayList<Map<String, Object>> dishes = new ArrayList<Map<String, Object>>();
 			String[] dishesList = getResources().getStringArray(R.array.dishes);
-			for (int i = 0; i < dishesList.length; i++) {
+			for (String dish : dishesList) {
 				Map<String, Object> dishInfo = new HashMap<String, Object>();
-				dishInfo.put("image", getResources().getIdentifier("drawable/dishes_" + i, "drawable", getPackageName()));
-				dishInfo.put("name", dishesList[i]);
+				dishInfo.put("image", getResources().getIdentifier(
+						dish.toLowerCase().replace(" ", "_"), "drawable", getPackageName()));
+				dishInfo.put("name", dish);
 				dishInfo.put("other", getString(R.string.recipesNumber)
-						.replaceFirst("\\?", Integer.toString(db.getRecipeCount(dishesList[i]))));
+						.replaceFirst("\\?", Integer.toString(db.getRecipeCount(dish))));
 				dishes.add(dishInfo);
 			}
 			list.setAdapter(new SimpleAdapter(MainActivity.this, dishes, R.layout.dishes_list_item,
@@ -655,7 +661,6 @@ public class MainActivity extends FragmentActivity {
 			// Set the ListView adapter
 			Date tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
-			Locale.setDefault(new Locale(getString(R.string.language)));
 			ArrayList<Map<String, Object>> sectionShoppingList = new ArrayList<Map<String, Object>>();
 			final GroupedListAdapter adapter = new GroupedListAdapter(MainActivity.this, R.layout.shopping_list_header);
 			for (Date day = new Date(), today = new Date(), lastDayGroupBy = new Date();
@@ -843,14 +848,12 @@ public class MainActivity extends FragmentActivity {
 		
 		// Expiration date button listener
 		expirationDate.setOnClickListener(new OnClickListener() {
-			Calendar calendar = Calendar.getInstance();
 			@Override
 			public void onClick(View v) {
-				Date date = new Date();
+				final Calendar calendar = Calendar.getInstance();
 				SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.simpleDateFormat));
-				try { date = dateFormat.parse(expirationDate.getText().toString()); }
+				try { calendar.setTime(dateFormat.parse(expirationDate.getText().toString())); }
 				catch (ParseException e) { }
-				calendar.setTime(date);
 				new DatePickerDialog(MainActivity.this, new OnDateSetListener() {
 					@Override
 					public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -865,7 +868,7 @@ public class MainActivity extends FragmentActivity {
 				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
 			}
 		});
-
+		
 		// Remove expiration date button listener
 		removeExpirationDate.setOnClickListener(new OnClickListener() {
 			@Override
@@ -887,14 +890,10 @@ public class MainActivity extends FragmentActivity {
 					String unitString;
 					float quantityFloat;
 					long expirationDateLong;
-					try {
-						cursor.moveToFirst();
-						unitString = cursor.getString(cursor.getColumnIndex(INVENTORY.unit));
-						quantityFloat = cursor.getFloat(cursor.getColumnIndex(INVENTORY.quantity));
-						expirationDateLong = cursor.getLong(cursor.getColumnIndex(INVENTORY.expirationDate));
-					} finally {
-						cursor.close();
-					}
+					cursor.moveToFirst();
+					unitString = cursor.getString(cursor.getColumnIndex(INVENTORY.unit));
+					quantityFloat = cursor.getFloat(cursor.getColumnIndex(INVENTORY.quantity));
+					expirationDateLong = cursor.getLong(cursor.getColumnIndex(INVENTORY.expirationDate));
 					quantity.setText(Float.toString(quantityFloat));
 					unit.setSelection(((ArrayAdapter<String>) unit.getAdapter()).getPosition(unitString));
 					if (expirationDateLong > 0) {
@@ -929,10 +928,9 @@ public class MainActivity extends FragmentActivity {
 				final long ingredientExpirationDate =
 						expirationDate.getText().toString().equals(getString(R.string.ingredientExpirationDateNoExpiry))
 						? 0 : date.getTime();
+				boolean alreadyExists = db.inventoryIngredientAlreadyExists(ingredientName);
 				// Check if another ingredient is already stored with the same name
-				Log.d("TAG", "updateIngredientName="+updateIngredientName);
-				Log.d("TAG", "ingredientName="+ingredientName);
-				if (db.inventoryIngredientAlreadyExists(ingredientName) && !ingredientName.equals(updateIngredientName)) {
+				if (alreadyExists && !ingredientName.equals(updateIngredientName)) {
 					String ingredientAlreadyExists = getString(R.string.ingredientAlreadyExists).replaceFirst("\\?", ingredientName);
 					new AlertDialog.Builder(MainActivity.this)
 						.setMessage(ingredientAlreadyExists)
@@ -957,7 +955,7 @@ public class MainActivity extends FragmentActivity {
 							}
 						}).show();
 				} else {
-					if (updateIngredientName == null) {
+					if (!alreadyExists) {
 						// Insert new ingredient
 						db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 						String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);

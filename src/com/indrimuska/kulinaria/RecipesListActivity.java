@@ -37,7 +37,7 @@ public class RecipesListActivity extends Activity {
 		
 		// Set activity layout
 		((ImageView) findViewById(R.id.dishImage)).setImageResource(
-				getResources().getIdentifier("drawable/" + dish.toLowerCase().replace(" ", "_"), "drawable", getPackageName()));
+				getResources().getIdentifier(dish.toLowerCase().replace(" ", "_") + "_xhdpi", "drawable", getPackageName()));
 		((TextView) findViewById(R.id.dishName)).setText(dish);
 		list = (ListView) findViewById(R.id.dishList);
 		((Button) findViewById(R.id.dishBackButton)).setOnClickListener(new View.OnClickListener() {
