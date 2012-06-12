@@ -101,7 +101,7 @@
 			android:drawableLeft="@drawable/create_contact"
 			android:drawablePadding="10dp" />
 		
-		<ImageView
+		<ImageButton
 			android:id="@+id/menuDayAfter"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -109,8 +109,9 @@
 			android:layout_alignParentRight="true"
 			android:padding="15dp"
 			android:contentDescription="@null"
+			android:background="@android:color/transparent"
 			android:src="@drawable/ic_ab_back_holo_light_flip" />
-		<ImageView
+		<ImageButton
 			android:id="@+id/menuDayBefore"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -118,6 +119,7 @@
 			android:layout_toLeftOf="@id/menuDayAfter"
 			android:padding="15dp"
 			android:contentDescription="@null"
+			android:background="@android:color/transparent"
 			android:src="@drawable/ic_ab_back_holo_light" />
 	</RelativeLayout>
 	

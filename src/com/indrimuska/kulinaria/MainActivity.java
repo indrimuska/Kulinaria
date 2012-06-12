@@ -252,10 +252,10 @@ public class MainActivity extends FragmentActivity {
 			});
 			
 			// Change data buttons
-			((ImageView) layout.findViewById(R.id.menuDayBefore)).setOnClickListener(new OnClickListener() {
+			((ImageButton) layout.findViewById(R.id.menuDayBefore)).setOnClickListener(new OnClickListener() {
 				@Override public void onClick(View view) { day.setDate(day.getDate()-1); inflateView(layout); }
 			});
-			((ImageView) layout.findViewById(R.id.menuDayAfter)).setOnClickListener(new OnClickListener() {
+			((ImageButton) layout.findViewById(R.id.menuDayAfter)).setOnClickListener(new OnClickListener() {
 				@Override public void onClick(View view) { day.setDate(day.getDate()+1); inflateView(layout); }
 			});
 			return layout;
@@ -541,7 +541,7 @@ public class MainActivity extends FragmentActivity {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					startActivity(new Intent(MainActivity.this, RecipesListActivity.class)
-						.putExtra("dish", ((TextView) view.findViewById(R.id.listDishName)).getText().toString()));
+						.putExtra("dish", ((TextView) view.findViewById(R.id.listDishName)).getText()));
 				}
 			});
 			
@@ -624,8 +624,8 @@ public class MainActivity extends FragmentActivity {
 		
 		// Shopping list variables
 		LinearLayout layout;
+		boolean create = true;
 		int groupByPosition = 0;
-		boolean refreshed = true;
 		
 		@Override
 		public View getView() {
@@ -641,10 +641,10 @@ public class MainActivity extends FragmentActivity {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 					groupByPosition = position;
-					// The next control is needed due to the call of the this listener method
-					// every time when the view is created
-					if (!refreshed) refresh();
-					else refreshed = false;
+					// The next control is needed due to the call of this
+					// listener method every time  the view is created
+					if (!create) refresh();
+					else create = false;
 				}
 				@Override public void onNothingSelected(AdapterView<?> parent) { }
 			});
@@ -779,7 +779,7 @@ public class MainActivity extends FragmentActivity {
 		
 		@Override
 		public void refresh() {
-			refreshed = true;
+			create = true;
 			if (layout != null) {
 				ViewGroup parent = (ViewGroup) layout.getParent();
 				int index = parent.indexOfChild(layout);
@@ -928,9 +928,8 @@ public class MainActivity extends FragmentActivity {
 				final long ingredientExpirationDate =
 						expirationDate.getText().toString().equals(getString(R.string.ingredientExpirationDateNoExpiry))
 						? 0 : date.getTime();
-				boolean alreadyExists = db.inventoryIngredientAlreadyExists(ingredientName);
 				// Check if another ingredient is already stored with the same name
-				if (alreadyExists && !ingredientName.equals(updateIngredientName)) {
+				if (db.inventoryIngredientAlreadyExists(ingredientName) && !ingredientName.equals(updateIngredientName)) {
 					String ingredientAlreadyExists = getString(R.string.ingredientAlreadyExists).replaceFirst("\\?", ingredientName);
 					new AlertDialog.Builder(MainActivity.this)
 						.setMessage(ingredientAlreadyExists)
@@ -955,7 +954,7 @@ public class MainActivity extends FragmentActivity {
 							}
 						}).show();
 				} else {
-					if (!alreadyExists) {
+					if (updateIngredientName == null || !db.inventoryIngredientAlreadyExists(updateIngredientName)) {
 						// Insert new ingredient
 						db.insertInventoryIngredient(ingredientName, ingredientQuantity, ingredientUnit, ingredientExpirationDate);
 						String ingredientAdded = getString(R.string.ingredientAdded).replaceFirst("\\?", ingredientName);
