@@ -17,8 +17,10 @@
 		android:id="@+id/recipesSearchList"
 		android:layout_width="fill_parent"
 		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:layout_margin="10dp"
 		android:orientation="vertical"
-		android:visibility="invisible"
+		android:visibility="gone"
 		android:cacheColorHint="@android:color/transparent" />
 	
 	<ImageView

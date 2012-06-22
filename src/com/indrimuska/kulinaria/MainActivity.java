@@ -225,7 +225,7 @@ public class MainActivity extends FragmentActivity {
 								cursor.close();
 							}
 							db.addMenuDish(
-									new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day),
+									new SimpleDateFormat(DatabaseInterface.DATEFORMAT).format(day),
 									meal.getSelectedItem().toString(),
 									recipesId.get(recipe.getSelectedItemPosition()));
 							String menuDishAdded = getString(R.string.menuDishAdded)
@@ -242,7 +242,7 @@ public class MainActivity extends FragmentActivity {
 					String[] meals = getResources().getStringArray(R.array.meals);
 					ArrayList<ArrayList<Map<String, Object>>> menuByMeal = new ArrayList<ArrayList<Map<String, Object>>>();
 					for (String meal : getResources().getStringArray(R.array.meals))
-						menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal));
+						menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATEFORMAT).format(day), meal));
 					ArrayList<Map<String, Object>> recipesToExclude = new ArrayList<Map<String, Object>>();
 					for (int i = 0; i < menuByMeal.size(); i++)
 						if (meals[i].equals(meal.getSelectedItem().toString()))
@@ -282,7 +282,7 @@ public class MainActivity extends FragmentActivity {
 			final String[] meals = getResources().getStringArray(R.array.meals);
 			final ArrayList<ArrayList<Map<String, Object>>> menuByMeal = new ArrayList<ArrayList<Map<String, Object>>>();
 			for (String meal : getResources().getStringArray(R.array.meals))
-				menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal));
+				menuByMeal.add(db.getMenu(new SimpleDateFormat(DatabaseInterface.DATEFORMAT).format(day), meal));
 			menuMealsList.setAdapter(new BaseExpandableListAdapter() {
 				@Override
 				public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
@@ -346,7 +346,7 @@ public class MainActivity extends FragmentActivity {
 												public void onClick(DialogInterface dialog, int which) {
 													String dishName = name.getText().toString().trim();
 													db.eatDrinkMenuDish(
-															new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal, recipeId);
+															new SimpleDateFormat(DatabaseInterface.DATEFORMAT).format(day), meal, recipeId);
 													db.eatDrinkRecipe(recipeId);
 													String dishEatenDrunk = getString(R.string.menuDishEatenDrunk)
 															.replaceFirst("\\?", dishName);
@@ -372,7 +372,7 @@ public class MainActivity extends FragmentActivity {
 													public void onClick(DialogInterface dialog, int which) {
 														String dishName = name.getText().toString().trim();
 														db.deleteMenuDish(
-																new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day), meal, recipeId);
+																new SimpleDateFormat(DatabaseInterface.DATEFORMAT).format(day), meal, recipeId);
 														String dishDelete = getString(R.string.menuDishDeleted)
 																.replaceFirst("\\?", dishName);
 														Toast.makeText(MainActivity.this, dishDelete, Toast.LENGTH_SHORT).show();
@@ -562,21 +562,13 @@ public class MainActivity extends FragmentActivity {
 			searchField.addTextChangedListener(new TextWatcher() {
 				@Override
 				public void onTextChanged(CharSequence s, int start, int before, int count) {
-					LayoutParams show = new LayoutParams(LayoutParams.FILL_PARENT, 0, 1);
-					LayoutParams hidden = new LayoutParams(LayoutParams.FILL_PARENT, 0, 0);
-					int dp20 = (int) (20 * getResources().getDisplayMetrics().density);
-					show.setMargins(dp20, dp20, dp20, dp20);
-					hidden.setMargins(0, 0, 0, 0);
 					if (s.toString().trim().length() == 0) {
-						list.setLayoutParams(show);
-						search.setLayoutParams(hidden);
+						searchField.setCompoundDrawables(null, null, null, null);
 						list.setVisibility(View.VISIBLE);
-						search.setVisibility(View.INVISIBLE);
+						search.setVisibility(View.GONE);
 						return;
 					}
-					list.setLayoutParams(hidden);
-					search.setLayoutParams(show);
-					list.setVisibility(View.INVISIBLE);
+					list.setVisibility(View.GONE);
 					search.setVisibility(View.VISIBLE);
 					Drawable clearButton = getResources().getDrawable(R.drawable.ic_clear_holo_light);
 					clearButton.setBounds(0, 0, clearButton.getIntrinsicWidth(), clearButton.getIntrinsicHeight());
@@ -715,7 +707,7 @@ public class MainActivity extends FragmentActivity {
 												MainActivity.this, R.layout.shopping_list_dialog_header);
 										for (int m = 0; m < meals.length; m++) {
 											Date date = null;
-											SimpleDateFormat format = new SimpleDateFormat(DatabaseInterface.DATAFORMAT);
+											SimpleDateFormat format = new SimpleDateFormat(DatabaseInterface.DATEFORMAT);
 											try { date = format.parse(dates[m]); }
 											catch (ParseException e) { }
 											shoppingListAdapter.addSection(meals[m].toUpperCase() + " (" +
@@ -755,7 +747,7 @@ public class MainActivity extends FragmentActivity {
 					sectionShoppingList = new ArrayList<Map<String, Object>>();
 				}
 				// Get the shopping list for this day
-				String header = new SimpleDateFormat(DatabaseInterface.DATAFORMAT).format(day);
+				String header = new SimpleDateFormat(DatabaseInterface.DATEFORMAT).format(day);
 				mergeShoppingLists(sectionShoppingList, db.getShoppingList(header, inventoryList));
 			}
 			

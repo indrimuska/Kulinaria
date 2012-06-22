@@ -30,7 +30,7 @@ public class DatabaseInterface {
 	static final int VERSION = 1;
 	static final String DATABASE = "kulinaria.db";
 	
-	public static final String DATAFORMAT = "yyyy-MM-dd";
+	public static final String DATEFORMAT = "yyyy-MM-dd";
 	
 	// Tables definition
 	public static final class INVENTORY {
@@ -45,7 +45,7 @@ public class DatabaseInterface {
 						name + " text primary key, " +
 						quantity + " float, " +
 						unit + " text, " +
-						expirationDate + " int )";
+						expirationDate + " long )";
 	}
 	public static final class RECIPES {
 		static final String TABLE			= "Recipes";
@@ -207,7 +207,7 @@ public class DatabaseInterface {
 				Document doc = documentBuilder.parse(context.getResources().openRawResource(XML));
 				doc.getDocumentElement().normalize();
 				
-				// Save XML content into ArrayList<String>
+				// Save XML content into Map<String, ArrayList>
 				NodeList tableList = doc.getElementsByTagName("table");
 				for (int t = 0; t < tableList.getLength(); t++) {
 					ArrayList<ArrayList<String>> rows = new ArrayList<ArrayList<String>>();
@@ -573,7 +573,7 @@ public class DatabaseInterface {
 	public Date getLastShoppingDay() {
 		Date last = new Date();
 		ArrayList<Map<String, Object>> inventoryList = getInventory();
-		SimpleDateFormat dateFormat = new SimpleDateFormat(DATAFORMAT);
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
 		
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		Cursor cursor = db.query(MENU.TABLE, null, MENU.date + " >= date('now') and " + MENU.eatenDrunk + " = 0",
