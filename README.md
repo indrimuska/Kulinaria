@@ -14,9 +14,9 @@ Per sapere quali sono gli ingredienti e i prodotti che servono per completare un
 - L’inventario dei prodotti che ogni utente già possiede nella dispensa, nel frigo, o più in generale in cucina.
 
 Sapendo quali prodotti sono richiesti per ogni ricetta e quali invece sono già in possesso dell’utente, è possibile definire una lista di prodotti mancanti che l’utente dovrà ottenere per poter concretizzare le scelte alimentari desiderate.
-In questo modo si possono programmare colazioni, pranzi, cene o affini senza dover controllare o tenere a mente ogni volta quali prodotti sono già disponibili e quali no. Così facendo si unisce la comodità di un ricettario potatile con l’utilità di inventario personale, al fine di ottenere una lista della spesa intelligente, che si aggiorna automaticamente al variare delle proprie esigenze.
+In questo modo si possono programmare colazioni, pranzi, cene o affini senza dover controllare o tenere a mente ogni volta quali prodotti sono già disponibili e quali no. Così facendo si unisce la comodità di un **ricettario potatile** con l’utilità di **inventario personale**, al fine di ottenere una **lista della spesa intelligente**, che si aggiorna automaticamente al variare delle proprie esigenze.
 
-
-
-	Indri Muska
-	indrimuska@gmail.com
+Autore
+----------------------------------
+Indri Muska
+[indrimuska@gmail.com](mailto:indrimuska@gmail.com)
